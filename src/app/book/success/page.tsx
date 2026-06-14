@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { CheckCircle2, MessageSquare, Phone } from "lucide-react";
+import { CheckCircle2, Clock3, MessageSquare, Phone, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   BUSINESS_INSTAGRAM_HANDLE,
   BUSINESS_INSTAGRAM_URL,
+  BUSINESS_NAME,
   BUSINESS_PHONE_DISPLAY,
   BUSINESS_PHONE_TEL,
+  PAYMENT_OPERATOR_NAME,
 } from "@/lib/business";
 
 export default async function BookingSuccessPage({
@@ -24,17 +26,41 @@ export default async function BookingSuccessPage({
           Request Received
         </p>
         <h1 className="mt-4 font-heading text-5xl font-black uppercase leading-none text-white">
-          You&apos;re In The Queue
+          You&apos;re All Set
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-200">
-          We received your request and will review it as soon as possible. If payment
-          was required, Stripe will confirm that part automatically on the back end.
+          We received your request. If you paid today, your payment went through safely.
+          We will review the details and follow up with a clear confirmation.
+        </p>
+        <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-slate-300">
+          Your bank statement or checkout page may show {PAYMENT_OPERATOR_NAME}. That is the payment
+          company handling secure online checkout for {BUSINESS_NAME}.
         </p>
         {params.booking ? (
           <p className="mt-4 text-sm uppercase tracking-[0.18em] text-white/60">
             Booking reference: {params.booking}
           </p>
         ) : null}
+        <div className="mx-auto mt-8 grid max-w-3xl gap-4 text-left sm:grid-cols-3">
+          <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
+            <Clock3 className="size-5 text-cyan-200" />
+            <p className="mt-3 text-sm leading-6 text-white/88">
+              We review the request and check the schedule.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
+            <ShieldCheck className="size-5 text-cyan-200" />
+            <p className="mt-3 text-sm leading-6 text-white/88">
+              We confirm your service date and time window.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
+            <MessageSquare className="size-5 text-cyan-200" />
+            <p className="mt-3 text-sm leading-6 text-white/88">
+              If you need to add anything, call or DM us any time.
+            </p>
+          </div>
+        </div>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button asChild>
             <Link href={`tel:${BUSINESS_PHONE_TEL}`}>

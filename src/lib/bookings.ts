@@ -1,10 +1,14 @@
 import { revalidatePath } from "next/cache";
 
 import { getSql } from "@/lib/db";
-import { bookingAdminAlert, sendTransactionalEmail } from "@/lib/email";
-import { buildQuote, getTimeWindowLabel } from "@/lib/pricing";
+import {
+  bookingAdminAlert,
+  bookingStatusEmail,
+  customerPaymentReceivedEmail,
+  customerRequestEmail,
+} from "@/lib/email";
+import { buildQuote } from "@/lib/pricing";
 import type { BookingFormValues } from "@/lib/booking-schema";
-import { BUSINESS_NAME, BUSINESS_PHONE_DISPLAY, BUSINESS_INSTAGRAM_HANDLE } from "@/lib/business";
 
 export interface BookingRecord {
   id: string;
@@ -35,18 +39,21 @@ export interface BookingRecord {
   stripe_payment_status: string | null;
   heavy_stain_level: string | null;
   bins_count: number | null;
+  gate_code_needed: boolean;
+  gate_code: string | null;
   driveway_sqft: number | null;
   walkway_sqft: number | null;
   patio_sqft: number | null;
   house_sqft: number | null;
   fence_linear_feet: number | null;
   notes: string | null;
+  referral_source: string | null;
   owner_notes: string | null;
   terms_accepted: boolean;
   privacy_accepted: boolean;
   sms_opt_in: boolean;
   email_opt_in: boolean;
-  quote_json: string;
+  quote_json: unknown;
 }
 
 export async function createBookingSubmission(values: BookingFormValues) {
@@ -85,9 +92,9 @@ export async function createBookingSubmission(values: BookingFormValues) {
       customer_name, phone, email, instagram_handle, primary_service, frequency, status,
       property_type, address_line_1, city, state, zip, distance_miles, travel_surcharge,
       preferred_date, preferred_time_window, quote_total, deposit_due, payment_mode,
-      heavy_stain_level, bins_count, driveway_sqft, walkway_sqft, patio_sqft, house_sqft,
-      fence_linear_feet, notes, terms_accepted, privacy_accepted, sms_opt_in, email_opt_in,
-      quote_json
+      heavy_stain_level, bins_count, gate_code_needed, gate_code, driveway_sqft, walkway_sqft,
+      patio_sqft, house_sqft, fence_linear_feet, notes, referral_source, terms_accepted,
+      privacy_accepted, sms_opt_in, email_opt_in, quote_json
     ) VALUES (
       ${values.customerName},
       ${values.phone},
@@ -110,12 +117,15 @@ export async function createBookingSubmission(values: BookingFormValues) {
       ${quote.paymentMode},
       ${values.heavyStainLevel},
       ${values.binsCount || null},
+      ${values.gateCodeNeeded},
+      ${values.gateCode || null},
       ${values.drivewaySqft || null},
       ${values.walkwaySqft || null},
       ${values.patioSqft || null},
       ${values.houseSqft || null},
       ${values.fenceLinearFeet || null},
       ${values.notes || null},
+      ${values.referralSource || null},
       ${values.termsAccepted},
       ${values.privacyAccepted},
       ${values.smsOptIn},
@@ -128,24 +138,11 @@ export async function createBookingSubmission(values: BookingFormValues) {
   const booking = (result as BookingRecord[])[0];
 
   try {
-    await bookingAdminAlert({
-      customerName: booking.customer_name,
-      service: booking.primary_service,
-      status: booking.status,
-    });
+    await bookingAdminAlert(booking);
   } catch {}
 
   try {
-    await sendTransactionalEmail({
-      to: values.email,
-      subject: `${BUSINESS_NAME} received your request`,
-      html: `<p>Hi ${values.customerName},</p>
-        <p>We received your ${values.primaryService.replaceAll("_", " ")} request.</p>
-        <p>Preferred time: ${values.preferredDate} (${getTimeWindowLabel(values.preferredTimeWindow)})</p>
-        <p>If we need anything else, we will call, text, or email you.</p>
-        <p>${BUSINESS_PHONE_DISPLAY} | ${BUSINESS_INSTAGRAM_HANDLE}</p>`,
-      text: `Hi ${values.customerName}, we received your request for ${values.primaryService.replaceAll("_", " ")}. Preferred time: ${values.preferredDate} (${getTimeWindowLabel(values.preferredTimeWindow)}).`,
-    });
+    await customerRequestEmail(booking);
   } catch {}
 
   return {
@@ -165,6 +162,19 @@ export async function getAllBookings() {
   `;
 
   return Array.isArray(result) ? (result as BookingRecord[]) : [];
+}
+
+export async function getBookingById(id: string) {
+  const sql = getSql();
+  if (!sql) return null;
+
+  const result = await sql`
+    SELECT * FROM bookings
+    WHERE id = ${id}
+    LIMIT 1
+  `;
+
+  return ((result as BookingRecord[])[0] ?? null);
 }
 
 export async function updateBookingById(
@@ -197,4 +207,16 @@ export async function updateBookingById(
 
   revalidatePath("/admin");
   return ((result as BookingRecord[])[0] ?? null);
+}
+
+export async function notifyCustomerBookingUpdated(booking: BookingRecord) {
+  try {
+    await bookingStatusEmail(booking);
+  } catch {}
+}
+
+export async function notifyCustomerPaymentReceived(booking: BookingRecord) {
+  try {
+    await customerPaymentReceivedEmail(booking);
+  } catch {}
 }

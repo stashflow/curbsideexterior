@@ -1,4 +1,5 @@
 export const BUSINESS_NAME = "CURBSIDE EXTERIOR CO.";
+export const PAYMENT_OPERATOR_NAME = "Meademark Labs";
 export const BUSINESS_PHONE_RAW = "6787096690";
 export const BUSINESS_PHONE_DISPLAY = "(678) 709-6690";
 export const BUSINESS_PHONE_TEL = `+1${BUSINESS_PHONE_RAW}`;

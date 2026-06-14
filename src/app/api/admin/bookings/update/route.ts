@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAdminSession } from "@/lib/auth";
-import { updateBookingById } from "@/lib/bookings";
+import { notifyCustomerBookingUpdated, updateBookingById } from "@/lib/bookings";
 
 export async function POST(request: Request) {
   const session = await getAdminSession();
@@ -21,12 +21,16 @@ export async function POST(request: Request) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
-  await updateBookingById(id, {
+  const updated = await updateBookingById(id, {
     status: status || undefined,
     scheduledDate: scheduledDate || null,
     scheduledTimeWindow: scheduledTimeWindow || null,
     ownerNotes: ownerNotes || null,
   });
+
+  if (updated && (status || scheduledDate || scheduledTimeWindow)) {
+    await notifyCustomerBookingUpdated(updated);
+  }
 
   return NextResponse.redirect(new URL("/admin", request.url));
 }

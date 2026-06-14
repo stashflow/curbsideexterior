@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { updateBookingById } from "@/lib/bookings";
+import { notifyCustomerPaymentReceived, updateBookingById } from "@/lib/bookings";
 import { getSql } from "@/lib/db";
-import { sendTransactionalEmail } from "@/lib/email";
 import { getStripe } from "@/lib/stripe";
-import { BUSINESS_NAME } from "@/lib/business";
 
 export const runtime = "nodejs";
 
@@ -46,14 +44,7 @@ export async function POST(request: Request) {
         });
 
         if (updated) {
-          try {
-            await sendTransactionalEmail({
-              to: updated.email,
-              subject: `${BUSINESS_NAME} payment received`,
-              html: `<p>Hi ${updated.customer_name},</p><p>We received your payment and your booking is now pending final confirmation.</p>`,
-              text: `Hi ${updated.customer_name}, we received your payment and your booking is now pending final confirmation.`,
-            });
-          } catch {}
+          await notifyCustomerPaymentReceived(updated);
         }
       }
     }
