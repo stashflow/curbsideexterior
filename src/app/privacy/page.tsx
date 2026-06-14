@@ -37,8 +37,9 @@ export default function PrivacyPage() {
             <h2 className="font-heading text-3xl font-black uppercase text-white">Texts & Emails</h2>
             <p>
               If you opt in, we may contact you by text or email regarding booking, scheduling,
-              reminders, and service updates. You can ask us to stop non-essential communications
-              at any time.
+              reminders, service updates, and occasional seasonal marketing emails. You can
+              unsubscribe from non-essential email at any time using the link inside the email
+              or by contacting us directly.
             </p>
           </section>
           <section>

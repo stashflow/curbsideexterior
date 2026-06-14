@@ -49,6 +49,27 @@ CREATE TABLE IF NOT EXISTS bookings (
 CREATE INDEX IF NOT EXISTS bookings_status_idx ON bookings (status);
 CREATE INDEX IF NOT EXISTS bookings_created_at_idx ON bookings (created_at DESC);
 
+CREATE TABLE IF NOT EXISTS subscribers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  email TEXT NOT NULL UNIQUE,
+  first_name TEXT,
+  zip TEXT,
+  source TEXT NOT NULL DEFAULT 'website',
+  status TEXT NOT NULL DEFAULT 'subscribed',
+  cadence TEXT NOT NULL DEFAULT 'balanced',
+  email_consent BOOLEAN NOT NULL DEFAULT TRUE,
+  unsubscribe_token TEXT NOT NULL UNIQUE DEFAULT gen_random_uuid()::text,
+  unsubscribed_at TIMESTAMPTZ,
+  last_sent_at TIMESTAMPTZ,
+  next_send_at TIMESTAMPTZ,
+  notes TEXT
+);
+
+CREATE INDEX IF NOT EXISTS subscribers_status_idx ON subscribers (status);
+CREATE INDEX IF NOT EXISTS subscribers_next_send_idx ON subscribers (next_send_at);
+
 CREATE TABLE IF NOT EXISTS stripe_webhook_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   stripe_event_id TEXT NOT NULL UNIQUE,

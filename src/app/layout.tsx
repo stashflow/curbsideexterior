@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Teko } from "next/font/google";
 import { InstallPrompt } from "@/components/site/install-prompt";
 import { PwaRegister } from "@/components/site/pwa-register";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_TEL } from "@/lib/business";
+import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const heading = Teko({
@@ -16,9 +18,9 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CURBSIDE EXTERIOR CO. | Premium Exterior Cleaning",
-  description:
-    "Professional pressure washing, trash can cleaning, and curb number painting for homeowners, HOAs, and property managers.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   keywords: [
     "pressure washing",
     "trash can cleaning",
@@ -26,6 +28,34 @@ export const metadata: Metadata = {
     "Marietta pressure washing",
     "exterior cleaning",
   ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: "CURBSIDE EXTERIOR CO.",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "CURBSIDE EXTERIOR CO.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/twitter-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -33,8 +63,8 @@ export const metadata: Metadata = {
     title: "CURBSIDE",
   },
   icons: {
-    icon: "/Logo.png",
-    apple: "/Logo.png",
+    icon: [{ url: "/icon", type: "image/png" }],
+    apple: [{ url: "/apple-icon", type: "image/png" }],
   },
 };
 
@@ -49,6 +79,33 @@ export default function RootLayout({
       className={`${heading.variable} ${body.variable} h-full`}
     >
       <body className="min-h-full bg-[#02060B] font-body text-white antialiased">
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              name: "CURBSIDE EXTERIOR CO.",
+              url: SITE_URL,
+              telephone: BUSINESS_PHONE_TEL,
+              description: SITE_DESCRIPTION,
+              areaServed: [
+                "Marietta, GA",
+                "Kennesaw, GA",
+                "Smyrna, GA",
+                "East Cobb, GA",
+                "Woodstock, GA",
+                "Roswell, GA",
+              ],
+              contactPoint: {
+                "@type": "ContactPoint",
+                telephone: BUSINESS_PHONE_DISPLAY,
+                contactType: "customer service",
+              },
+            }),
+          }}
+        />
         <PwaRegister />
         {children}
         <InstallPrompt />

@@ -1,6 +1,9 @@
 import { BUSINESS_NAME, BUSINESS_PHONE_DISPLAY, BUSINESS_INSTAGRAM_HANDLE, OWNER_EMAIL, PAYMENT_OPERATOR_NAME } from "@/lib/business";
 import { formatBoolean, formatCurrency, formatDateTime, formatTitle, parseQuoteJson } from "@/lib/format";
 import type { BookingRecord } from "@/lib/bookings";
+import { getCampaignForMonth } from "@/lib/marketing";
+import { SITE_URL } from "@/lib/site";
+import type { SubscriberRecord } from "@/lib/subscribers";
 
 interface EmailPayload {
   to: string;
@@ -209,6 +212,61 @@ export function bookingStatusEmail(booking: BookingRecord) {
       body,
     }),
     text: `Hi ${booking.customer_name}, your booking status is now ${formatTitle(booking.status)}.`,
+  });
+}
+
+function marketingFooter(subscriber: SubscriberRecord) {
+  const unsubscribeUrl = `${SITE_URL}/unsubscribe?token=${subscriber.unsubscribe_token}`;
+  return `${BUSINESS_NAME}<br />${BUSINESS_PHONE_DISPLAY}<br />Instagram ${BUSINESS_INSTAGRAM_HANDLE}<br />You can unsubscribe from email updates any time: <a href="${unsubscribeUrl}" style="color:#7DD3FC;">Unsubscribe</a>`;
+}
+
+export function sendMarketingWelcomeEmail(subscriber: SubscriberRecord) {
+  const body = `
+    <p style="margin:0 0 14px 0;">Hi ${subscriber.first_name || "there"},</p>
+    <p style="margin:0 0 14px 0;">You are on the CURBSIDE email list.</p>
+    <p style="margin:0 0 14px 0;">We use this list for useful seasonal reminders, simple service offers, and occasional cleanup ideas for homeowners in and around Marietta.</p>
+    <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
+      <p style="margin:0 0 8px 0;"><strong>What to expect:</strong> a light, seasonal email rhythm instead of constant promotions.</p>
+      <p style="margin:0;"><strong>Any time:</strong> you can unsubscribe with one click at the bottom of every email.</p>
+    </div>
+    <p style="margin:0;">If you want a quote sooner, you can book online or text us directly.</p>
+  `;
+
+  return sendTransactionalEmail({
+    to: subscriber.email,
+    subject: "You are on the CURBSIDE list",
+    html: emailShell({
+      eyebrow: "Email List",
+      title: "Thanks For Signing Up",
+      body,
+      footer: marketingFooter(subscriber),
+    }),
+    text: `Hi ${subscriber.first_name || "there"}, you are on the CURBSIDE email list. We send occasional seasonal service emails, and you can unsubscribe at any time.`,
+  });
+}
+
+export function marketingCampaignEmail(subscriber: SubscriberRecord, month = new Date().getMonth() + 1) {
+  const campaign = getCampaignForMonth(month);
+  const body = `
+    <p style="margin:0 0 14px 0;">Hi ${subscriber.first_name || "there"},</p>
+    <p style="margin:0 0 14px 0;">${campaign.body}</p>
+    <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
+      <p style="margin:0 0 8px 0;"><strong>Good fit for:</strong> driveways, walkways, patios, siding, fences, and trash can cleaning.</p>
+      <p style="margin:0;"><strong>Best next step:</strong> book online, text us, or DM @curbsideexterior.</p>
+    </div>
+    <p style="margin:0;"><a href="${SITE_URL}/book" style="display:inline-block;padding:12px 18px;border-radius:999px;background:linear-gradient(135deg,#12B6FF_0%,#009DFF_55%,#0567D8_100%);color:#FFFFFF;text-decoration:none;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">${campaign.cta}</a></p>
+  `;
+
+  return sendTransactionalEmail({
+    to: subscriber.email,
+    subject: campaign.subject,
+    html: emailShell({
+      eyebrow: campaign.preview,
+      title: campaign.headline,
+      body,
+      footer: marketingFooter(subscriber),
+    }),
+    text: `${campaign.headline}. ${campaign.body} ${campaign.cta}: ${SITE_URL}/book`,
   });
 }
 

@@ -9,6 +9,7 @@ import {
   Clock3,
   Copy,
   LogOut,
+  Mail,
   MapPinned,
   MessageSquareWarning,
   QrCode,
@@ -19,7 +20,8 @@ import QRCode from "qrcode";
 
 import type { BookingRecord } from "@/lib/bookings";
 import { customerInfoList } from "@/lib/email";
-import { formatCurrency, formatTitle, parseQuoteJson } from "@/lib/format";
+import { formatCurrency, formatDateTime, formatTitle, parseQuoteJson } from "@/lib/format";
+import { getSubscriberCampaignSummary, type SubscriberRecord } from "@/lib/subscribers";
 
 function SectionCard({
   label,
@@ -46,6 +48,8 @@ function statusPill(status: string) {
     pending_confirmation: "border-sky-300/20 bg-sky-400/10 text-sky-100",
     confirmed: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
     completed: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
+    subscribed: "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
+    unsubscribed: "border-white/12 bg-white/8 text-white/85",
     cancelled: "border-rose-300/20 bg-rose-400/10 text-rose-100",
     declined_area: "border-rose-300/20 bg-rose-400/10 text-rose-100",
   };
@@ -356,7 +360,15 @@ function InvoiceBuilder() {
   );
 }
 
-export function AdminDashboard({ bookings, username }: { bookings: BookingRecord[]; username: string }) {
+export function AdminDashboard({
+  bookings,
+  subscribers,
+  username,
+}: {
+  bookings: BookingRecord[];
+  subscribers: SubscriberRecord[];
+  username: string;
+}) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -385,6 +397,7 @@ export function AdminDashboard({ bookings, username }: { bookings: BookingRecord
   const leads = filtered.filter((booking) => ["lead", "pending_payment", "declined_area"].includes(booking.status));
   const upcoming = filtered.filter((booking) => ["pending_confirmation", "confirmed"].includes(booking.status));
   const past = filtered.filter((booking) => ["completed", "cancelled"].includes(booking.status));
+  const activeSubscribers = subscribers.filter((subscriber) => subscriber.status === "subscribed");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -436,6 +449,83 @@ export function AdminDashboard({ bookings, username }: { bookings: BookingRecord
         <SectionCard label="Finished" value={past.length} icon={CheckCircle2} />
         <SectionCard label="Total shown" value={filtered.length} icon={ShieldCheck} />
       </div>
+
+      <section className="mt-12">
+        <div className="flex items-center gap-3">
+          <Mail className="size-5 text-cyan-200" />
+          <h2 className="font-heading text-4xl font-black uppercase text-white">Email List</h2>
+        </div>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+          Subscribers are stored here with their status and next suggested send date. The current rhythm stays lighter in slower months and tighter during spring and early fall.
+        </p>
+        <div className="mt-5 grid gap-5 xl:grid-cols-[0.7fr_1.3fr]">
+          <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">At A Glance</p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.16em] text-white/55">Subscribed</p>
+                <p className="mt-2 font-heading text-5xl font-black text-white">{activeSubscribers.length}</p>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.16em] text-white/55">Unsubscribed</p>
+                <p className="mt-2 font-heading text-5xl font-black text-white">
+                  {subscribers.filter((subscriber) => subscriber.status === "unsubscribed").length}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-black/20 p-4 text-sm leading-6 text-slate-300">
+                Welcome email goes out right away. After that, the list uses a seasonal cadence so people hear from you at stronger times and get less email when it matters less.
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.04] p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+              Subscriber Details
+            </p>
+            <div className="mt-5 space-y-4">
+              {subscribers.length === 0 ? (
+                <div className="rounded-2xl border border-white/8 bg-black/20 p-5 text-slate-300">
+                  No email subscribers yet.
+                </div>
+              ) : (
+                subscribers.map((subscriber) => {
+                  const campaign = getSubscriberCampaignSummary(subscriber);
+
+                  return (
+                    <div key={subscriber.id} className="rounded-2xl border border-white/8 bg-black/20 p-4">
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                          <p className="text-lg font-semibold text-white">{subscriber.email}</p>
+                          <p className="mt-1 text-sm text-slate-300">
+                            {subscriber.first_name || "No name"} {subscriber.zip ? `• ZIP ${subscriber.zip}` : ""}
+                          </p>
+                        </div>
+                        <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${statusPill(subscriber.status)}`}>
+                          {formatTitle(subscriber.status)}
+                        </span>
+                      </div>
+                      <div className="mt-4 grid gap-3 md:grid-cols-3">
+                        <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                          <p className="text-[11px] uppercase tracking-[0.16em] text-white/50">Joined</p>
+                          <p className="mt-2 text-sm text-white/92">{formatDateTime(subscriber.created_at)}</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                          <p className="text-[11px] uppercase tracking-[0.16em] text-white/50">Next send</p>
+                          <p className="mt-2 text-sm text-white/92">{formatDateTime(campaign.nextDate)}</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                          <p className="text-[11px] uppercase tracking-[0.16em] text-white/50">Next subject</p>
+                          <p className="mt-2 text-sm text-white/92">{campaign.subject}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section id="leads" className="mt-12">
         <div className="flex items-center gap-3">

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/site/brand-logo";
+import { EmailSignupForm } from "@/components/site/email-signup-form";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -46,7 +47,7 @@ const services = [
     title: "Curb Number Painting",
     description:
       "High-visibility curb numbers that improve curb appeal and make your address easier to spot.",
-    items: ["Clean layout", "Easy to read", "Coming soon"],
+    items: ["Clean layout", "Easy to read", "Address visibility"],
     badge: "Coming Soon",
   },
 ];
@@ -217,7 +218,7 @@ function ProofCard({
       </h3>
       <p className="mt-4 text-base leading-7 text-slate-300">{body}</p>
       <div className="mt-6 rounded-2xl border border-white/8 bg-black/25 px-4 py-4 text-sm text-slate-300">
-        This is here to make the process feel easy to trust, not to fill space with fluff.
+        Clear steps, clear pricing, and clear follow-up help the booking process feel dependable.
       </div>
     </div>
   );
@@ -567,7 +568,7 @@ export function HomePage() {
           <SectionHeading
             eyebrow="Why People Book"
             title="Professional Enough To Trust. Simple Enough To Book Fast."
-            body="The page still feels premium, but the message is now much more direct for first-time visitors and mobile users."
+            body="Customers want a service that looks professional and feels easy to understand right away. That is exactly what this experience is built to do."
           />
           <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {reasons.map((reason, index) => (
@@ -594,7 +595,7 @@ export function HomePage() {
           <SectionHeading
             eyebrow="Booking Process"
             title="A Booking Experience That Builds Trust"
-            body="Until you have real project proof to add, the strongest conversion tool is a booking process that feels clear, organized, and easy to follow."
+            body="People are more likely to book when the process feels organized, direct, and easy to understand from the first screen."
             align="center"
           />
           <div className="mt-10 grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
@@ -610,6 +611,39 @@ export function HomePage() {
                 <ProofCard title={item.title} body={item.body} />
               </motion.div>
             ))}
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+          <SectionHeading
+            eyebrow="Email List"
+            title="Stay On The List Without Getting Buried In Emails"
+            body="The email list is built for useful reminders and timely offers, not constant blasts. It is meant to stay welcome in the inbox."
+          />
+          <div className="mt-10 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+            <EmailSignupForm />
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-200">
+                What Subscribers Get
+              </p>
+              <div className="mt-5 space-y-4 text-sm leading-6 text-white/88">
+                <div className="flex gap-3">
+                  <Check className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                  Seasonal reminders when exterior cleaning matters most
+                </div>
+                <div className="flex gap-3">
+                  <Check className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                  Simple offers and booking windows when timing is strongest
+                </div>
+                <div className="flex gap-3">
+                  <Check className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                  A low-pressure email rhythm with one-click unsubscribe
+                </div>
+              </div>
+              <div className="mt-6 rounded-2xl border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100">
+                We email more during spring and early fall, and less during slower parts of the year so the list stays helpful.
+              </div>
+            </div>
           </div>
         </section>
 
