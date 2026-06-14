@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -283,6 +284,28 @@ function StepBadge({
   );
 }
 
+function MobileSupportPanel({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <details
+      className="rounded-[1.35rem] border border-white/10 bg-white/[0.04] p-4 sm:hidden"
+      open={defaultOpen}
+    >
+      <summary className="cursor-pointer list-none text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+        {title}
+      </summary>
+      <div className="mt-4">{children}</div>
+    </details>
+  );
+}
+
 export function BookingForm() {
   const [form, setForm] = useState<FormState>(initialState);
   const [error, setError] = useState("");
@@ -493,13 +516,13 @@ export function BookingForm() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 pb-28 sm:px-6 sm:py-10 sm:pb-10 lg:px-8">
+    <div className="mx-auto max-w-7xl overflow-x-hidden px-4 py-6 pb-28 sm:px-6 sm:py-10 sm:pb-10 lg:px-8">
       <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8">
         <div className="space-y-6 sm:space-y-8">
           <motion.section
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-[2rem] border border-cyan-300/18 bg-[linear-gradient(135deg,rgba(18,182,255,0.14),rgba(7,17,29,0.98)_28%,rgba(2,6,11,0.98)_100%)] p-5 shadow-[0_24px_100px_rgba(0,0,0,0.35)] sm:rounded-[2.3rem] sm:p-8"
+            className="relative overflow-hidden rounded-[1.7rem] border border-cyan-300/18 bg-[linear-gradient(135deg,rgba(18,182,255,0.14),rgba(7,17,29,0.98)_28%,rgba(2,6,11,0.98)_100%)] p-4 shadow-[0_24px_100px_rgba(0,0,0,0.35)] sm:rounded-[2.3rem] sm:p-8"
           >
             <div className="pointer-events-none absolute -right-16 top-0 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl" />
             <div className="pointer-events-none absolute bottom-0 left-0 h-40 w-40 rounded-full bg-sky-500/14 blur-3xl" />
@@ -508,15 +531,35 @@ export function BookingForm() {
                 <Sparkles className="size-3.5" />
                 Book Online
               </div>
-              <h1 className="mt-4 max-w-4xl font-heading text-[2.6rem] font-black uppercase leading-[0.9] text-white sm:mt-5 sm:text-6xl">
+              <h1 className="mt-4 max-w-4xl font-heading text-[2rem] font-black uppercase leading-[0.92] text-white sm:mt-5 sm:text-6xl">
                 Fast quote. Clear steps. No confusing pricing.
               </h1>
-              <p className="mt-4 max-w-2xl text-[0.95rem] leading-7 text-slate-200 sm:mt-5 sm:text-lg sm:leading-8">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200 sm:mt-5 sm:text-lg sm:leading-8">
                 This booking flow is built to be simple. Pick the service, enter only the surfaces
                 that really need cleaning, choose a day, and send the request.
               </p>
 
-              <div className="-mx-1 mt-5 flex gap-3 overflow-x-auto px-1 pb-1 sm:mx-0 sm:mt-6 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:hidden">
+                {steps.map((step, index) => (
+                  <div
+                    key={step.id}
+                    className={`rounded-2xl border px-3 py-3 ${
+                      currentStep === index
+                        ? "border-cyan-300/35 bg-cyan-400/12"
+                        : stepValidity[index]
+                          ? "border-emerald-300/20 bg-emerald-400/10"
+                          : "border-white/8 bg-white/[0.03]"
+                    }`}
+                  >
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-white/50">{step.number}</p>
+                    <p className="mt-1 text-sm font-semibold uppercase leading-5 text-white">
+                      {step.title}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="-mx-1 mt-5 hidden gap-3 overflow-x-auto px-1 pb-1 sm:mx-0 sm:mt-6 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 xl:grid-cols-4">
                 {steps.map((step, index) => (
                   <div key={step.id} className="min-w-[15rem] sm:min-w-0">
                     <StepBadge
@@ -537,17 +580,20 @@ export function BookingForm() {
                 />
               </div>
 
-              <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row">
-                <Button asChild>
-                  <Link href="/book">
-                    <CalendarDays className="size-4" />
-                    Book Online
-                  </Link>
-                </Button>
-                <Button asChild variant="secondary">
+              <div className="mt-4 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:gap-3">
+                <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-white/88 sm:hidden">
+                  4 short steps. Live price updates. No call needed.
+                </div>
+                <Button asChild variant="secondary" className="sm:w-auto">
                   <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
                     <MessageSquare className="size-4" />
                     DM {BUSINESS_INSTAGRAM_HANDLE}
+                  </Link>
+                </Button>
+                <Button asChild className="hidden sm:inline-flex">
+                  <Link href="/book">
+                    <CalendarDays className="size-4" />
+                    Book Online
                   </Link>
                 </Button>
               </div>
@@ -567,16 +613,16 @@ export function BookingForm() {
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:rounded-[2rem] sm:p-7">
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 sm:rounded-[2rem] sm:p-7">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">
                     Step {currentStep + 1} of {steps.length}
                   </p>
-                  <h2 className="mt-3 font-heading text-[2.2rem] font-black uppercase leading-none text-white sm:text-5xl">
+                  <h2 className="mt-2 font-heading text-[1.7rem] font-black uppercase leading-none text-white sm:mt-3 sm:text-5xl">
                     {steps[currentStep].title}
                   </h2>
-                  <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:mt-4 sm:text-base">
                     {steps[currentStep].body}
                   </p>
                 </div>
@@ -594,7 +640,7 @@ export function BookingForm() {
                   exit="exit"
                   variants={panelMotion}
                   transition={{ duration: 0.28 }}
-                  className="mt-6 sm:mt-8"
+                  className="mt-5 sm:mt-8"
                 >
                   {steps[currentStep].id === "services" ? (
                     <div className="space-y-6">
@@ -607,7 +653,7 @@ export function BookingForm() {
                               key={option.value}
                               type="button"
                               onClick={() => toggleService(option.value)}
-                              className={`rounded-[1.45rem] border p-4 text-left transition sm:rounded-[1.7rem] sm:p-5 ${
+                              className={`rounded-[1.25rem] border p-4 text-left transition sm:rounded-[1.7rem] sm:p-5 ${
                                 selected
                                   ? "border-cyan-300/40 bg-cyan-400/10 shadow-[0_0_40px_rgba(18,182,255,0.08)]"
                                   : "border-white/10 bg-black/20 hover:border-white/20"
@@ -615,11 +661,11 @@ export function BookingForm() {
                               aria-pressed={selected}
                             >
                               <option.icon className="size-6 text-cyan-200" />
-                              <p className="mt-3 font-heading text-[1.7rem] font-black uppercase text-white sm:mt-4 sm:text-2xl">
+                              <p className="mt-3 font-heading text-[1.35rem] font-black uppercase leading-none text-white sm:mt-4 sm:text-2xl">
                                 {option.label}
                               </p>
-                              <p className="mt-3 text-sm leading-6 text-slate-300">{option.body}</p>
-                              <div className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">
+                              <p className="mt-2 text-sm leading-6 text-slate-300">{option.body}</p>
+                              <div className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">
                                 {selected ? "Selected" : "Tap to add"}
                               </div>
                             </button>
@@ -1065,24 +1111,24 @@ export function BookingForm() {
           </form>
         </div>
 
-        <div className="space-y-5 lg:sticky lg:top-28 lg:self-start">
+        <div className="space-y-4 lg:sticky lg:top-28 lg:self-start lg:space-y-5">
           <motion.section
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-[1.75rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(7,17,29,0.95),rgba(2,6,11,0.98))] p-5 shadow-[0_20px_70px_rgba(0,0,0,0.35)] sm:rounded-[2rem] sm:p-6"
+            className="rounded-[1.5rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(7,17,29,0.95),rgba(2,6,11,0.98))] p-4 shadow-[0_20px_70px_rgba(0,0,0,0.35)] sm:rounded-[2rem] sm:p-6"
           >
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-200">
                   Live Estimate
                 </p>
-                <h2 className="mt-3 font-heading text-4xl font-black uppercase leading-none text-white">
+                <h2 className="mt-2 font-heading text-[1.45rem] font-black uppercase leading-tight text-white sm:mt-3 sm:text-4xl sm:leading-none">
                   {quote.summary || "Smart pricing"}
                 </h2>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center">
+              <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-center sm:px-4 sm:py-3">
                 <p className="text-[11px] uppercase tracking-[0.16em] text-white/50">Step</p>
-                <p className="mt-1 text-xl font-semibold text-white">
+                <p className="mt-1 text-base font-semibold text-white sm:text-xl">
                   {currentStep + 1}/{steps.length}
                 </p>
               </div>
@@ -1095,7 +1141,7 @@ export function BookingForm() {
               </p>
             </div>
 
-            <div className="mt-5 space-y-3 sm:mt-6">
+            <div className="mt-4 space-y-3 sm:mt-6">
               {quote.lineItems.length > 0 ? (
                 quote.lineItems.map((item) => (
                   <div
@@ -1141,11 +1187,36 @@ export function BookingForm() {
             </div>
           </motion.section>
 
+          <MobileSupportPanel title="Why this feels easy" defaultOpen={false}>
+            <div className="space-y-4 text-sm leading-6 text-white/88">
+              <div className="flex gap-3">
+                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                The form moves one clear step at a time
+              </div>
+              <div className="flex gap-3">
+                <Lock className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                Stripe is only used when payment is actually needed
+              </div>
+              <div className="flex gap-3">
+                <Clock3 className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                The date picker is simple and does not ask you for a year
+              </div>
+              <div className="flex gap-3">
+                <Sparkles className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                Pricing moves up with the area entered instead of big jumps
+              </div>
+            </div>
+            <div className="mt-4 rounded-2xl border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100">
+              If Stripe asks for payment, it may show <strong>{PAYMENT_OPERATOR_NAME}</strong>.
+              That is the software company that securely handles online payments for {BUSINESS_NAME}.
+            </div>
+          </MobileSupportPanel>
+
           <motion.section
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:rounded-[2rem] sm:p-6"
+            className="hidden rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:block sm:rounded-[2rem] sm:p-6"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-200">
               Why this feels easy
@@ -1174,11 +1245,35 @@ export function BookingForm() {
             </div>
           </motion.section>
 
+          <MobileSupportPanel title="What happens next" defaultOpen={false}>
+            <div className="space-y-4 text-sm leading-6 text-white/88">
+              <div className="flex gap-3">
+                <CalendarDays className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                We review the request details
+              </div>
+              <div className="flex gap-3">
+                <ChevronRight className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                If payment is needed, Stripe handles it safely
+              </div>
+              <div className="flex gap-3">
+                <Check className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+                We confirm your date and time window
+              </div>
+            </div>
+            <div className="mt-4 rounded-2xl border border-white/8 bg-black/20 p-4 text-sm text-slate-300">
+              Current visit target:{" "}
+              <span className="font-semibold text-white">
+                {formatFriendlyDate(form.preferredMonth, form.preferredDay)} -{" "}
+                {getTimeWindowLabel(form.preferredTimeWindow)}
+              </span>
+            </div>
+          </MobileSupportPanel>
+
           <motion.section
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:rounded-[2rem] sm:p-6"
+            className="hidden rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:block sm:rounded-[2rem] sm:p-6"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-200">
               What happens next
