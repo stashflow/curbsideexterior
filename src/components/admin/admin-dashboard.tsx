@@ -20,7 +20,7 @@ import QRCode from "qrcode";
 
 import type { BookingRecord } from "@/lib/bookings";
 import { customerInfoList } from "@/lib/email";
-import { formatCurrency, formatDateTime, formatTitle, parseQuoteJson } from "@/lib/format";
+import { formatCurrency, formatDateTime, formatServiceList, formatTitle, parseQuoteJson } from "@/lib/format";
 import { getSubscriberCampaignSummary, type SubscriberRecord } from "@/lib/subscribers";
 
 function SectionCard({
@@ -77,7 +77,7 @@ function BookingCard({ booking }: { booking: BookingRecord }) {
 
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {[
-              { label: "Service", value: formatTitle(booking.primary_service) },
+              { label: "Service", value: formatServiceList(booking.primary_service) },
               { label: "Frequency", value: formatTitle(booking.frequency) },
               { label: "Total", value: formatCurrency(booking.quote_total) },
               {

@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckCircle2, Clock3, MessageSquare, Phone, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MessageSquare, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   BUSINESS_INSTAGRAM_HANDLE,
   BUSINESS_INSTAGRAM_URL,
   BUSINESS_NAME,
-  BUSINESS_PHONE_DISPLAY,
-  BUSINESS_PHONE_TEL,
   PAYMENT_OPERATOR_NAME,
 } from "@/lib/business";
 
@@ -66,21 +64,27 @@ export default async function BookingSuccessPage({
           <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
             <MessageSquare className="size-5 text-cyan-200" />
             <p className="mt-3 text-sm leading-6 text-white/88">
-              If you need to add anything, call or DM us any time.
+              If you need to add anything, send a text or DM us any time.
             </p>
           </div>
         </div>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button asChild>
-            <Link href={`tel:${BUSINESS_PHONE_TEL}`}>
-              <Phone className="size-4" />
-              Call {BUSINESS_PHONE_DISPLAY}
+            <Link href="/book">
+              <CalendarDays className="size-4" />
+              Book Online
             </Link>
           </Button>
           <Button asChild variant="secondary">
             <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
               <MessageSquare className="size-4" />
               DM {BUSINESS_INSTAGRAM_HANDLE}
+            </Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link href="/">
+              <ArrowLeft className="size-4" />
+              Back Home
             </Link>
           </Button>
         </div>

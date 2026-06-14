@@ -1,5 +1,5 @@
 import { BUSINESS_NAME, BUSINESS_PHONE_DISPLAY, BUSINESS_INSTAGRAM_HANDLE, OWNER_EMAIL, PAYMENT_OPERATOR_NAME } from "@/lib/business";
-import { formatBoolean, formatCurrency, formatDateOnly, formatDateTime, formatTitle, parseQuoteJson } from "@/lib/format";
+import { formatBoolean, formatCurrency, formatDateOnly, formatDateTime, formatServiceList, formatTitle, parseQuoteJson } from "@/lib/format";
 import type { BookingRecord } from "@/lib/bookings";
 import { getCampaignForMonth } from "@/lib/marketing";
 import { SITE_URL } from "@/lib/site";
@@ -116,7 +116,7 @@ export function bookingAdminAlert(booking: BookingRecord) {
       <p style="margin:0 0 8px 0;"><strong>Customer:</strong> ${booking.customer_name}</p>
       <p style="margin:0 0 8px 0;"><strong>Phone:</strong> ${booking.phone}</p>
       <p style="margin:0 0 8px 0;"><strong>Email:</strong> ${booking.email}</p>
-      <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatTitle(booking.primary_service)}</p>
+      <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatServiceList(booking.primary_service)}</p>
       <p style="margin:0 0 8px 0;"><strong>Requested time:</strong> ${formatDateOnly(booking.preferred_date)} (${booking.preferred_time_window})</p>
       <p style="margin:0 0 8px 0;"><strong>Address:</strong> ${booking.address_line_1}, ${booking.city}, ${booking.state} ${booking.zip}</p>
       <p style="margin:0;"><strong>Status:</strong> ${formatTitle(booking.status)}</p>
@@ -132,7 +132,7 @@ export function bookingAdminAlert(booking: BookingRecord) {
       title: "A New Request Needs Review",
       body,
     }),
-    text: `New booking from ${booking.customer_name}. Service: ${formatTitle(booking.primary_service)}. Status: ${formatTitle(booking.status)}. Phone: ${booking.phone}.`,
+    text: `New booking from ${booking.customer_name}. Service: ${formatServiceList(booking.primary_service)}. Status: ${formatTitle(booking.status)}. Phone: ${booking.phone}.`,
   });
 }
 
@@ -146,13 +146,13 @@ export function customerRequestEmail(booking: BookingRecord) {
     <p style="margin:0 0 14px 0;">Hi ${booking.customer_name},</p>
     <p style="margin:0 0 14px 0;">We got your request. Thank you for reaching out to ${BUSINESS_NAME}.</p>
     <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
-      <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatTitle(booking.primary_service)}</p>
+      <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatServiceList(booking.primary_service)}</p>
       <p style="margin:0 0 8px 0;"><strong>Preferred date:</strong> ${formatDateOnly(booking.preferred_date)}</p>
       <p style="margin:0 0 8px 0;"><strong>Preferred time:</strong> ${booking.preferred_time_window}</p>
       <p style="margin:0;"><strong>${paymentLine}</strong></p>
     </div>
     ${quoteSummaryTable(booking)}
-    <p style="margin:18px 0 0 0;">If we need anything else, we will keep it simple and reach out by phone, text, or email.</p>
+    <p style="margin:18px 0 0 0;">If we need anything else, we will keep it simple and reach out by text, email, or Instagram DM.</p>
   `;
 
   return sendTransactionalEmail({
@@ -163,7 +163,7 @@ export function customerRequestEmail(booking: BookingRecord) {
       title: "We Got Your Request",
       body,
     }),
-    text: `Hi ${booking.customer_name}, we got your request for ${formatTitle(booking.primary_service)}. Preferred date: ${booking.preferred_date}. ${paymentLine}`,
+    text: `Hi ${booking.customer_name}, we got your request for ${formatServiceList(booking.primary_service)}. Preferred date: ${booking.preferred_date}. ${paymentLine}`,
   });
 }
 
@@ -172,11 +172,11 @@ export function customerPaymentReceivedEmail(booking: BookingRecord) {
     <p style="margin:0 0 14px 0;">Hi ${booking.customer_name},</p>
     <p style="margin:0 0 14px 0;">We received your payment.</p>
     <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
-      <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatTitle(booking.primary_service)}</p>
+      <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatServiceList(booking.primary_service)}</p>
       <p style="margin:0 0 8px 0;"><strong>Status:</strong> Pending final confirmation</p>
       <p style="margin:0;"><strong>Next step:</strong> We will confirm your date and time window as soon as possible.</p>
     </div>
-    <p style="margin:0;">If you need to add anything, reply to this email or reach out by phone or Instagram DM.</p>
+    <p style="margin:0;">If you need to add anything, reply to this email or send an Instagram DM.</p>
   `;
 
   return sendTransactionalEmail({
@@ -279,7 +279,7 @@ export function customerInfoList(booking: BookingRecord) {
     ["Email", booking.email],
     ["Instagram", booking.instagram_handle || "None given"],
     ["Status", formatTitle(booking.status)],
-    ["Service", formatTitle(booking.primary_service)],
+    ["Service", formatServiceList(booking.primary_service)],
     ["Frequency", formatTitle(booking.frequency)],
     ["Property type", formatTitle(booking.property_type)],
     ["Address", `${booking.address_line_1}, ${booking.city}, ${booking.state} ${booking.zip}`],

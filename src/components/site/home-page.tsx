@@ -14,7 +14,6 @@ import {
   Lock,
   MapPinned,
   MessageSquare,
-  Phone,
   ShieldCheck,
   Sparkles,
   SprayCan,
@@ -53,10 +52,10 @@ const services = [
 ];
 
 const quickFacts = [
-  "Get your quote and request service online",
+  "Book online in a few clear steps",
   "A real person reviews every request",
   "Serving Marietta and nearby areas",
-  "Call, text, or DM if you want help",
+  "Text or DM if you want help",
 ];
 
 const trustItems = [
@@ -91,12 +90,12 @@ const reasons = [
 
 const processSteps = [
   {
-    title: "Contact us",
-    body: "Call, text, or DM us and tell us what you want cleaned.",
+    title: "Book online",
+    body: "Choose the service, add the details, and send the request in one place.",
   },
   {
-    title: "Get your quote",
-    body: "We confirm the work, answer questions, and give you straightforward pricing.",
+    title: "See the pricing",
+    body: "The form shows clear pricing and tells you exactly what happens next.",
   },
   {
     title: "Schedule service",
@@ -125,7 +124,7 @@ const bookingTrustCards = [
   },
   {
     title: "Simple follow-up",
-    body: "Customers can book online, then still call, text, or DM if they want help. That makes the process feel modern without feeling cold.",
+    body: "Customers can book online, then still text or DM if they want help. That keeps the process modern and easy to follow.",
   },
 ];
 
@@ -138,7 +137,7 @@ const faqItems = [
   {
     question: "How do I get a quote?",
     answer:
-      "Call, text, or DM on Instagram at @curbsideexterior. If you want the fastest reply, send your address and what you want cleaned.",
+      "Book online for the best experience, or send a text or Instagram DM if you want help first.",
   },
   {
     question: "Do I need to be home?",
@@ -287,18 +286,12 @@ export function HomePage() {
             </Link>
           </div>
           <div className="hidden items-center gap-3 lg:flex">
-            <Button asChild variant="secondary">
-              <Link href="tel:+16787096690">
-                <Phone className="size-4" />
-                Call Now
-              </Link>
-            </Button>
             <Button asChild>
-              <Link href="#contact">Get Quote</Link>
+              <Link href="/book">Book Online</Link>
             </Button>
           </div>
           <Button asChild size="lg" className="lg:hidden">
-            <Link href="tel:+16787096690">Call</Link>
+            <Link href="/book">Book Online</Link>
           </Button>
         </nav>
       </header>
@@ -332,7 +325,7 @@ export function HomePage() {
               variants={fadeUp}
               className="mt-4 max-w-2xl text-base leading-7 text-slate-200 sm:text-xl sm:leading-8"
             >
-              Book online, text, call, or DM. We make it obvious what you need to send, what the service costs, and what happens next so booking feels easy from the first tap.
+              Book online, text, or DM. We make it obvious what you need to send, what the service costs, and what happens next so booking feels easy from the first tap.
             </motion.p>
             <motion.p
               initial="hidden"
@@ -390,13 +383,13 @@ export function HomePage() {
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/book">
                   <CalendarClock className="size-4" />
-                  Get Quote Online
+                  Book Online
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
                 <Link href="sms:+16787096690">
                   <MessageSquare className="size-4" />
-                  Text For A Quote
+                  Text Us
                 </Link>
               </Button>
             </motion.div>
@@ -426,7 +419,7 @@ export function HomePage() {
               variants={fadeUp}
               className="mt-6 rounded-[1.6rem] border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100 sm:px-5"
             >
-              The online quote flow helps customers send the right details the first time, see clearer pricing, and feel confident before they commit.
+              The online booking flow helps customers send the right details the first time, see clearer pricing, and feel confident before they commit.
             </motion.div>
           </div>
 
@@ -492,7 +485,7 @@ export function HomePage() {
                       Best next step
                     </p>
                     <p className="mt-2 text-white/92">
-                      Book online if you want the smoothest path. Call, text, or DM if you want help first.
+                      Book online if you want the smoothest path. Text or DM if you want help first.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
@@ -566,7 +559,7 @@ export function HomePage() {
                   href="#contact"
                   className="mt-7 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200 transition group-hover:gap-3"
                 >
-                  Request Quote <ChevronRight className="size-4" />
+                  Book Online <ChevronRight className="size-4" />
                 </Link>
               </motion.article>
             ))}
@@ -710,7 +703,7 @@ export function HomePage() {
                     Areas We Serve
                   </h3>
                   <p className="mt-4 text-base leading-7 text-slate-300">
-                    If you are nearby but don’t see your city listed, call or text and ask.
+                    If you are nearby but don’t see your city listed, send a text and ask.
                   </p>
                 </div>
               </div>
@@ -794,8 +787,7 @@ export function HomePage() {
                   Ready To Clean Up Your Property?
                 </h2>
                 <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
-                  Call or text <span className="font-semibold text-white">(678) 709-6690</span>, or
-                  send a DM to <span className="font-semibold text-white">@curbsideexterior</span> on Instagram.
+                  Book online for the smoothest path, or send a text or Instagram DM if you want help first.
                 </p>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <Button asChild size="lg" className="w-full sm:w-auto">
@@ -837,7 +829,7 @@ export function HomePage() {
           <Button asChild size="lg" className="w-full">
             <Link href="/book">
               <CalendarClock className="size-4" />
-              Book Now
+              Book Online
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary" className="w-full">

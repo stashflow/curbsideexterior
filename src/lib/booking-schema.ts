@@ -8,11 +8,11 @@ export const bookingFormSchema = z.object({
     .transform((value) => value.replace(/\D/g, "")),
   email: z.string().email("Please enter a valid email address."),
   instagramHandle: z.string().optional().default(""),
-  primaryService: z.enum([
-    "pressure_washing",
-    "trash_can_cleaning",
-    "curb_number_painting",
-  ]),
+  selectedServices: z
+    .array(
+      z.enum(["pressure_washing", "trash_can_cleaning", "curb_number_painting"]),
+    )
+    .min(1, "Please pick at least one service."),
   frequency: z.enum(["one_time", "monthly"]),
   propertyType: z.enum([
     "single_family",

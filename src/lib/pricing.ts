@@ -15,7 +15,7 @@ export type PropertyType =
 export type TimeWindow = "8-10" | "10-12" | "12-2" | "2-4" | "4-6";
 
 export interface QuoteInput {
-  primaryService: PrimaryService;
+  selectedServices: PrimaryService[];
   frequency: FrequencyOption;
   propertyType: PropertyType;
   zip: string;
@@ -36,6 +36,7 @@ export interface QuoteLineItem {
 }
 
 export interface QuoteResult {
+  selectedServices: PrimaryService[];
   subtotal: number;
   total: number;
   depositDue: number;
@@ -49,43 +50,27 @@ export interface QuoteResult {
 
 function drivewayPrice(squareFeet = 0) {
   if (squareFeet <= 0) return 0;
-  if (squareFeet <= 1000) return 149;
-  if (squareFeet <= 1500) return 209;
-  if (squareFeet <= 2000) return 269;
-
-  const extraUnits = Math.ceil((squareFeet - 2000) / 500);
-  return 269 + extraUnits * 55;
+  return Math.round(squareFeet * 0.12);
 }
 
 function walkwayPrice(squareFeet = 0) {
   if (squareFeet <= 0) return 0;
-  if (squareFeet <= 150) return 59;
-  if (squareFeet <= 300) return 89;
-  if (squareFeet <= 500) return 119;
-  return 119 + Math.ceil((squareFeet - 500) / 150) * 30;
+  return Math.round(squareFeet * 0.18);
 }
 
 function patioPrice(squareFeet = 0) {
   if (squareFeet <= 0) return 0;
-  if (squareFeet <= 250) return 89;
-  if (squareFeet <= 500) return 149;
-  if (squareFeet <= 750) return 199;
-  return 199 + Math.ceil((squareFeet - 750) / 250) * 45;
+  return Math.round(squareFeet * 0.2);
 }
 
 function houseWashPrice(squareFeet = 0) {
   if (squareFeet <= 0) return 0;
-  if (squareFeet <= 2000) return 249;
-  if (squareFeet <= 3000) return 329;
-  if (squareFeet <= 4000) return 409;
-  return 409 + Math.ceil((squareFeet - 4000) / 500) * 50;
+  return Math.round(squareFeet * 0.09);
 }
 
 function fencePrice(linearFeet = 0) {
   if (linearFeet <= 0) return 0;
-  if (linearFeet <= 100) return 179;
-  if (linearFeet <= 200) return 319;
-  return 319 + Math.ceil((linearFeet - 200) / 50) * 45;
+  return Math.round(linearFeet * 1.45);
 }
 
 function trashCanOneTimePrice(binCount = 1) {
@@ -114,9 +99,11 @@ export function getTimeWindowLabel(window: TimeWindow) {
 
 export function buildQuote(input: QuoteInput): QuoteResult {
   const serviceArea = evaluateServiceArea(input.zip);
+  const selectedServices = Array.from(new Set(input.selectedServices));
 
   if (!serviceArea.allowed) {
     return {
+      selectedServices,
       subtotal: 0,
       total: 0,
       depositDue: 0,
@@ -136,8 +123,11 @@ export function buildQuote(input: QuoteInput): QuoteResult {
   let depositDue = 0;
   let manualReview = false;
   let summary = "";
+  const hasPressureWashing = selectedServices.includes("pressure_washing");
+  const hasTrashCanCleaning = selectedServices.includes("trash_can_cleaning");
+  const hasCurbNumberPainting = selectedServices.includes("curb_number_painting");
 
-  if (input.primaryService === "pressure_washing") {
+  if (hasPressureWashing) {
     const driveway = drivewayPrice(input.drivewaySqft);
     const walkway = walkwayPrice(input.walkwaySqft);
     const patio = patioPrice(input.patioSqft);
@@ -157,25 +147,32 @@ export function buildQuote(input: QuoteInput): QuoteResult {
       lineItems.push({
         label: "Custom pressure washing review",
         amount: 0,
-        note: "We need a manual review because no pressure washing areas were selected.",
+        note: "Enter only the surfaces that actually need cleaning so the estimate stays accurate.",
       });
+    }
+
+    if (input.heavyStainLevel === "moderate") {
+      const moderateSurcharge = Math.round(subtotal * 0.06);
+      lineItems.push({
+        label: "Extra buildup treatment",
+        amount: moderateSurcharge,
+        note: "Small increase for heavier-than-normal mildew or grime.",
+      });
+      subtotal += moderateSurcharge;
     }
 
     if (input.heavyStainLevel === "heavy") {
+      const heavySurcharge = Math.round(subtotal * 0.12);
       lineItems.push({
-        label: "Deep stain treatment allowance",
-        amount: 35,
-        note: "Applied when oil, rust, or significant buildup is present.",
+        label: "Heavy stain treatment allowance",
+        amount: heavySurcharge,
+        note: "Used when oil, rust, red clay, or major buildup will likely need extra treatment.",
       });
-      subtotal += 35;
+      subtotal += heavySurcharge;
     }
-
-    paymentMode = "deposit";
-    depositDue = subtotal >= 300 ? 100 : 50;
-    summary = "Estimated pressure washing total";
   }
 
-  if (input.primaryService === "trash_can_cleaning") {
+  if (hasTrashCanCleaning) {
     const bins = Math.max(1, input.binsCount ?? 1);
 
     if (input.frequency === "monthly") {
@@ -183,37 +180,27 @@ export function buildQuote(input: QuoteInput): QuoteResult {
       lineItems.push({
         label: `Monthly trash can cleaning (${bins} bin${bins > 1 ? "s" : ""})`,
         amount: estimate,
-        note: "Manual confirmation required before scheduling recurring service.",
+        note: "Monthly service is reviewed by the owner before it is put on the schedule.",
       });
-      subtotal = estimate;
-      paymentMode = "manual_confirmation";
-      depositDue = 0;
+      subtotal += estimate;
       manualReview = true;
-      summary = "Estimated monthly service price";
     } else {
       const oneTime = trashCanOneTimePrice(bins);
       lineItems.push({
         label: `One-time trash can cleaning (${bins} bin${bins > 1 ? "s" : ""})`,
         amount: oneTime,
       });
-      subtotal = oneTime;
-      paymentMode = "full";
-      depositDue = oneTime;
-      summary = "One-time trash can cleaning total";
+      subtotal += oneTime;
     }
   }
 
-  if (input.primaryService === "curb_number_painting") {
+  if (hasCurbNumberPainting) {
     lineItems.push({
       label: "Curb number painting interest",
       amount: 0,
       note: "Coming soon. We will contact you once this service opens.",
     });
-    subtotal = 0;
-    paymentMode = "lead_only";
-    depositDue = 0;
     manualReview = true;
-    summary = "Curb number painting interest captured";
   }
 
   if (serviceArea.travelSurcharge > 0) {
@@ -225,7 +212,34 @@ export function buildQuote(input: QuoteInput): QuoteResult {
     subtotal += serviceArea.travelSurcharge;
   }
 
+  if (subtotal <= 0) {
+    paymentMode = "lead_only";
+    depositDue = 0;
+  } else if (manualReview) {
+    paymentMode = "manual_confirmation";
+    depositDue = 0;
+  } else if (hasPressureWashing) {
+    paymentMode = "deposit";
+    depositDue = subtotal >= 300 ? 100 : 50;
+  } else {
+    paymentMode = "full";
+    depositDue = subtotal;
+  }
+
+  if (selectedServices.length === 1 && hasPressureWashing) {
+    summary = "Estimated pressure washing total";
+  } else if (selectedServices.length === 1 && hasTrashCanCleaning && input.frequency === "monthly") {
+    summary = "Estimated monthly service price";
+  } else if (selectedServices.length === 1 && hasTrashCanCleaning) {
+    summary = "One-time trash can cleaning total";
+  } else if (selectedServices.length === 1 && hasCurbNumberPainting) {
+    summary = "Curb number painting interest captured";
+  } else {
+    summary = "Estimated total for selected services";
+  }
+
   return {
+    selectedServices,
     subtotal,
     total: subtotal,
     depositDue,
@@ -234,7 +248,7 @@ export function buildQuote(input: QuoteInput): QuoteResult {
     serviceArea,
     summary,
     disclaimer:
-      "Final pricing is confirmed after we review the full job details. Deposits reserve time on the schedule but do not waive the right to adjust for inaccurate measurements, unsafe access, or undisclosed surface conditions.",
+      "This estimate is based on the surfaces and measurements entered here. Only include the parts that actually need cleaning. Final pricing can change if the measurements are off, access is limited, or the condition is very different in person.",
     manualReview,
   };
 }

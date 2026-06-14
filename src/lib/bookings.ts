@@ -59,7 +59,7 @@ export interface BookingRecord {
 export async function createBookingSubmission(values: BookingFormValues) {
   const sql = getSql();
   const quote = buildQuote({
-    primaryService: values.primaryService,
+    selectedServices: values.selectedServices,
     frequency: values.frequency,
     propertyType: values.propertyType,
     zip: values.zip,
@@ -100,7 +100,7 @@ export async function createBookingSubmission(values: BookingFormValues) {
       ${values.phone},
       ${values.email},
       ${values.instagramHandle || null},
-      ${values.primaryService},
+      ${values.selectedServices.join(",")},
       ${values.frequency},
       ${initialStatus},
       ${values.propertyType},

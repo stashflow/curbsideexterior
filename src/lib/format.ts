@@ -14,6 +14,17 @@ export function formatTitle(value: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+export function formatServiceList(value: string | string[]) {
+  const items = Array.isArray(value)
+    ? value
+    : value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+  return items.map(formatTitle).join(", ");
+}
+
 export function formatBoolean(value: boolean | null | undefined) {
   return value ? "Yes" : "No";
 }
