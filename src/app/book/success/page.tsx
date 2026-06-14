@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MessageSquare, ShieldCheck } from "lucide-react";
 
+import { PostCheckoutInstallTrigger } from "@/components/site/post-checkout-install-trigger";
 import { Button } from "@/components/ui/button";
 import {
   BUSINESS_INSTAGRAM_HANDLE,
@@ -26,8 +27,10 @@ export default async function BookingSuccessPage({
   const params = await searchParams;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
-      <div className="rounded-[2.4rem] border border-cyan-300/18 bg-white/[0.04] p-8 text-center shadow-[0_18px_80px_rgba(0,0,0,0.35)] sm:p-12">
+    <>
+      <PostCheckoutInstallTrigger />
+      <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="rounded-[2.4rem] border border-cyan-300/18 bg-white/[0.04] p-8 text-center shadow-[0_18px_80px_rgba(0,0,0,0.35)] sm:p-12">
         <CheckCircle2 className="mx-auto size-16 text-cyan-200" />
         <p className="mt-6 text-sm font-semibold uppercase tracking-[0.28em] text-cyan-200">
           Request Received
@@ -89,6 +92,7 @@ export default async function BookingSuccessPage({
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -359,6 +359,7 @@ export function BookingForm() {
       : quote.paymentMode === "full"
         ? `Pay ${formatCurrency(quote.total)}`
         : "Send Request";
+  const isLastStep = currentStep === steps.length - 1;
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -492,13 +493,13 @@ export function BookingForm() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="space-y-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 pb-28 sm:px-6 sm:py-10 sm:pb-10 lg:px-8">
+      <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8">
+        <div className="space-y-6 sm:space-y-8">
           <motion.section
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-[2.3rem] border border-cyan-300/18 bg-[linear-gradient(135deg,rgba(18,182,255,0.14),rgba(7,17,29,0.98)_28%,rgba(2,6,11,0.98)_100%)] p-6 shadow-[0_24px_100px_rgba(0,0,0,0.35)] sm:p-8"
+            className="relative overflow-hidden rounded-[2rem] border border-cyan-300/18 bg-[linear-gradient(135deg,rgba(18,182,255,0.14),rgba(7,17,29,0.98)_28%,rgba(2,6,11,0.98)_100%)] p-5 shadow-[0_24px_100px_rgba(0,0,0,0.35)] sm:rounded-[2.3rem] sm:p-8"
           >
             <div className="pointer-events-none absolute -right-16 top-0 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl" />
             <div className="pointer-events-none absolute bottom-0 left-0 h-40 w-40 rounded-full bg-sky-500/14 blur-3xl" />
@@ -507,27 +508,28 @@ export function BookingForm() {
                 <Sparkles className="size-3.5" />
                 Book Online
               </div>
-              <h1 className="mt-5 max-w-4xl font-heading text-5xl font-black uppercase leading-[0.9] text-white sm:text-6xl">
+              <h1 className="mt-4 max-w-4xl font-heading text-[2.6rem] font-black uppercase leading-[0.9] text-white sm:mt-5 sm:text-6xl">
                 Fast quote. Clear steps. No confusing pricing.
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-slate-200 sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-2xl text-[0.95rem] leading-7 text-slate-200 sm:mt-5 sm:text-lg sm:leading-8">
                 This booking flow is built to be simple. Pick the service, enter only the surfaces
                 that really need cleaning, choose a day, and send the request.
               </p>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="-mx-1 mt-5 flex gap-3 overflow-x-auto px-1 pb-1 sm:mx-0 sm:mt-6 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 xl:grid-cols-4">
                 {steps.map((step, index) => (
-                  <StepBadge
-                    key={step.id}
-                    active={currentStep === index}
-                    complete={stepValidity[index]}
-                    number={step.number}
-                    title={step.title}
-                  />
+                  <div key={step.id} className="min-w-[15rem] sm:min-w-0">
+                    <StepBadge
+                      active={currentStep === index}
+                      complete={stepValidity[index]}
+                      number={step.number}
+                      title={step.title}
+                    />
+                  </div>
                 ))}
               </div>
 
-              <div className="mt-6 h-2 overflow-hidden rounded-full bg-white/8">
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/8 sm:mt-6">
                 <motion.div
                   className="h-full rounded-full bg-[linear-gradient(90deg,#12B6FF,#009DFF,#78E6FF)]"
                   animate={{ width: `${progress}%` }}
@@ -535,7 +537,7 @@ export function BookingForm() {
                 />
               </div>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row">
                 <Button asChild>
                   <Link href="/book">
                     <CalendarDays className="size-4" />
@@ -552,8 +554,8 @@ export function BookingForm() {
             </div>
           </motion.section>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex items-center justify-between gap-3">
+          <form id="booking-form" onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <Button asChild variant="secondary" className="w-full sm:w-auto">
                 <Link href="/">
                   <ArrowLeft className="size-4" />
@@ -565,20 +567,20 @@ export function BookingForm() {
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 sm:p-7">
+            <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:rounded-[2rem] sm:p-7">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">
                     Step {currentStep + 1} of {steps.length}
                   </p>
-                  <h2 className="mt-3 font-heading text-4xl font-black uppercase leading-none text-white sm:text-5xl">
+                  <h2 className="mt-3 font-heading text-[2.2rem] font-black uppercase leading-none text-white sm:text-5xl">
                     {steps[currentStep].title}
                   </h2>
                   <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
                     {steps[currentStep].body}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center">
+                <div className="hidden rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center sm:block">
                   <p className="text-[11px] uppercase tracking-[0.16em] text-white/50">Progress</p>
                   <p className="mt-1 text-xl font-semibold text-white">{progress}%</p>
                 </div>
@@ -592,11 +594,11 @@ export function BookingForm() {
                   exit="exit"
                   variants={panelMotion}
                   transition={{ duration: 0.28 }}
-                  className="mt-8"
+                  className="mt-6 sm:mt-8"
                 >
                   {steps[currentStep].id === "services" ? (
                     <div className="space-y-6">
-                      <div className="grid gap-4 md:grid-cols-3">
+                      <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
                         {serviceOptions.map((option) => {
                           const selected = form.selectedServices.includes(option.value);
 
@@ -605,7 +607,7 @@ export function BookingForm() {
                               key={option.value}
                               type="button"
                               onClick={() => toggleService(option.value)}
-                              className={`rounded-[1.7rem] border p-5 text-left transition ${
+                              className={`rounded-[1.45rem] border p-4 text-left transition sm:rounded-[1.7rem] sm:p-5 ${
                                 selected
                                   ? "border-cyan-300/40 bg-cyan-400/10 shadow-[0_0_40px_rgba(18,182,255,0.08)]"
                                   : "border-white/10 bg-black/20 hover:border-white/20"
@@ -613,7 +615,7 @@ export function BookingForm() {
                               aria-pressed={selected}
                             >
                               <option.icon className="size-6 text-cyan-200" />
-                              <p className="mt-4 font-heading text-2xl font-black uppercase text-white">
+                              <p className="mt-3 font-heading text-[1.7rem] font-black uppercase text-white sm:mt-4 sm:text-2xl">
                                 {option.label}
                               </p>
                               <p className="mt-3 text-sm leading-6 text-slate-300">{option.body}</p>
@@ -625,7 +627,7 @@ export function BookingForm() {
                         })}
                       </div>
 
-                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                         <label className="space-y-2">
                           <span className="text-sm font-medium text-slate-200">Property type</span>
                           <select
@@ -669,15 +671,15 @@ export function BookingForm() {
                   ) : null}
 
                   {steps[currentStep].id === "measurements" ? (
-                    <div className="space-y-6">
-                      <div className="rounded-[1.6rem] border border-cyan-300/16 bg-cyan-400/8 px-5 py-5 text-sm leading-6 text-cyan-100">
+                    <div className="space-y-5 sm:space-y-6">
+                      <div className="rounded-[1.35rem] border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100 sm:rounded-[1.6rem] sm:px-5 sm:py-5">
                         Only enter the parts that actually need cleaning. If only one side of the
                         house needs work, use only that area. Tiny changes in square footage should
                         only make tiny changes in price.
                       </div>
 
                       {hasPressureWashing ? (
-                        <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                           {[
                             ["drivewaySqft", "Driveway square feet", "Example: 900"],
                             ["walkwaySqft", "Walkway square feet", "Example: 120"],
@@ -720,7 +722,7 @@ export function BookingForm() {
                       ) : null}
 
                       {hasTrashCanCleaning ? (
-                        <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                           <label className="space-y-2">
                             <span className="text-sm font-medium text-slate-200">Number of bins</span>
                             <input
@@ -747,8 +749,8 @@ export function BookingForm() {
                   ) : null}
 
                   {steps[currentStep].id === "schedule" ? (
-                    <div className="space-y-6">
-                      <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-5 sm:space-y-6">
+                      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                         <label className="space-y-2 sm:col-span-2">
                           <span className="text-sm font-medium text-slate-200">Street address</span>
                           <input
@@ -793,7 +795,7 @@ export function BookingForm() {
                         </div>
                       </div>
 
-                      <div className="grid gap-4 md:grid-cols-3">
+                      <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
                         <label className="space-y-2">
                           <span className="text-sm font-medium text-slate-200">Preferred month</span>
                           <select
@@ -883,8 +885,8 @@ export function BookingForm() {
                   ) : null}
 
                   {steps[currentStep].id === "contact" ? (
-                    <div className="space-y-6">
-                      <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-5 sm:space-y-6">
+                      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                         <label className="space-y-2">
                           <span className="text-sm font-medium text-slate-200">Full name</span>
                           <input
@@ -927,7 +929,7 @@ export function BookingForm() {
                         </label>
                       </div>
 
-                      <div className="grid gap-4">
+                      <div className="grid gap-3 sm:gap-4">
                         <label className="space-y-2">
                           <span className="text-sm font-medium text-slate-200">
                             Anything we should know?
@@ -952,7 +954,7 @@ export function BookingForm() {
                         </label>
                       </div>
 
-                      <div className="rounded-[1.6rem] border border-white/8 bg-black/20 p-5">
+                      <div className="rounded-[1.35rem] border border-white/8 bg-black/20 p-4 sm:rounded-[1.6rem] sm:p-5">
                         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
                           Request summary
                         </p>
@@ -976,7 +978,7 @@ export function BookingForm() {
                         </div>
                       </div>
 
-                      <div className="space-y-3 rounded-[1.6rem] border border-white/8 bg-black/20 p-5">
+                      <div className="space-y-3 rounded-[1.35rem] border border-white/8 bg-black/20 p-4 sm:rounded-[1.6rem] sm:p-5">
                         <label className="flex items-start gap-3 text-sm leading-6 text-white/90">
                           <input
                             type="checkbox"
@@ -1036,7 +1038,7 @@ export function BookingForm() {
               </div>
             ) : null}
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center sm:justify-between">
               <Button
                 type="button"
                 variant="secondary"
@@ -1063,11 +1065,11 @@ export function BookingForm() {
           </form>
         </div>
 
-        <div className="space-y-6 lg:sticky lg:top-28 lg:self-start">
+        <div className="space-y-5 lg:sticky lg:top-28 lg:self-start">
           <motion.section
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-[2rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(7,17,29,0.95),rgba(2,6,11,0.98))] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.35)]"
+            className="rounded-[1.75rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(7,17,29,0.95),rgba(2,6,11,0.98))] p-5 shadow-[0_20px_70px_rgba(0,0,0,0.35)] sm:rounded-[2rem] sm:p-6"
           >
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -1086,14 +1088,14 @@ export function BookingForm() {
               </div>
             </div>
 
-            <div className="mt-5 rounded-[1.6rem] border border-white/8 bg-black/20 p-5">
+            <div className="mt-4 rounded-[1.35rem] border border-white/8 bg-black/20 p-4 sm:mt-5 sm:rounded-[1.6rem] sm:p-5">
               <p className="text-xs uppercase tracking-[0.16em] text-white/50">Selected services</p>
               <p className="mt-2 text-sm leading-6 text-white/92">
                 {formatServiceList(form.selectedServices)}
               </p>
             </div>
 
-            <div className="mt-6 space-y-3">
+            <div className="mt-5 space-y-3 sm:mt-6">
               {quote.lineItems.length > 0 ? (
                 quote.lineItems.map((item) => (
                   <div
@@ -1118,7 +1120,7 @@ export function BookingForm() {
               )}
             </div>
 
-            <div className="mt-6 space-y-3 rounded-[1.6rem] border border-white/8 bg-black/20 p-5">
+            <div className="mt-5 space-y-3 rounded-[1.35rem] border border-white/8 bg-black/20 p-4 sm:mt-6 sm:rounded-[1.6rem] sm:p-5">
               <div className="flex items-center justify-between text-sm text-white/88">
                 <span>Estimated total</span>
                 <strong>{formatCurrency(quote.total)}</strong>
@@ -1143,7 +1145,7 @@ export function BookingForm() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6"
+            className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:rounded-[2rem] sm:p-6"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-200">
               Why this feels easy
@@ -1176,7 +1178,7 @@ export function BookingForm() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6"
+            className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:rounded-[2rem] sm:p-6"
           >
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-200">
               What happens next
@@ -1203,6 +1205,32 @@ export function BookingForm() {
               </span>
             </div>
           </motion.section>
+        </div>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-cyan-300/14 bg-[#02060B]/96 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-xl sm:hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-3">
+          <Button
+            type="button"
+            variant="secondary"
+            className="h-12 flex-1"
+            onClick={goBack}
+            disabled={currentStep === 0 || isPending}
+          >
+            <ArrowLeft className="size-4" />
+            Back
+          </Button>
+          {isLastStep ? (
+            <Button type="submit" form="booking-form" size="lg" className="h-12 flex-[1.35]" disabled={isPending}>
+              {isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
+              {bookingButtonLabel}
+            </Button>
+          ) : (
+            <Button type="button" size="lg" className="h-12 flex-[1.35]" onClick={goNext}>
+              Continue
+              <ArrowRight className="size-4" />
+            </Button>
+          )}
         </div>
       </div>
     </div>

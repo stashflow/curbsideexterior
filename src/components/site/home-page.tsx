@@ -297,7 +297,7 @@ export function HomePage() {
       </header>
 
       <main id="top" className="relative z-10 pb-28 md:pb-0">
-        <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-12 pt-8 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14 lg:px-8 lg:pb-24 lg:pt-16">
+        <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14 lg:px-8 lg:pb-24 lg:pt-16">
           <div>
             <motion.div
               initial="hidden"
@@ -314,7 +314,7 @@ export function HomePage() {
               animate="visible"
               custom={0.06}
               variants={fadeUp}
-              className="mt-5 max-w-4xl font-heading text-[2.85rem] font-black uppercase leading-[0.92] tracking-[0.03em] text-white sm:text-[4.6rem] lg:text-[5.8rem]"
+              className="mt-4 max-w-4xl font-heading text-[2.55rem] font-black uppercase leading-[0.92] tracking-[0.03em] text-white sm:mt-5 sm:text-[4.6rem] lg:text-[5.8rem]"
             >
               Pressure Washing And Trash Can Cleaning Made Simple.
             </motion.h1>
@@ -323,7 +323,7 @@ export function HomePage() {
               animate="visible"
               custom={0.12}
               variants={fadeUp}
-              className="mt-4 max-w-2xl text-base leading-7 text-slate-200 sm:text-xl sm:leading-8"
+              className="mt-3 max-w-2xl text-[0.98rem] leading-7 text-slate-200 sm:mt-4 sm:text-xl sm:leading-8"
             >
               Book online, text, or DM. We make it obvious what you need to send, what the service costs, and what happens next so booking feels easy from the first tap.
             </motion.p>
@@ -332,7 +332,7 @@ export function HomePage() {
               animate="visible"
               custom={0.13}
               variants={fadeUp}
-              className="mt-3 max-w-2xl text-sm leading-6 text-cyan-100/90 sm:text-base"
+              className="mt-2.5 max-w-2xl text-sm leading-6 text-cyan-100/90 sm:mt-3 sm:text-base"
             >
               Fast quotes, clear follow-up, and no guessing about the next step.
             </motion.p>
@@ -342,7 +342,7 @@ export function HomePage() {
               animate="visible"
               custom={0.15}
               variants={fadeUp}
-              className="mt-5 grid gap-3 sm:grid-cols-3"
+              className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-3"
             >
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white/92">
                 <div className="flex items-center gap-2 text-cyan-200">
@@ -378,7 +378,7 @@ export function HomePage() {
               animate="visible"
               custom={0.18}
               variants={fadeUp}
-              className="mt-6 flex flex-col gap-3 sm:flex-row"
+              className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row"
             >
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/book">
@@ -399,7 +399,7 @@ export function HomePage() {
               animate="visible"
               custom={0.24}
               variants={fadeUp}
-              className="mt-6 grid gap-3 sm:grid-cols-2"
+              className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2"
             >
               {quickFacts.map((fact) => (
                 <li
@@ -417,7 +417,7 @@ export function HomePage() {
               animate="visible"
               custom={0.28}
               variants={fadeUp}
-              className="mt-6 rounded-[1.6rem] border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100 sm:px-5"
+              className="mt-5 rounded-[1.4rem] border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100 sm:mt-6 sm:rounded-[1.6rem] sm:px-5"
             >
               The online booking flow helps customers send the right details the first time, see clearer pricing, and feel confident before they commit.
             </motion.div>
