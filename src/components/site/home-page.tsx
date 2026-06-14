@@ -11,6 +11,7 @@ import {
   Clock3,
   Droplets,
   House,
+  Lock,
   MapPinned,
   MessageSquare,
   Phone,
@@ -51,10 +52,10 @@ const services = [
 ];
 
 const quickFacts = [
-  "Pressure washing for homes",
-  "Trash can cleaning",
+  "Book online in a few minutes",
+  "We review every request before confirming",
   "Serving Marietta and nearby areas",
-  "Call, text, or DM to book",
+  "Call, text, or DM if you want help",
 ];
 
 const trustItems = [
@@ -67,23 +68,23 @@ const trustItems = [
 const reasons = [
   {
     icon: ShieldCheck,
-    title: "Safe, professional service",
-    body: "We show up prepared, protect your property, and keep the job straightforward from start to finish.",
+    title: "Clear from the start",
+    body: "People trust simple service. We explain the job, the quote, and the next step in plain English.",
   },
   {
     icon: Sparkles,
-    title: "Visible results",
-    body: "The goal is simple: cleaner surfaces, better curb appeal, and a property that looks well cared for.",
+    title: "Cleaner looking property",
+    body: "The goal is straightforward: cleaner surfaces, better curb appeal, and a property that looks cared for.",
   },
   {
     icon: Clock3,
     title: "Easy for busy families",
-    body: "Quick call, text, and DM communication makes scheduling simple and low-stress.",
+    body: "Quick online booking plus simple text and DM communication keeps the process easy and low-stress.",
   },
   {
     icon: BadgeCheck,
-    title: "Built for repeat trust",
-    body: "A polished experience matters when homeowners, HOAs, and property managers need someone reliable.",
+    title: "Built to feel organized",
+    body: "A polished booking process helps homeowners and property managers feel like the job will be handled right.",
   },
 ];
 
@@ -108,18 +109,22 @@ const processSteps = [
 
 const serviceAreas = ["Marietta", "Kennesaw", "Smyrna", "East Cobb", "Woodstock", "Roswell"];
 
-const proofPlans = [
+const bookingTrustCards = [
   {
-    title: "Recent work photos later",
-    body: "When you have real project photos, this is where driveway, walkway, and patio results should go.",
+    title: "Real quote details",
+    body: "The form asks what needs to be cleaned, where the property is, and what timing works best so the quote is more useful from the start.",
   },
   {
-    title: "Google reviews later",
-    body: "Once you collect reviews, add screenshots or pull in live review text to strengthen trust fast.",
+    title: "Real person review",
+    body: "A person still reviews the request before the job is confirmed. That keeps scheduling clear and helps catch special details early.",
   },
   {
-    title: "Service proof today",
-    body: "Until then, the strongest trust builders are clear wording, easy contact, local service areas, and straightforward next steps.",
+    title: "Clear payment step",
+    body: "If payment is needed, the site tells the customer exactly what happens next instead of surprising them halfway through.",
+  },
+  {
+    title: "Simple follow-up",
+    body: "Customers can book online, then still call, text, or DM if they want help. That makes the process feel modern without feeling cold.",
   },
 ];
 
@@ -140,9 +145,14 @@ const faqItems = [
       "Usually not, as long as we have clear access and we’ve confirmed the scope ahead of time.",
   },
   {
-    question: "What should I send to make this site convert better?",
+    question: "How does online booking work?",
     answer:
-      "Real job photos, a few reviews, insurance details, and simple starting price guidance are the biggest upgrades from here.",
+      "You fill out the job details, see the estimate or next step, and then we review the request and confirm the schedule. A real person still looks over every booking.",
+  },
+  {
+    question: "When do I pay?",
+    answer:
+      "Some services may ask for payment or a deposit during booking. If that happens, the site explains it clearly before checkout.",
   },
 ];
 
@@ -207,7 +217,7 @@ function ProofCard({
       </h3>
       <p className="mt-4 text-base leading-7 text-slate-300">{body}</p>
       <div className="mt-6 rounded-2xl border border-white/8 bg-black/25 px-4 py-4 text-sm text-slate-300">
-        The site is set up so real proof can slide in cleanly later without a redesign.
+        This is here to make the process feel easy to trust, not to fill space with fluff.
       </div>
     </div>
   );
@@ -269,7 +279,7 @@ export function HomePage() {
               Areas
             </Link>
             <Link href="#proof" className="transition hover:text-cyan-200">
-              Real Results
+              Booking Process
             </Link>
             <Link href="#contact" className="transition hover:text-cyan-200">
               Contact
@@ -293,7 +303,7 @@ export function HomePage() {
       </header>
 
       <main id="top" className="relative z-10 pb-28 md:pb-0">
-        <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-10 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14 lg:px-8 lg:pb-24 lg:pt-16">
+        <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-12 pt-8 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14 lg:px-8 lg:pb-24 lg:pt-16">
           <div>
             <motion.div
               initial="hidden"
@@ -310,7 +320,7 @@ export function HomePage() {
               animate="visible"
               custom={0.06}
               variants={fadeUp}
-              className="mt-6 max-w-4xl font-heading text-[3.2rem] font-black uppercase leading-[0.9] tracking-[0.03em] text-white sm:text-[4.6rem] lg:text-[5.8rem]"
+              className="mt-5 max-w-4xl font-heading text-[2.85rem] font-black uppercase leading-[0.92] tracking-[0.03em] text-white sm:text-[4.6rem] lg:text-[5.8rem]"
             >
               Pressure Washing And Trash Can Cleaning Made Simple.
             </motion.h1>
@@ -319,18 +329,53 @@ export function HomePage() {
               animate="visible"
               custom={0.12}
               variants={fadeUp}
-              className="mt-5 max-w-2xl text-lg leading-8 text-slate-200 sm:text-xl"
+              className="mt-4 max-w-2xl text-base leading-7 text-slate-200 sm:text-xl sm:leading-8"
             >
-              We help homeowners, HOAs, and property managers keep properties
-              cleaner, sharper, and easier to maintain. Call, text, or DM on Instagram to get started.
+              Book online, text, call, or DM. We make it obvious what you need to send, what the service costs, and what happens next so booking feels easy from the first tap.
             </motion.p>
+
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              custom={0.15}
+              variants={fadeUp}
+              className="mt-5 grid gap-3 sm:grid-cols-3"
+            >
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white/92">
+                <div className="flex items-center gap-2 text-cyan-200">
+                  <CalendarClock className="size-4" />
+                  <span className="font-semibold uppercase tracking-[0.16em]">Easy Booking</span>
+                </div>
+                <p className="mt-2 leading-6 text-slate-300">
+                  The form is built to help people book quickly without confusion.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white/92">
+                <div className="flex items-center gap-2 text-cyan-200">
+                  <ShieldCheck className="size-4" />
+                  <span className="font-semibold uppercase tracking-[0.16em]">Real Review</span>
+                </div>
+                <p className="mt-2 leading-6 text-slate-300">
+                  A real person reviews each request before the schedule is locked in.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white/92">
+                <div className="flex items-center gap-2 text-cyan-200">
+                  <Lock className="size-4" />
+                  <span className="font-semibold uppercase tracking-[0.16em]">Secure Payment</span>
+                </div>
+                <p className="mt-2 leading-6 text-slate-300">
+                  If payment is needed, the site explains it clearly before checkout.
+                </p>
+              </div>
+            </motion.div>
 
             <motion.div
               initial="hidden"
               animate="visible"
               custom={0.18}
               variants={fadeUp}
-              className="mt-8 flex flex-col gap-3 sm:flex-row"
+              className="mt-6 flex flex-col gap-3 sm:flex-row"
             >
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/book">
@@ -351,7 +396,7 @@ export function HomePage() {
               animate="visible"
               custom={0.24}
               variants={fadeUp}
-              className="mt-8 grid gap-3 sm:grid-cols-2"
+              className="mt-6 grid gap-3 sm:grid-cols-2"
             >
               {quickFacts.map((fact) => (
                 <li
@@ -363,6 +408,16 @@ export function HomePage() {
                 </li>
               ))}
             </motion.ul>
+
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              custom={0.28}
+              variants={fadeUp}
+              className="mt-6 rounded-[1.6rem] border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100 sm:px-5"
+            >
+              The online booking flow is not just a contact form. It helps customers send the right details, see clearer pricing, and feel more confident before they commit.
+            </motion.div>
           </div>
 
           <motion.div
@@ -376,10 +431,29 @@ export function HomePage() {
               <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(18,182,255,0.08)_38%,transparent_60%)]" />
               <div className="relative">
                 <p className="text-sm font-semibold uppercase tracking-[0.28em] text-cyan-200">
-                  What We Do
+                  Why Booking Feels Better Here
                 </p>
                 <div className="mt-6 space-y-4">
-                  {services.map((service) => (
+                  {[
+                    {
+                      icon: CalendarClock,
+                      title: "A quote form that asks the right things",
+                      description:
+                        "Customers can send the address, service details, timing, and access notes in one place instead of going back and forth.",
+                    },
+                    {
+                      icon: MapPinned,
+                      title: "Service area check before time gets wasted",
+                      description:
+                        "ZIP-based pricing and range checks help people know early if they are in the service area.",
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: "Clear confirmation after booking",
+                      description:
+                        "The site makes it clear that a real person reviews the request and confirms the final schedule.",
+                    },
+                  ].map((service) => (
                     <div
                       key={service.title}
                       className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-5"
@@ -393,11 +467,6 @@ export function HomePage() {
                             <h2 className="font-heading text-3xl font-black uppercase leading-none text-white">
                               {service.title}
                             </h2>
-                            {service.badge ? (
-                              <span className="rounded-full border border-cyan-300/18 bg-cyan-400/12 px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.22em] text-cyan-100">
-                                {service.badge}
-                              </span>
-                            ) : null}
                           </div>
                           <p className="mt-3 text-base leading-7 text-slate-300">
                             {service.description}
@@ -413,7 +482,7 @@ export function HomePage() {
                       Best next step
                     </p>
                     <p className="mt-2 text-white/92">
-                      Book online, or call, text, or DM @curbsideexterior for fast help.
+                      Book online if you want the smoothest path. Call, text, or DM if you want help first.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-black/20 p-4">
@@ -444,7 +513,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section id="services" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <section id="services" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <SectionHeading
             eyebrow="Services"
             title="Three Clear Offers. No Guesswork."
@@ -494,7 +563,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <SectionHeading
             eyebrow="Why People Book"
             title="Professional Enough To Trust. Simple Enough To Book Fast."
@@ -521,15 +590,15 @@ export function HomePage() {
           </div>
         </section>
 
-        <section id="proof" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <section id="proof" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <SectionHeading
-            eyebrow="Trust"
-            title="Built To Convert Cleanly Even Before You Have Photos"
-            body="Instead of fake mockups, this section now explains how the site is positioned to feel trustworthy today and even stronger once real proof gets added."
+            eyebrow="Booking Process"
+            title="A Booking Experience That Builds Trust"
+            body="Until you have real project proof to add, the strongest conversion tool is a booking process that feels clear, organized, and easy to follow."
             align="center"
           />
-          <div className="mt-10 grid gap-5 lg:grid-cols-3">
-            {proofPlans.map((item, index) => (
+          <div className="mt-10 grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
+            {bookingTrustCards.map((item, index) => (
               <motion.div
                 key={item.title}
                 initial="hidden"
@@ -544,7 +613,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <SectionHeading
             eyebrow="Process"
             title="How It Works"
@@ -574,7 +643,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section id="areas" className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <section id="areas" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <SectionHeading
             eyebrow="Service Area"
             title="Serving Marietta And Nearby Communities"
@@ -645,7 +714,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
           <SectionHeading
             eyebrow="FAQ"
             title="Questions A Visitor May Have Right Away"
@@ -671,7 +740,7 @@ export function HomePage() {
           </div>
         </section>
 
-        <section id="contact" className="px-4 pb-16 pt-6 sm:px-6 lg:px-8 lg:pb-24">
+        <section id="contact" className="px-4 pb-12 pt-4 sm:px-6 lg:px-8 lg:pb-24">
           <div className="mx-auto max-w-7xl overflow-hidden rounded-[2.2rem] border border-cyan-300/18 bg-[linear-gradient(120deg,rgba(18,182,255,0.16),rgba(7,17,29,0.98)_28%,rgba(2,6,11,0.98)_62%,rgba(0,157,255,0.16)_100%)] px-6 py-10 shadow-[0_28px_120px_rgba(18,182,255,0.12)] sm:px-8 lg:px-12 lg:py-14">
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
