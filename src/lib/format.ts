@@ -50,3 +50,16 @@ export function formatDateTime(value: unknown) {
     minute: "2-digit",
   }).format(date);
 }
+
+export function formatDateOnly(value: unknown) {
+  if (!value) return "Not set";
+
+  const date = value instanceof Date ? value : new Date(String(value));
+  if (Number.isNaN(date.getTime())) return String(value);
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}

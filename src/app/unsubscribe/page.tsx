@@ -1,7 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { unsubscribeSubscriberByToken } from "@/lib/subscribers";
+
+export const metadata: Metadata = {
+  title: "Unsubscribe | CURBSIDE EXTERIOR CO.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function UnsubscribePage({
   searchParams,

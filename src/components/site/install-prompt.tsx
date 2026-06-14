@@ -63,7 +63,7 @@ export function InstallPrompt() {
             Save To Home Screen
           </p>
           <p className="text-sm leading-6 text-white/88">
-            Add CURBSIDE to your home screen for faster booking and quick admin access.
+            Add CURBSIDE to your home screen for faster booking, quick quotes, and easy return visits.
             {isIos
               ? " On iPhone: tap the share icon, then choose Add to Home Screen."
               : " Installing it makes it feel more like a real app."}

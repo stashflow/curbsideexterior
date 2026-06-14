@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, Clock3, MessageSquare, Phone, ShieldCheck } from "lucide-react";
 
@@ -10,6 +11,14 @@ import {
   BUSINESS_PHONE_TEL,
   PAYMENT_OPERATOR_NAME,
 } from "@/lib/business";
+
+export const metadata: Metadata = {
+  title: "Request Received | CURBSIDE EXTERIOR CO.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function BookingSuccessPage({
   searchParams,

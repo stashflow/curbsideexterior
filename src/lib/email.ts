@@ -1,5 +1,5 @@
 import { BUSINESS_NAME, BUSINESS_PHONE_DISPLAY, BUSINESS_INSTAGRAM_HANDLE, OWNER_EMAIL, PAYMENT_OPERATOR_NAME } from "@/lib/business";
-import { formatBoolean, formatCurrency, formatDateTime, formatTitle, parseQuoteJson } from "@/lib/format";
+import { formatBoolean, formatCurrency, formatDateOnly, formatDateTime, formatTitle, parseQuoteJson } from "@/lib/format";
 import type { BookingRecord } from "@/lib/bookings";
 import { getCampaignForMonth } from "@/lib/marketing";
 import { SITE_URL } from "@/lib/site";
@@ -117,7 +117,7 @@ export function bookingAdminAlert(booking: BookingRecord) {
       <p style="margin:0 0 8px 0;"><strong>Phone:</strong> ${booking.phone}</p>
       <p style="margin:0 0 8px 0;"><strong>Email:</strong> ${booking.email}</p>
       <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatTitle(booking.primary_service)}</p>
-      <p style="margin:0 0 8px 0;"><strong>Requested time:</strong> ${booking.preferred_date} (${booking.preferred_time_window})</p>
+      <p style="margin:0 0 8px 0;"><strong>Requested time:</strong> ${formatDateOnly(booking.preferred_date)} (${booking.preferred_time_window})</p>
       <p style="margin:0 0 8px 0;"><strong>Address:</strong> ${booking.address_line_1}, ${booking.city}, ${booking.state} ${booking.zip}</p>
       <p style="margin:0;"><strong>Status:</strong> ${formatTitle(booking.status)}</p>
     </div>
@@ -147,7 +147,7 @@ export function customerRequestEmail(booking: BookingRecord) {
     <p style="margin:0 0 14px 0;">We got your request. Thank you for reaching out to ${BUSINESS_NAME}.</p>
     <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
       <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatTitle(booking.primary_service)}</p>
-      <p style="margin:0 0 8px 0;"><strong>Preferred date:</strong> ${booking.preferred_date}</p>
+      <p style="margin:0 0 8px 0;"><strong>Preferred date:</strong> ${formatDateOnly(booking.preferred_date)}</p>
       <p style="margin:0 0 8px 0;"><strong>Preferred time:</strong> ${booking.preferred_time_window}</p>
       <p style="margin:0;"><strong>${paymentLine}</strong></p>
     </div>
@@ -197,7 +197,7 @@ export function bookingStatusEmail(booking: BookingRecord) {
     <p style="margin:0 0 14px 0;">Your booking has been updated.</p>
     <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
       <p style="margin:0 0 8px 0;"><strong>Status:</strong> ${formatTitle(booking.status)}</p>
-      <p style="margin:0 0 8px 0;"><strong>Scheduled date:</strong> ${booking.scheduled_date ?? "Not set yet"}</p>
+      <p style="margin:0 0 8px 0;"><strong>Scheduled date:</strong> ${formatDateOnly(booking.scheduled_date) === "Not set" ? "Not set yet" : formatDateOnly(booking.scheduled_date)}</p>
       <p style="margin:0;"><strong>Time window:</strong> ${booking.scheduled_time_window ?? "Not set yet"}</p>
     </div>
     <p style="margin:0;">We will keep communication clear and simple. If something looks wrong, contact us and we will help.</p>
@@ -283,9 +283,9 @@ export function customerInfoList(booking: BookingRecord) {
     ["Frequency", formatTitle(booking.frequency)],
     ["Property type", formatTitle(booking.property_type)],
     ["Address", `${booking.address_line_1}, ${booking.city}, ${booking.state} ${booking.zip}`],
-    ["Preferred date", booking.preferred_date],
+    ["Preferred date", formatDateOnly(booking.preferred_date)],
     ["Preferred time", booking.preferred_time_window],
-    ["Scheduled date", booking.scheduled_date || "Not set"],
+    ["Scheduled date", formatDateOnly(booking.scheduled_date)],
     ["Scheduled time", booking.scheduled_time_window || "Not set"],
     ["Distance", booking.distance_miles != null ? `${booking.distance_miles} miles` : "Unknown"],
     ["Travel fee", booking.travel_surcharge > 0 ? formatCurrency(booking.travel_surcharge) : "None"],

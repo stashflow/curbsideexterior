@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Checkout Cancelled | CURBSIDE EXTERIOR CO.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function BookingCancelPage() {
   return (

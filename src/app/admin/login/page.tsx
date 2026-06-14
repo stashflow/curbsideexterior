@@ -1,4 +1,13 @@
+import type { Metadata } from "next";
 import { LockKeyhole } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Admin Login | CURBSIDE EXTERIOR CO.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function AdminLoginPage() {
   return (

@@ -53,8 +53,8 @@ const services = [
 ];
 
 const quickFacts = [
-  "Book online in a few minutes",
-  "We review every request before confirming",
+  "Get your quote and request service online",
+  "A real person reviews every request",
   "Serving Marietta and nearby areas",
   "Call, text, or DM if you want help",
 ];
@@ -334,6 +334,15 @@ export function HomePage() {
             >
               Book online, text, call, or DM. We make it obvious what you need to send, what the service costs, and what happens next so booking feels easy from the first tap.
             </motion.p>
+            <motion.p
+              initial="hidden"
+              animate="visible"
+              custom={0.13}
+              variants={fadeUp}
+              className="mt-3 max-w-2xl text-sm leading-6 text-cyan-100/90 sm:text-base"
+            >
+              Fast quotes, clear follow-up, and no guessing about the next step.
+            </motion.p>
 
             <motion.div
               initial="hidden"
@@ -381,7 +390,7 @@ export function HomePage() {
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/book">
                   <CalendarClock className="size-4" />
-                  Book Online
+                  Get Quote Online
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
@@ -417,7 +426,7 @@ export function HomePage() {
               variants={fadeUp}
               className="mt-6 rounded-[1.6rem] border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100 sm:px-5"
             >
-              The online booking flow is not just a contact form. It helps customers send the right details, see clearer pricing, and feel more confident before they commit.
+              The online quote flow helps customers send the right details the first time, see clearer pricing, and feel confident before they commit.
             </motion.div>
           </div>
 
