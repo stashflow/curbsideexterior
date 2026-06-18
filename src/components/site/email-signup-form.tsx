@@ -40,47 +40,46 @@ export function EmailSignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+    <form onSubmit={handleSubmit} className="rounded-lg border border-white/12 bg-white/[0.035] p-4 sm:p-6">
       <div className="flex items-center gap-3 text-cyan-200">
         <Mail className="size-5" />
-        <p className="text-sm font-semibold uppercase tracking-[0.22em]">Stay In The Loop</p>
+        <p className="text-xs font-bold uppercase italic tracking-[0.16em]">Stay In The Loop</p>
       </div>
-      <h3 className="mt-4 font-heading text-4xl font-black uppercase leading-none text-white">
-        Simple Seasonal Emails
+      <h3 className="mt-3 font-heading text-3xl font-black uppercase italic leading-none text-white sm:text-4xl">
+        Seasonal Reminders
       </h3>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-        Helpful cleanup reminders, occasional offers, and service timing updates for Marietta-area homes.
-        No daily noise. Unsubscribe any time.
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+        Useful reminders and occasional offers. Unsubscribe any time.
       </p>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <input
           value={firstName}
           onChange={(event) => setFirstName(event.target.value)}
           placeholder="First name"
-          className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-white outline-none transition focus:border-cyan-300/40"
+          className="h-12 rounded-md border border-white/12 bg-black/35 px-4 text-white outline-none transition focus:border-[#0B67F0]"
         />
         <input
           value={zip}
           onChange={(event) => setZip(event.target.value)}
           placeholder="ZIP code"
-          className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-white outline-none transition focus:border-cyan-300/40"
+          className="h-12 rounded-md border border-white/12 bg-black/35 px-4 text-white outline-none transition focus:border-[#0B67F0]"
         />
         <input
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="Email address"
-          className="h-12 rounded-2xl border border-white/10 bg-black/20 px-4 text-white outline-none transition focus:border-cyan-300/40 sm:col-span-3"
+          className="h-12 rounded-md border border-white/12 bg-black/35 px-4 text-white outline-none transition focus:border-[#0B67F0] sm:col-span-3"
           required
         />
       </div>
       {error ? (
-        <div className="mt-4 rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+        <div className="mt-4 rounded-md border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
           {error}
         </div>
       ) : null}
       {message ? (
-        <div className="mt-4 rounded-2xl border border-cyan-300/20 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100">
+        <div className="mt-4 rounded-md border border-cyan-300/20 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100">
           {message}
         </div>
       ) : null}

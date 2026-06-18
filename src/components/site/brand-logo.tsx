@@ -6,18 +6,17 @@ export function BrandLogo({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative inline-flex items-center rounded-2xl border border-white/8 bg-white/[0.03] px-3 py-2 backdrop-blur-md shadow-[0_0_40px_rgba(18,182,255,0.08)]",
+        "relative inline-flex h-14 w-48 items-center overflow-hidden sm:h-16 sm:w-60",
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[linear-gradient(135deg,rgba(18,182,255,0.10),transparent_42%,rgba(18,182,255,0.06))]" />
       <Image
-        src="/Logo.png"
+        src="/curbside.png"
         alt="CURBSIDE EXTERIOR CO."
-        width={1254}
-        height={1254}
+        width={1024}
+        height={1024}
         priority
-        className="relative h-auto w-[9.5rem] drop-shadow-[0_0_26px_rgba(18,182,255,0.16)] sm:w-[11.25rem]"
+        className="absolute left-1/2 top-1/2 size-[13.5rem] -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-[0_2px_14px_rgba(255,255,255,0.12)] sm:size-[16rem]"
       />
     </div>
   );
