@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
@@ -168,6 +168,7 @@ type SizeOption = {
 };
 
 const drivewaySizeOptions: SizeOption[] = [
+  { value: "na", label: "No driveway", sqft: 0 },
   { value: "one_car", label: "1-car driveway", sqft: 300, image: "/driveway-size-1-car.png" },
   { value: "two_car", label: "2-car driveway", sqft: 600, image: "/driveway-size-2-car.png" },
   { value: "three_car", label: "3-car driveway", sqft: 900, image: "/driveway-size-3-car.png" },
@@ -176,6 +177,7 @@ const drivewaySizeOptions: SizeOption[] = [
 ];
 
 const walkwaySizeOptions: SizeOption[] = [
+  { value: "na", label: "No walkway", sqft: 0 },
   { value: "small", label: "Small walkway", sqft: 80 },
   { value: "medium", label: "Medium walkway", sqft: 150 },
   { value: "large", label: "Large walkway", sqft: 250 },
@@ -183,6 +185,7 @@ const walkwaySizeOptions: SizeOption[] = [
 ];
 
 const patioSizeOptions: SizeOption[] = [
+  { value: "na", label: "No patio", sqft: 0 },
   { value: "small", label: "Small patio", sqft: 150 },
   { value: "medium", label: "Medium patio", sqft: 300 },
   { value: "large", label: "Large patio", sqft: 500 },
@@ -190,6 +193,7 @@ const patioSizeOptions: SizeOption[] = [
 ];
 
 const houseWashSizeOptions: SizeOption[] = [
+  { value: "na", label: "No house wash", sqft: 0 },
   { value: "front", label: "Front only", sqft: 500 },
   { value: "back", label: "Back only", sqft: 500 },
   { value: "one_side", label: "One side", sqft: 400 },
@@ -212,6 +216,8 @@ const monthOptions = [
   "November",
   "December",
 ];
+
+const timeWindowOptions: TimeWindow[] = ["8-10", "10-12", "12-2", "2-4", "4-6"];
 
 const panelMotion = {
   hidden: { opacity: 0, y: 18, filter: "blur(6px)" },
@@ -366,6 +372,8 @@ export function BookingForm() {
   const [error, setError] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [unavailableTimeWindows, setUnavailableTimeWindows] = useState<TimeWindow[]>([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPending, startTransition] = useTransition();
   const [isUploading, startUploadTransition] = useTransition();
@@ -382,6 +390,42 @@ export function BookingForm() {
     () => getDaysForMonth(form.preferredMonth, form.preferredDay),
     [form.preferredMonth, form.preferredDay],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAvailability() {
+      if (!preferredDate) {
+        setUnavailableTimeWindows([]);
+        return;
+      }
+
+      setAvailabilityLoading(true);
+
+      try {
+        const response = await fetch(`/api/bookings/availability?date=${preferredDate}`);
+        const data = (await response.json()) as { unavailable?: TimeWindow[] };
+
+        if (!cancelled) {
+          setUnavailableTimeWindows(data.unavailable ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setUnavailableTimeWindows([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setAvailabilityLoading(false);
+        }
+      }
+    }
+
+    loadAvailability();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [preferredDate]);
 
   const quote = useMemo(
     () =>
@@ -417,10 +461,17 @@ export function BookingForm() {
       toNumber(form.houseSqft),
       toNumber(form.fenceLinearFeet),
     ].some((value) => value > 0) ||
-    Boolean(form.drivewaySize || form.walkwaySize || form.patioSize || form.houseWashSize) ||
+    [form.drivewaySize, form.walkwaySize, form.patioSize, form.houseWashSize].some(
+      (value) => value === "not_sure",
+    ) ||
     form.photoUrls.length > 0;
 
   const progress = Math.round(((currentStep + 1) / steps.length) * 100);
+  const openTimeWindows = useMemo(
+    () => timeWindowOptions.filter((window) => !unavailableTimeWindows.includes(window)),
+    [unavailableTimeWindows],
+  );
+  const selectedTimeWindowUnavailable = unavailableTimeWindows.includes(form.preferredTimeWindow);
 
   const bookingButtonLabel =
     quote.paymentMode === "deposit"
@@ -552,6 +603,11 @@ export function BookingForm() {
 
       if (!preferredDate) {
         setError("Choose a preferred month and day.");
+        return false;
+      }
+
+      if (unavailableTimeWindows.includes(form.preferredTimeWindow)) {
+        setError("That time is already booked. Pick another available time.");
         return false;
       }
 
@@ -798,22 +854,41 @@ export function BookingForm() {
                           />
 
                           <div className="grid gap-3 sm:grid-cols-2">
-                            <label className="space-y-2 rounded-[1.15rem] border border-white/10 bg-black/25 p-3">
+                            <div className="space-y-2 rounded-[1.15rem] border border-white/10 bg-black/25 p-3">
                               <span className="font-heading text-2xl font-black uppercase italic leading-none text-white">
                                 Fence
                               </span>
                               <span className="block text-sm leading-6 text-white/62">
                                 Most panels are 6-8 feet.
                               </span>
-                              <input
-                                type="number"
-                                min="0"
-                                value={form.fenceLinearFeet}
-                                onChange={(event) => update("fenceLinearFeet", event.target.value)}
-                                placeholder="Example: 80"
-                                className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
-                              />
-                            </label>
+                              <div className="grid grid-cols-2 gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => update("fenceLinearFeet", "")}
+                                  className={`rounded-2xl border px-3 py-3 text-xs font-black uppercase italic tracking-[0.06em] transition ${
+                                    !toNumber(form.fenceLinearFeet)
+                                      ? "border-[#0B67F0] bg-[#0B67F0]/16 text-white"
+                                      : "border-white/10 bg-white/[0.03] text-white/70"
+                                  }`}
+                                  aria-pressed={!toNumber(form.fenceLinearFeet)}
+                                >
+                                  No fence
+                                </button>
+                                <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                                  <span className="block text-[10px] font-bold uppercase italic tracking-[0.08em] text-white/48">
+                                    Linear feet
+                                  </span>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={form.fenceLinearFeet}
+                                    onChange={(event) => update("fenceLinearFeet", event.target.value)}
+                                    placeholder="80"
+                                    className="mt-1 w-full bg-transparent text-sm text-white outline-none placeholder:text-white/30"
+                                  />
+                                </div>
+                              </div>
+                            </div>
                             <label className="space-y-2 rounded-[1.15rem] border border-white/10 bg-black/25 p-3">
                               <span className="font-heading text-2xl font-black uppercase italic leading-none text-white">
                                 Stains
@@ -1016,20 +1091,48 @@ export function BookingForm() {
                         <label className="space-y-2">
                           <span className="text-sm font-medium text-slate-200">Time window</span>
                           <select
-                            value={form.preferredTimeWindow}
+                            value={selectedTimeWindowUnavailable ? "" : form.preferredTimeWindow}
                             onChange={(event) =>
                               update("preferredTimeWindow", event.target.value as TimeWindow)
                             }
                             className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
                           >
-                            <option value="8-10">8:00 AM - 10:00 AM</option>
-                            <option value="10-12">10:00 AM - 12:00 PM</option>
-                            <option value="12-2">12:00 PM - 2:00 PM</option>
-                            <option value="2-4">2:00 PM - 4:00 PM</option>
-                            <option value="4-6">4:00 PM - 6:00 PM</option>
+                            {selectedTimeWindowUnavailable ? (
+                              <option value="" disabled>
+                                Choose an available time
+                              </option>
+                            ) : null}
+                            {timeWindowOptions.map((window) => {
+                              const unavailable = unavailableTimeWindows.includes(window);
+
+                              return (
+                                <option key={window} value={window} disabled={unavailable}>
+                                  {getTimeWindowLabel(window)}
+                                  {unavailable ? " - booked" : ""}
+                                </option>
+                              );
+                            })}
                           </select>
                         </label>
                       </div>
+
+                      {availabilityLoading ? (
+                        <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-sm text-white/70">
+                          Checking available times...
+                        </div>
+                      ) : null}
+
+                      {!availabilityLoading && openTimeWindows.length === 0 ? (
+                        <div className="rounded-2xl border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm leading-6 text-amber-100">
+                          This day is full. Pick another day.
+                        </div>
+                      ) : null}
+
+                      {!availabilityLoading && selectedTimeWindowUnavailable && openTimeWindows.length > 0 ? (
+                        <div className="rounded-2xl border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm leading-6 text-amber-100">
+                          That time is booked. Choose one of the open times.
+                        </div>
+                      ) : null}
 
                       <div className="rounded-2xl border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100">
                         Preferred visit:{" "}

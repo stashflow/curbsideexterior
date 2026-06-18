@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 
 CREATE INDEX IF NOT EXISTS bookings_status_idx ON bookings (status);
 CREATE INDEX IF NOT EXISTS bookings_created_at_idx ON bookings (created_at DESC);
+CREATE INDEX IF NOT EXISTS bookings_preferred_slot_idx ON bookings (preferred_date, preferred_time_window, status);
 
 ALTER TABLE bookings
   ADD COLUMN IF NOT EXISTS photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb;

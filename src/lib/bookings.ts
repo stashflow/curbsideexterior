@@ -9,6 +9,7 @@ import {
 } from "@/lib/email";
 import { buildQuote } from "@/lib/pricing";
 import type { BookingFormValues } from "@/lib/booking-schema";
+import type { TimeWindow } from "@/lib/pricing";
 
 export interface BookingRecord {
   id: string;
@@ -55,6 +56,29 @@ export interface BookingRecord {
   sms_opt_in: boolean;
   email_opt_in: boolean;
   quote_json: unknown;
+}
+
+export async function getUnavailablePreferredTimeWindows(preferredDate: string) {
+  const sql = getSql();
+  if (!sql) return [];
+
+  const result = await sql`
+    SELECT DISTINCT preferred_time_window
+    FROM bookings
+    WHERE preferred_date = ${preferredDate}
+      AND status IN ('lead', 'pending_payment', 'pending_confirmation', 'confirmed')
+  `;
+
+  return (Array.isArray(result) ? result : [])
+    .map((row) => (row as { preferred_time_window?: string }).preferred_time_window)
+    .filter((window): window is TimeWindow =>
+      ["8-10", "10-12", "12-2", "2-4", "4-6"].includes(String(window)),
+    );
+}
+
+export async function isPreferredTimeWindowAvailable(preferredDate: string, preferredTimeWindow: TimeWindow) {
+  const unavailable = await getUnavailablePreferredTimeWindows(preferredDate);
+  return !unavailable.includes(preferredTimeWindow);
 }
 
 export async function createBookingSubmission(values: BookingFormValues) {

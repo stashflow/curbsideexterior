@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 
 import { bookingFormSchema } from "@/lib/booking-schema";
-import { createBookingSubmission, updateBookingById } from "@/lib/bookings";
+import {
+  createBookingSubmission,
+  isPreferredTimeWindowAvailable,
+  updateBookingById,
+} from "@/lib/bookings";
 import { formatServiceList } from "@/lib/format";
 import { getStripe } from "@/lib/stripe";
 
@@ -16,6 +20,18 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message ?? "Invalid booking request." },
         { status: 400 },
+      );
+    }
+
+    const slotAvailable = await isPreferredTimeWindowAvailable(
+      parsed.data.preferredDate,
+      parsed.data.preferredTimeWindow,
+    );
+
+    if (!slotAvailable) {
+      return NextResponse.json(
+        { error: "That time was just booked. Please choose another time window." },
+        { status: 409 },
       );
     }
 
