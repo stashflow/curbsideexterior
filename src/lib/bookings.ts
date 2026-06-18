@@ -62,18 +62,23 @@ export async function getUnavailablePreferredTimeWindows(preferredDate: string) 
   const sql = getSql();
   if (!sql) return [];
 
-  const result = await sql`
-    SELECT DISTINCT preferred_time_window
-    FROM bookings
-    WHERE preferred_date = ${preferredDate}
-      AND status IN ('lead', 'pending_payment', 'pending_confirmation', 'confirmed')
-  `;
+  try {
+    const result = await sql`
+      SELECT DISTINCT preferred_time_window
+      FROM bookings
+      WHERE preferred_date = ${preferredDate}
+        AND status IN ('lead', 'pending_payment', 'pending_confirmation', 'confirmed')
+    `;
 
-  return (Array.isArray(result) ? result : [])
-    .map((row) => (row as { preferred_time_window?: string }).preferred_time_window)
-    .filter((window): window is TimeWindow =>
-      ["8-10", "10-12", "12-2", "2-4", "4-6"].includes(String(window)),
-    );
+    return (Array.isArray(result) ? result : [])
+      .map((row) => (row as { preferred_time_window?: string }).preferred_time_window)
+      .filter((window): window is TimeWindow =>
+        ["8-10", "10-12", "12-2", "2-4", "4-6"].includes(String(window)),
+      );
+  } catch (error) {
+    console.error("Unable to load booked time windows", error);
+    return [];
+  }
 }
 
 export async function isPreferredTimeWindowAvailable(preferredDate: string, preferredTimeWindow: TimeWindow) {
@@ -112,13 +117,71 @@ export async function createBookingSubmission(values: BookingFormValues) {
     };
   }
 
-  const result = await sql`
+  let result;
+
+  try {
+    result = await sql`
+      INSERT INTO bookings (
+        customer_name, phone, email, instagram_handle, primary_service, frequency, status,
+        property_type, address_line_1, city, state, zip, distance_miles, travel_surcharge,
+        preferred_date, preferred_time_window, quote_total, deposit_due, payment_mode,
+        heavy_stain_level, bins_count, gate_code_needed, gate_code, driveway_sqft, walkway_sqft,
+        patio_sqft, house_sqft, fence_linear_feet, photo_urls, notes, referral_source, terms_accepted,
+        privacy_accepted, sms_opt_in, email_opt_in, quote_json
+      ) VALUES (
+        ${values.customerName},
+        ${values.phone},
+        ${values.email},
+        ${values.instagramHandle || null},
+        ${values.selectedServices.join(",")},
+        ${values.frequency},
+        ${initialStatus},
+        ${values.propertyType},
+        ${values.addressLine1},
+        ${values.city},
+        ${values.state},
+        ${values.zip},
+        ${quote.serviceArea.miles ?? null},
+        ${quote.serviceArea.travelSurcharge},
+        ${values.preferredDate},
+        ${values.preferredTimeWindow},
+        ${quote.total},
+        ${quote.depositDue},
+        ${quote.paymentMode},
+        ${values.heavyStainLevel},
+        ${values.binsCount || null},
+        ${values.gateCodeNeeded},
+        ${values.gateCode || null},
+        ${values.drivewaySqft || null},
+        ${values.walkwaySqft || null},
+        ${values.patioSqft || null},
+        ${values.houseSqft || null},
+        ${values.fenceLinearFeet || null},
+        ${JSON.stringify(values.photoUrls ?? [])},
+        ${values.notes || null},
+        ${values.referralSource || null},
+        ${values.termsAccepted},
+        ${values.privacyAccepted},
+        ${values.smsOptIn},
+        ${values.emailOptIn},
+        ${JSON.stringify(quote)}
+      )
+      RETURNING *
+    `;
+  } catch (error) {
+    if (!isMissingPhotoUrlsColumnError(error)) {
+      throw error;
+    }
+
+    console.error("Bookings table is missing photo_urls; retrying booking insert without uploaded photos.", error);
+
+    result = await sql`
     INSERT INTO bookings (
       customer_name, phone, email, instagram_handle, primary_service, frequency, status,
       property_type, address_line_1, city, state, zip, distance_miles, travel_surcharge,
       preferred_date, preferred_time_window, quote_total, deposit_due, payment_mode,
       heavy_stain_level, bins_count, gate_code_needed, gate_code, driveway_sqft, walkway_sqft,
-      patio_sqft, house_sqft, fence_linear_feet, photo_urls, notes, referral_source, terms_accepted,
+      patio_sqft, house_sqft, fence_linear_feet, notes, referral_source, terms_accepted,
       privacy_accepted, sms_opt_in, email_opt_in, quote_json
     ) VALUES (
       ${values.customerName},
@@ -149,7 +212,6 @@ export async function createBookingSubmission(values: BookingFormValues) {
       ${values.patioSqft || null},
       ${values.houseSqft || null},
       ${values.fenceLinearFeet || null},
-      ${JSON.stringify(values.photoUrls ?? [])},
       ${values.notes || null},
       ${values.referralSource || null},
       ${values.termsAccepted},
@@ -160,6 +222,7 @@ export async function createBookingSubmission(values: BookingFormValues) {
     )
     RETURNING *
   `;
+  }
 
   const booking = (result as BookingRecord[])[0];
 
@@ -176,6 +239,11 @@ export async function createBookingSubmission(values: BookingFormValues) {
     quote,
     status: initialStatus,
   };
+}
+
+function isMissingPhotoUrlsColumnError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes("photo_urls") && message.includes("does not exist");
 }
 
 export async function getAllBookings() {
