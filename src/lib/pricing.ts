@@ -74,15 +74,13 @@ function fencePrice(linearFeet = 0) {
 }
 
 function trashCanOneTimePrice(binCount = 1) {
-  if (binCount <= 1) return 35;
-  if (binCount === 2) return 49;
-  return 49 + (binCount - 2) * 12;
+  if (binCount <= 1) return 30;
+  return 35;
 }
 
 function trashCanMonthlyEstimate(binCount = 1) {
-  if (binCount <= 1) return 20;
-  if (binCount === 2) return 25;
-  return 25 + (binCount - 2) * 8;
+  if (binCount <= 1) return 30;
+  return 35;
 }
 
 export function getTimeWindowLabel(window: TimeWindow) {
@@ -180,7 +178,7 @@ export function buildQuote(input: QuoteInput): QuoteResult {
       lineItems.push({
         label: `Monthly trash can cleaning (${bins} bin${bins > 1 ? "s" : ""})`,
         amount: estimate,
-        note: "Monthly service is reviewed by the owner before it is put on the schedule.",
+        note: "Transparent bin pricing: 1 bin is $30, 2+ bins are $35. Monthly service is reviewed before it is put on the schedule.",
       });
       subtotal += estimate;
       manualReview = true;
@@ -189,6 +187,7 @@ export function buildQuote(input: QuoteInput): QuoteResult {
       lineItems.push({
         label: `One-time trash can cleaning (${bins} bin${bins > 1 ? "s" : ""})`,
         amount: oneTime,
+        note: "Transparent bin pricing: 1 bin is $30, 2+ bins are $35.",
       });
       subtotal += oneTime;
     }

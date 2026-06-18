@@ -59,23 +59,35 @@ const services = [
     icon: Droplets,
     title: "Pressure Washing",
     body: "Driveways, walkways, patios, siding, fences.",
+    href: "/services/pressure-washing-marietta-ga",
   },
   {
     icon: Home,
     title: "Soft Washing",
     body: "Gentler cleaning for home exteriors.",
+    href: "/services/house-washing-marietta-ga",
   },
   {
     icon: Trash2,
     title: "Trash Bin Cleaning",
-    body: "Cleaner bins, less odor.",
+    body: "$30 for 1 bin. $35 for 2+ bins.",
+    href: "/services/trash-can-cleaning-marietta-ga",
   },
   {
     icon: SprayCan,
     title: "Curb Number Painting",
     body: "Coming soon.",
+    href: "/book",
   },
 ];
+
+const seoLinks = [
+  ["Pressure Washing Marietta", "/services/pressure-washing-marietta-ga"],
+  ["Driveway Cleaning Marietta", "/services/driveway-cleaning-marietta-ga"],
+  ["House Washing Marietta", "/services/house-washing-marietta-ga"],
+  ["Trash Can Cleaning Marietta", "/services/trash-can-cleaning-marietta-ga"],
+  ["Exterior Cleaning Marietta", "/areas/marietta-ga-exterior-cleaning"],
+] as const;
 
 const why = [
   {
@@ -260,7 +272,7 @@ export function HomePage() {
                 {services.map((service) => (
                   <Link
                     key={service.title}
-                    href="/book"
+                    href={service.href}
                     className="flex min-h-[5.5rem] flex-col items-center px-2 text-center"
                   >
                     <service.icon className="size-8 text-white" />
@@ -281,7 +293,7 @@ export function HomePage() {
               {services.map((service) => (
                 <Link
                   key={service.title}
-                  href="/book"
+                  href={service.href}
                   className="border border-white/12 bg-white/[0.03] p-4 transition hover:border-[#0B67F0]"
                 >
                   <service.icon className="size-8 text-white" />
@@ -325,7 +337,7 @@ export function HomePage() {
               {areas.map((area) => (
                 <Link
                   key={area}
-                  href="/book"
+                  href={area === "Marietta" ? "/areas/marietta-ga-exterior-cleaning" : "/book"}
                   className="border border-white/12 bg-black/35 px-3 py-3 text-center text-sm font-bold uppercase italic tracking-[0.08em] text-white"
                 >
                   {area}
@@ -349,6 +361,23 @@ export function HomePage() {
               </p>
             </div>
             <EmailSignupForm />
+          </div>
+        </section>
+
+        <section className="bg-[#050505] px-4 py-8 sm:px-6 md:py-14 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <SectionTitle>Local Cleaning Guides</SectionTitle>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+              {seoLinks.map(([label, href]) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="border border-white/12 bg-black/35 px-3 py-3 text-center text-xs font-black uppercase italic tracking-[0.08em] text-white transition hover:border-[#0B67F0]"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 

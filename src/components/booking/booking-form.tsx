@@ -479,6 +479,14 @@ export function BookingForm() {
       : quote.paymentMode === "full"
         ? `Pay ${formatCurrency(quote.total)}`
         : "Send Request";
+  const paymentPreview =
+    quote.total <= 0
+      ? "No payment yet"
+      : quote.paymentMode === "deposit"
+        ? `Today: ${formatCurrency(quote.depositDue)} deposit`
+        : quote.paymentMode === "full"
+          ? `Today: ${formatCurrency(quote.total)}`
+          : "Reviewed before payment";
   const isLastStep = currentStep === steps.length - 1;
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -702,12 +710,24 @@ export function BookingForm() {
                   Back
                 </Button>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-heading text-xl font-black uppercase italic leading-none text-white sm:text-2xl">
-                    Step {currentStep + 1}: {steps[currentStep].title}
-                  </p>
-                  <p className="truncate text-[11px] font-bold uppercase italic tracking-[0.08em] text-white/62">
-                    {quote.total > 0 ? `Estimate ${estimateLabel}` : estimateLabel} • Final price confirmed
-                  </p>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-heading text-lg font-black uppercase italic leading-none text-white sm:text-2xl">
+                        {currentStep + 1}/{steps.length} {steps[currentStep].title}
+                      </p>
+                      <p className="truncate text-[10px] font-bold uppercase italic tracking-[0.08em] text-white/58 sm:text-[11px]">
+                        {paymentPreview} • Final price confirmed
+                      </p>
+                    </div>
+                    <div className="shrink-0 rounded-2xl border border-[#0B67F0]/70 bg-[#0B67F0]/18 px-3 py-2 text-right shadow-[0_0_24px_rgba(11,103,240,0.25)]">
+                      <p className="text-[9px] font-black uppercase italic tracking-[0.12em] text-white/62">
+                        Live estimate
+                      </p>
+                      <p className="mt-0.5 whitespace-nowrap font-heading text-xl font-black uppercase italic leading-none text-white sm:text-2xl">
+                        {estimateLabel}
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 {isLastStep ? (
                   <Button type="submit" className="hidden h-10 px-4 sm:inline-flex" disabled={isPending}>
@@ -991,8 +1011,8 @@ export function BookingForm() {
                             />
                           </label>
                           <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-4 text-sm leading-6 text-white/80">
-                            Monthly trash can service is always reviewed by a real person before it
-                            is confirmed.
+                            Clear pricing: 1 bin is $30. Two or more bins are $35 total.
+                            Monthly service is reviewed before it is confirmed.
                           </div>
                         </div>
                       ) : null}
