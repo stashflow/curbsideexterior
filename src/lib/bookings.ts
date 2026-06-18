@@ -38,6 +38,7 @@ export interface BookingRecord {
   payment_mode: string;
   stripe_checkout_session_id: string | null;
   stripe_payment_status: string | null;
+  customer_action_token: string;
   heavy_stain_level: string | null;
   bins_count: number | null;
   gate_code_needed: boolean;
@@ -67,7 +68,14 @@ export async function getUnavailablePreferredTimeWindows(preferredDate: string) 
       SELECT DISTINCT preferred_time_window
       FROM bookings
       WHERE preferred_date = ${preferredDate}
-        AND status IN ('lead', 'pending_payment', 'pending_confirmation', 'confirmed')
+        AND status IN (
+          'lead',
+          'pending_payment',
+          'payment_required',
+          'pending_confirmation',
+          'reschedule_requested',
+          'confirmed'
+        )
     `;
 
     return (Array.isArray(result) ? result : [])
@@ -124,7 +132,7 @@ export async function createBookingSubmission(values: BookingFormValues) {
       INSERT INTO bookings (
         customer_name, phone, email, instagram_handle, primary_service, frequency, status,
         property_type, address_line_1, city, state, zip, distance_miles, travel_surcharge,
-        preferred_date, preferred_time_window, quote_total, deposit_due, payment_mode,
+        preferred_date, preferred_time_window, quote_total, deposit_due, payment_mode, customer_action_token,
         heavy_stain_level, bins_count, gate_code_needed, gate_code, driveway_sqft, walkway_sqft,
         patio_sqft, house_sqft, fence_linear_feet, photo_urls, notes, referral_source, terms_accepted,
         privacy_accepted, sms_opt_in, email_opt_in, quote_json
@@ -148,6 +156,7 @@ export async function createBookingSubmission(values: BookingFormValues) {
         ${quote.total},
         ${quote.depositDue},
         ${quote.paymentMode},
+        ${crypto.randomUUID()},
         ${values.heavyStainLevel},
         ${values.binsCount || null},
         ${values.gateCodeNeeded},
@@ -179,7 +188,7 @@ export async function createBookingSubmission(values: BookingFormValues) {
     INSERT INTO bookings (
       customer_name, phone, email, instagram_handle, primary_service, frequency, status,
       property_type, address_line_1, city, state, zip, distance_miles, travel_surcharge,
-      preferred_date, preferred_time_window, quote_total, deposit_due, payment_mode,
+      preferred_date, preferred_time_window, quote_total, deposit_due, payment_mode, customer_action_token,
       heavy_stain_level, bins_count, gate_code_needed, gate_code, driveway_sqft, walkway_sqft,
       patio_sqft, house_sqft, fence_linear_feet, notes, referral_source, terms_accepted,
       privacy_accepted, sms_opt_in, email_opt_in, quote_json
@@ -203,6 +212,7 @@ export async function createBookingSubmission(values: BookingFormValues) {
       ${quote.total},
       ${quote.depositDue},
       ${quote.paymentMode},
+      ${crypto.randomUUID()},
       ${values.heavyStainLevel},
       ${values.binsCount || null},
       ${values.gateCodeNeeded},
@@ -271,10 +281,25 @@ export async function getBookingById(id: string) {
   return ((result as BookingRecord[])[0] ?? null);
 }
 
+export async function getBookingByCustomerActionToken(token: string) {
+  const sql = getSql();
+  if (!sql) return null;
+
+  const result = await sql`
+    SELECT * FROM bookings
+    WHERE customer_action_token = ${token}
+    LIMIT 1
+  `;
+
+  return ((result as BookingRecord[])[0] ?? null);
+}
+
 export async function updateBookingById(
   id: string,
   updates: {
     status?: string;
+    preferredDate?: string | null;
+    preferredTimeWindow?: string | null;
     scheduledDate?: string | null;
     scheduledTimeWindow?: string | null;
     ownerNotes?: string | null;
@@ -289,11 +314,42 @@ export async function updateBookingById(
     UPDATE bookings
     SET
       status = COALESCE(${updates.status ?? null}, status),
+      preferred_date = COALESCE(${updates.preferredDate ?? null}, preferred_date),
+      preferred_time_window = COALESCE(${updates.preferredTimeWindow ?? null}, preferred_time_window),
       scheduled_date = COALESCE(${updates.scheduledDate ?? null}, scheduled_date),
       scheduled_time_window = COALESCE(${updates.scheduledTimeWindow ?? null}, scheduled_time_window),
       owner_notes = COALESCE(${updates.ownerNotes ?? null}, owner_notes),
       stripe_payment_status = COALESCE(${updates.stripePaymentStatus ?? null}, stripe_payment_status),
       stripe_checkout_session_id = COALESCE(${updates.stripeCheckoutSessionId ?? null}, stripe_checkout_session_id),
+      updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+
+  revalidatePath("/admin");
+  return ((result as BookingRecord[])[0] ?? null);
+}
+
+export async function updateBookingCustomerTimeRequest(
+  id: string,
+  updates: {
+    preferredDate: string;
+    preferredTimeWindow: string;
+    ownerNotes: string;
+  },
+) {
+  const sql = getSql();
+  if (!sql) return null;
+
+  const result = await sql`
+    UPDATE bookings
+    SET
+      status = 'pending_confirmation',
+      preferred_date = ${updates.preferredDate},
+      preferred_time_window = ${updates.preferredTimeWindow},
+      scheduled_date = NULL,
+      scheduled_time_window = NULL,
+      owner_notes = ${updates.ownerNotes},
       updated_at = NOW()
     WHERE id = ${id}
     RETURNING *

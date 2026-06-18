@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   payment_mode TEXT NOT NULL,
   stripe_checkout_session_id TEXT,
   stripe_payment_status TEXT,
+  customer_action_token TEXT NOT NULL UNIQUE DEFAULT gen_random_uuid()::text,
   heavy_stain_level TEXT,
   bins_count INTEGER,
   gate_code_needed BOOLEAN NOT NULL DEFAULT FALSE,
@@ -53,6 +54,11 @@ CREATE INDEX IF NOT EXISTS bookings_preferred_slot_idx ON bookings (preferred_da
 
 ALTER TABLE bookings
   ADD COLUMN IF NOT EXISTS photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+ALTER TABLE bookings
+  ADD COLUMN IF NOT EXISTS customer_action_token TEXT NOT NULL UNIQUE DEFAULT gen_random_uuid()::text;
+
+CREATE INDEX IF NOT EXISTS bookings_customer_action_token_idx ON bookings (customer_action_token);
 
 CREATE TABLE IF NOT EXISTS subscribers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -26,6 +26,13 @@ import { formatCurrency, formatServiceList, formatTitle, parseQuoteJson } from "
 import { getSubscriberCampaignSummary, type SubscriberRecord } from "@/lib/subscribers";
 
 const SECTION_STORAGE_PREFIX = "curbside-admin-viewed";
+const timeWindowOptions = ["8-10", "10-12", "12-2", "2-4", "4-6"];
+const drivewayGuide = [
+  { label: "1-car driveway", sqft: 300, price: "$129", image: "/driveway-size-1-car.png" },
+  { label: "2-car driveway", sqft: 600, price: "$132", image: "/driveway-size-2-car.png" },
+  { label: "3-car driveway", sqft: 900, price: "$198", image: "/driveway-size-3-car.png" },
+  { label: "Long driveway", sqft: 1200, price: "$264", image: "/driveway-size-long.png" },
+];
 
 function SectionCard({
   label,
@@ -49,7 +56,9 @@ function statusPill(status: string) {
   const palette: Record<string, string> = {
     lead: "border-amber-300/20 bg-amber-400/10 text-amber-100",
     pending_payment: "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
+    payment_required: "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
     pending_confirmation: "border-sky-300/20 bg-sky-400/10 text-sky-100",
+    reschedule_requested: "border-amber-300/20 bg-amber-400/10 text-amber-100",
     confirmed: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
     completed: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
     subscribed: "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
@@ -114,6 +123,102 @@ function SummaryPill({ label, value }: { label: string; value: string }) {
     <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
       <p className="text-[11px] uppercase tracking-[0.16em] text-white/45">{label}</p>
       <p className="mt-1.5 text-sm font-medium text-white/92">{value}</p>
+    </div>
+  );
+}
+
+function getAdminNextStep(booking: BookingRecord) {
+  const paid = booking.stripe_payment_status === "paid";
+
+  if (booking.status === "lead") return "Review photos, check the quote, then accept, deny, or propose a better time.";
+  if (booking.status === "pending_payment") return "Customer started booking. If the quote looks right, accept and resend payment options.";
+  if (booking.status === "payment_required") return "Job is accepted. Customer still needs to pay the upfront fee or pay in full.";
+  if (booking.status === "reschedule_requested") return "Waiting for the customer to accept your proposed time or choose another.";
+  if (booking.status === "pending_confirmation" && paid) return "Payment came through. Confirm the job when the schedule looks right.";
+  if (booking.status === "pending_confirmation") return "Customer requested another time. Accept it, reschedule, or deny.";
+  if (booking.status === "confirmed") return "Job is confirmed. Mark complete after service.";
+  if (booking.status === "completed") return "Job is complete.";
+  if (booking.status === "cancelled") return "This job is cancelled or denied.";
+  if (booking.status === "declined_area") return "Address may be outside the service area. Deny or manually review.";
+
+  return "Review the booking and choose the next action.";
+}
+
+function getDrivewayMatch(squareFeet: number | null) {
+  if (!squareFeet) return null;
+  return drivewayGuide.reduce((closest, option) => {
+    return Math.abs(option.sqft - squareFeet) < Math.abs(closest.sqft - squareFeet) ? option : closest;
+  }, drivewayGuide[0]);
+}
+
+function DrivewayPricingGuide({ squareFeet }: { squareFeet: number | null }) {
+  const match = getDrivewayMatch(squareFeet);
+
+  return (
+    <div className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4">
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+        Driveway Price Guide
+      </p>
+      <p className="mt-2 text-xs leading-5 text-white/58">
+        Quick sanity check for beginners. Match the photo, then adjust for heavy stains, hills, or extra length.
+      </p>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        {drivewayGuide.map((option) => {
+          const isMatch = match?.label === option.label;
+
+          return (
+            <div
+              key={option.label}
+              className={`overflow-hidden rounded-2xl border bg-white/[0.03] ${
+                isMatch ? "border-cyan-300/60 shadow-[0_0_28px_rgba(11,103,240,0.28)]" : "border-white/8"
+              }`}
+            >
+              <Image
+                src={option.image}
+                alt={option.label}
+                width={260}
+                height={150}
+                className="h-24 w-full object-contain p-2"
+              />
+              <div className="border-t border-white/8 px-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white">{option.label}</p>
+                <p className="mt-1 text-xs text-cyan-100">
+                  Suggest: {option.price}
+                  {isMatch ? " - closest" : ""}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function PaymentCoach({ booking }: { booking: BookingRecord }) {
+  const paid = booking.stripe_payment_status === "paid";
+  const depositDue = booking.deposit_due > 0 ? formatCurrency(booking.deposit_due) : "No upfront fee";
+  const total = formatCurrency(booking.quote_total);
+
+  return (
+    <div className="rounded-[1.5rem] border border-cyan-300/14 bg-cyan-400/[0.06] p-4">
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-100">
+        Payment Plan
+      </p>
+      <div className="mt-3 grid gap-2 text-sm leading-6 text-white/82">
+        <p>
+          <strong className="text-white">Total:</strong> {total}
+        </p>
+        <p>
+          <strong className="text-white">Upfront fee:</strong> {depositDue}
+        </p>
+        <p>
+          <strong className="text-white">Paid now:</strong> {paid ? "Yes" : "No"}
+        </p>
+      </div>
+      <p className="mt-3 text-xs leading-5 text-white/58">
+        When you accept an unpaid job, the customer gets two choices: pay the upfront fee or pay in full.
+      </p>
     </div>
   );
 }
@@ -260,71 +365,128 @@ function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolea
                 </div>
               </div>
 
+              <DrivewayPricingGuide squareFeet={booking.driveway_sqft} />
+              <PaymentCoach booking={booking} />
+
               <form
                 action="/api/admin/bookings/update"
                 method="post"
-                className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4"
+                className="rounded-[1.5rem] border border-cyan-300/18 bg-black/20 p-4 shadow-[0_0_45px_rgba(11,103,240,0.12)]"
               >
                 <input type="hidden" name="id" value={booking.id} />
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
-                  Update Booking
+                  Decision Center
                 </p>
+                <div className="mt-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-white/45">What to do next</p>
+                  <p className="mt-2 text-sm leading-6 text-white/88">{getAdminNextStep(booking)}</p>
+                </div>
                 <div className="mt-4 grid gap-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="space-y-2">
+                      <span className="text-xs uppercase tracking-[0.16em] text-white/60">Schedule date</span>
+                      <input
+                        type="date"
+                        name="scheduledDate"
+                        defaultValue={booking.scheduled_date ?? booking.preferred_date ?? ""}
+                        className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white"
+                      />
+                    </label>
+                    <label className="space-y-2">
+                      <span className="text-xs uppercase tracking-[0.16em] text-white/60">Time window</span>
+                      <select
+                        name="scheduledTimeWindow"
+                        defaultValue={booking.scheduled_time_window ?? booking.preferred_time_window ?? ""}
+                        className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white"
+                      >
+                        {timeWindowOptions.map((window) => (
+                          <option key={window} value={window}>
+                            {window}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
                   <label className="space-y-2">
-                    <span className="text-xs uppercase tracking-[0.16em] text-white/60">Status</span>
-                    <select
-                      name="status"
-                      defaultValue={booking.status}
-                      className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white"
-                    >
-                      <option value="lead">Lead</option>
-                      <option value="pending_payment">Pending payment</option>
-                      <option value="pending_confirmation">Pending confirmation</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="completed">Completed</option>
-                      <option value="cancelled">Cancelled</option>
-                      <option value="declined_area">Declined area</option>
-                    </select>
-                  </label>
-                  <label className="space-y-2">
-                    <span className="text-xs uppercase tracking-[0.16em] text-white/60">Scheduled date</span>
-                    <input
-                      type="date"
-                      name="scheduledDate"
-                      defaultValue={booking.scheduled_date ?? ""}
-                      className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white"
-                    />
-                  </label>
-                  <label className="space-y-2">
-                    <span className="text-xs uppercase tracking-[0.16em] text-white/60">Time window</span>
-                    <select
-                      name="scheduledTimeWindow"
-                      defaultValue={booking.scheduled_time_window ?? ""}
-                      className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white"
-                    >
-                      <option value="">Not set</option>
-                      <option value="8-10">8:00 AM - 10:00 AM</option>
-                      <option value="10-12">10:00 AM - 12:00 PM</option>
-                      <option value="12-2">12:00 PM - 2:00 PM</option>
-                      <option value="2-4">2:00 PM - 4:00 PM</option>
-                      <option value="4-6">4:00 PM - 6:00 PM</option>
-                    </select>
-                  </label>
-                  <label className="space-y-2">
-                    <span className="text-xs uppercase tracking-[0.16em] text-white/60">Owner notes</span>
+                    <span className="text-xs uppercase tracking-[0.16em] text-white/60">
+                      Owner notes for yourself
+                    </span>
                     <textarea
                       name="ownerNotes"
                       defaultValue={booking.owner_notes ?? ""}
-                      className="min-h-28 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white"
+                      placeholder="Example: Confirmed by text. Needs oil spot pre-treatment."
+                      className="min-h-24 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white"
                     />
                   </label>
-                  <button
-                    type="submit"
-                    className="inline-flex h-12 items-center justify-center rounded-full border border-cyan-300/80 bg-[linear-gradient(135deg,#12B6FF_0%,#009DFF_55%,#0567D8_100%)] px-5 text-sm font-semibold uppercase tracking-[0.18em] text-white"
-                  >
-                    Save Changes
-                  </button>
+                  <div className="grid gap-2">
+                    <button
+                      type="submit"
+                      name="action"
+                      value="accept"
+                      className="inline-flex h-12 items-center justify-center rounded-full border border-cyan-300/80 bg-[linear-gradient(135deg,#12B6FF_0%,#009DFF_55%,#0567D8_100%)] px-5 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+                    >
+                      Accept Job + Send Payment
+                    </button>
+                    <button
+                      type="submit"
+                      name="action"
+                      value="reschedule"
+                      className="inline-flex h-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-5 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+                    >
+                      Propose Reschedule
+                    </button>
+                    <button
+                      type="submit"
+                      name="action"
+                      value="complete"
+                      className="inline-flex h-12 items-center justify-center rounded-full border border-emerald-300/25 bg-emerald-400/10 px-5 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-100"
+                    >
+                      Mark Complete
+                    </button>
+                    <button
+                      type="submit"
+                      name="action"
+                      value="deny"
+                      className="inline-flex h-12 items-center justify-center rounded-full border border-rose-300/25 bg-rose-400/10 px-5 text-sm font-semibold uppercase tracking-[0.18em] text-rose-100"
+                    >
+                      Deny / Cancel Job
+                    </button>
+                  </div>
                 </div>
+
+                <details className="mt-4 rounded-2xl border border-white/8 bg-black/20 p-4">
+                  <summary className="cursor-pointer text-xs font-semibold uppercase tracking-[0.16em] text-white/60">
+                    Advanced manual edit
+                  </summary>
+                  <div className="mt-4 grid gap-4">
+                    <label className="space-y-2">
+                      <span className="text-xs uppercase tracking-[0.16em] text-white/60">Status</span>
+                      <select
+                        name="status"
+                        defaultValue={booking.status}
+                        className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white"
+                      >
+                        <option value="lead">Lead</option>
+                        <option value="pending_payment">Pending payment</option>
+                        <option value="payment_required">Payment required</option>
+                        <option value="pending_confirmation">Pending confirmation</option>
+                        <option value="reschedule_requested">Reschedule requested</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="declined_area">Declined area</option>
+                      </select>
+                    </label>
+                    <button
+                      type="submit"
+                      name="action"
+                      value="save"
+                      className="inline-flex h-12 items-center justify-center rounded-full border border-white/10 bg-black/30 px-5 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+                    >
+                      Save Manual Edit
+                    </button>
+                  </div>
+                </details>
               </form>
             </div>
           </div>
@@ -593,8 +755,12 @@ export function AdminDashboard({
     });
   }, [bookings, query]);
 
-  const leads = filtered.filter((booking) => ["lead", "pending_payment", "declined_area"].includes(booking.status));
-  const upcoming = filtered.filter((booking) => ["pending_confirmation", "confirmed"].includes(booking.status));
+  const leads = filtered.filter((booking) =>
+    ["lead", "pending_payment", "payment_required", "declined_area"].includes(booking.status),
+  );
+  const upcoming = filtered.filter((booking) =>
+    ["pending_confirmation", "reschedule_requested", "confirmed"].includes(booking.status),
+  );
   const past = filtered.filter((booking) => ["completed", "cancelled"].includes(booking.status));
   const activeSubscribers = subscribers.filter((subscriber) => subscriber.status === "subscribed");
   const unsubscribedCount = subscribers.filter((subscriber) => subscriber.status === "unsubscribed").length;

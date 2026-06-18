@@ -236,6 +236,99 @@ export function bookingStatusEmail(booking: BookingRecord) {
   });
 }
 
+export function customerJobAcceptedEmail(
+  booking: BookingRecord,
+  paymentLinks?: { depositUrl?: string | null; fullUrl?: string | null },
+) {
+  const payDeposit = paymentLinks?.depositUrl
+    ? `<a href="${paymentLinks.depositUrl}" style="display:inline-block;margin:10px 8px 0 0;padding:12px 18px;border-radius:999px;background:#0B67F0;color:#FFFFFF;text-decoration:none;font-weight:800;">Pay upfront fee</a>`
+    : "";
+  const payFull = paymentLinks?.fullUrl
+    ? `<a href="${paymentLinks.fullUrl}" style="display:inline-block;margin:10px 0 0 0;padding:12px 18px;border-radius:999px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);color:#FFFFFF;text-decoration:none;font-weight:800;">Pay in full</a>`
+    : "";
+  const paymentCopy =
+    payDeposit || payFull
+      ? `<p style="margin:18px 0 8px 0;">Your job is approved. Choose how you want to lock it in:</p>${payDeposit}${payFull}`
+      : `<p style="margin:18px 0 0 0;">Your job is approved and no online payment is needed right now.</p>`;
+
+  const body = `
+    <p style="margin:0 0 14px 0;">Hi ${booking.customer_name},</p>
+    <p style="margin:0 0 14px 0;">Good news — we accepted your ${BUSINESS_NAME} request.</p>
+    <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
+      <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatServiceList(booking.primary_service)}</p>
+      <p style="margin:0 0 8px 0;"><strong>Scheduled date:</strong> ${formatDateOnly(booking.scheduled_date || booking.preferred_date)}</p>
+      <p style="margin:0 0 8px 0;"><strong>Time window:</strong> ${booking.scheduled_time_window || booking.preferred_time_window}</p>
+      <p style="margin:0;"><strong>Total:</strong> ${formatCurrency(booking.quote_total)}</p>
+    </div>
+    ${quoteSummaryTable(booking)}
+    ${paymentCopy}
+  `;
+
+  return sendTransactionalEmail({
+    to: booking.email,
+    subject: "Your CURBSIDE job was accepted",
+    html: emailShell({
+      eyebrow: "Job Accepted",
+      title: "You Are Approved",
+      body,
+    }),
+    text: `Hi ${booking.customer_name}, your CURBSIDE job was accepted. Total: ${formatCurrency(booking.quote_total)}.`,
+  });
+}
+
+export function customerJobDeclinedEmail(booking: BookingRecord) {
+  const body = `
+    <p style="margin:0 0 14px 0;">Hi ${booking.customer_name},</p>
+    <p style="margin:0 0 14px 0;">Thank you for reaching out. We reviewed the request and cannot take this job as submitted.</p>
+    <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
+      <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatServiceList(booking.primary_service)}</p>
+      <p style="margin:0;"><strong>Status:</strong> Not accepted</p>
+    </div>
+    <p style="margin:0;">If you think something was entered wrong, reply to this email or message us on Instagram and we can take another look.</p>
+  `;
+
+  return sendTransactionalEmail({
+    to: booking.email,
+    subject: "Update on your CURBSIDE request",
+    html: emailShell({
+      eyebrow: "Request Update",
+      title: "We Cannot Take This One",
+      body,
+    }),
+    text: `Hi ${booking.customer_name}, we reviewed your CURBSIDE request and cannot take this job as submitted.`,
+  });
+}
+
+export function customerRescheduleRequestedEmail(booking: BookingRecord) {
+  const token = booking.customer_action_token;
+  const responseUrl = `${SITE_URL}/book/respond?token=${token}`;
+  const acceptUrl = `${SITE_URL}/api/bookings/respond?token=${token}&action=accept`;
+  const declineUrl = `${SITE_URL}/api/bookings/respond?token=${token}&action=decline`;
+
+  const body = `
+    <p style="margin:0 0 14px 0;">Hi ${booking.customer_name},</p>
+    <p style="margin:0 0 14px 0;">We need to adjust your appointment time. Please review this proposed slot:</p>
+    <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
+      <p style="margin:0 0 8px 0;"><strong>New date:</strong> ${formatDateOnly(booking.scheduled_date)}</p>
+      <p style="margin:0;"><strong>New time:</strong> ${booking.scheduled_time_window ?? "Not set yet"}</p>
+    </div>
+    <a href="${acceptUrl}" style="display:inline-block;margin:6px 8px 0 0;padding:12px 18px;border-radius:999px;background:#0B67F0;color:#FFFFFF;text-decoration:none;font-weight:800;">Accept this time</a>
+    <a href="${responseUrl}" style="display:inline-block;margin:6px 8px 0 0;padding:12px 18px;border-radius:999px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);color:#FFFFFF;text-decoration:none;font-weight:800;">Choose another time</a>
+    <a href="${declineUrl}" style="display:inline-block;margin:6px 0 0 0;padding:12px 18px;border-radius:999px;background:rgba(244,63,94,0.16);border:1px solid rgba(244,63,94,0.28);color:#FFFFFF;text-decoration:none;font-weight:800;">Cancel request</a>
+  `;
+
+  return sendTransactionalEmail({
+    to: booking.email,
+    subject: "Please confirm your new CURBSIDE time",
+    html: emailShell({
+      eyebrow: "Reschedule",
+      title: "Does This Time Work?",
+      body,
+    }),
+    text: `Hi ${booking.customer_name}, please confirm your new CURBSIDE time: ${formatDateOnly(booking.scheduled_date)} ${booking.scheduled_time_window}. ${responseUrl}`,
+  });
+}
+
 function marketingFooter(subscriber: SubscriberRecord) {
   const unsubscribeUrl = `${SITE_URL}/unsubscribe?token=${subscriber.unsubscribe_token}`;
   return `${BUSINESS_NAME}<br />${BUSINESS_PHONE_DISPLAY}<br />Instagram ${BUSINESS_INSTAGRAM_HANDLE}<br />You can unsubscribe from email updates any time: <a href="${unsubscribeUrl}" style="color:#7DD3FC;">Unsubscribe</a>`;
