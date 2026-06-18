@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     siteName: "CURBSIDE EXTERIOR CO.",
     images: [
       {
-        url: "/opengraph-image",
+        url: "/opengraph-image?v=20260618",
         width: 1200,
         height: 630,
         alt: "CURBSIDE EXTERIOR CO.",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/twitter-image"],
+    images: ["/twitter-image?v=20260618"],
   },
   robots: {
     index: true,

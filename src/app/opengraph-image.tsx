@@ -17,10 +17,9 @@ export default function OpenGraphImage() {
           display: "flex",
           position: "relative",
           overflow: "hidden",
-          background:
-            "radial-gradient(circle at 18% 15%, rgba(18,182,255,0.38), transparent 26%), radial-gradient(circle at 88% 18%, rgba(0,157,255,0.4), transparent 22%), linear-gradient(180deg, #02060B 0%, #07111D 100%)",
+          background: "linear-gradient(180deg, #000000 0%, #030303 58%, #0047BD 100%)",
           color: "white",
-          fontFamily: "Arial, sans-serif",
+          fontFamily: "Arial Narrow, Arial, sans-serif",
         }}
       >
         <div
@@ -28,32 +27,39 @@ export default function OpenGraphImage() {
             position: "absolute",
             inset: 0,
             background:
-              "repeating-linear-gradient(90deg, transparent 0, transparent 78px, rgba(18,182,255,0.07) 79px, transparent 80px), repeating-linear-gradient(180deg, transparent 0, transparent 16px, rgba(255,255,255,0.025) 17px, transparent 18px)",
-            opacity: 0.45,
+              "radial-gradient(circle at 18% 18%, rgba(11,103,240,0.34), transparent 28%), radial-gradient(circle at 82% 76%, rgba(7,91,230,0.42), transparent 24%), linear-gradient(120deg, transparent 0%, transparent 53%, rgba(255,255,255,0.08) 54%, transparent 72%)",
           }}
         />
         <div
           style={{
             position: "absolute",
-            right: -100,
-            top: 130,
-            width: 720,
-            height: 34,
-            transform: "rotate(-22deg)",
-            background: "linear-gradient(90deg, rgba(18,182,255,0), #12B6FF, rgba(18,182,255,0))",
-            boxShadow: "0 0 65px rgba(18,182,255,0.55)",
+            inset: 42,
+            border: "1px solid rgba(255,255,255,0.14)",
+            borderRadius: 38,
+            background: "linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.018))",
+            boxShadow: "0 36px 120px rgba(0,0,0,0.55)",
           }}
         />
         <div
           style={{
             position: "absolute",
-            right: -40,
-            bottom: 115,
-            width: 600,
-            height: 24,
-            transform: "rotate(-22deg)",
-            background: "linear-gradient(90deg, rgba(0,157,255,0), #009DFF, rgba(0,157,255,0))",
-            boxShadow: "0 0 60px rgba(0,157,255,0.45)",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 126,
+            background: "#075BE6",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            right: -92,
+            bottom: 58,
+            width: 470,
+            height: 118,
+            transform: "rotate(-12deg)",
+            borderTop: "2px solid rgba(255,255,255,0.72)",
+            background: "#075BE6",
           }}
         />
         <div
@@ -61,7 +67,7 @@ export default function OpenGraphImage() {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-            padding: "78px 72px",
+            padding: "76px 82px",
             width: "100%",
             position: "relative",
           }}
@@ -71,55 +77,79 @@ export default function OpenGraphImage() {
               display: "flex",
               alignSelf: "flex-start",
               alignItems: "center",
-              gap: 14,
-              padding: "10px 18px",
+              padding: "10px 18px 9px",
               borderRadius: 999,
-              border: "1px solid rgba(18,182,255,0.22)",
-              background: "rgba(18,182,255,0.09)",
-              fontSize: 24,
+              border: "1px solid rgba(11,103,240,0.72)",
+              background: "rgba(11,103,240,0.14)",
+              boxShadow: "0 0 34px rgba(11,103,240,0.34)",
+              fontSize: 26,
               textTransform: "uppercase",
-              letterSpacing: "0.24em",
-              color: "#B6E9FF",
-              fontWeight: 700,
+              letterSpacing: "0.14em",
+              color: "#FFFFFF",
+              fontWeight: 900,
+              fontStyle: "italic",
             }}
           >
-            Fast. Clean. Professional.
+            Professional Exterior Cleaning
           </div>
           <div
             style={{
-              marginTop: 34,
-              fontSize: 128,
-              lineHeight: 0.9,
+              marginTop: 30,
+              display: "flex",
+              flexDirection: "column",
+              fontSize: 104,
+              lineHeight: 0.88,
               fontWeight: 900,
               fontStyle: "italic",
               textTransform: "uppercase",
-              letterSpacing: "0.02em",
+              letterSpacing: "-0.015em",
+              maxWidth: 760,
             }}
           >
-            CURBSIDE
+            <span>Exterior Cleaning</span>
+            <span style={{ color: "#0B67F0" }}>Made Easy.</span>
           </div>
           <div
             style={{
-              marginTop: 8,
-              fontSize: 56,
-              letterSpacing: "0.3em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.92)",
-              fontWeight: 700,
+              position: "absolute",
+              left: 82,
+              bottom: 56,
+              display: "flex",
+              alignItems: "center",
+              gap: 24,
             }}
           >
-            Exterior Co.
-          </div>
-          <div
-            style={{
-              marginTop: 32,
-              maxWidth: 840,
-              fontSize: 40,
-              lineHeight: 1.3,
-              color: "#D9E3EE",
-            }}
-          >
-            Pressure washing, trash can cleaning, and curb appeal service for Marietta and nearby areas.
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 999,
+                background: "#0B67F0",
+                padding: "17px 30px 15px",
+                fontSize: 28,
+                fontWeight: 900,
+                fontStyle: "italic",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                boxShadow: "0 0 38px rgba(11,103,240,0.5)",
+              }}
+            >
+              Book Online
+            </div>
+            <div
+              style={{
+                fontSize: 26,
+                lineHeight: 1.2,
+                fontWeight: 900,
+                fontStyle: "italic",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: "rgba(255,255,255,0.92)",
+              }}
+            >
+              CURBSIDE EXTERIOR CO.
+            </div>
           </div>
         </div>
       </div>
