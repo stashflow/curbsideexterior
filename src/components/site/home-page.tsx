@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import {
   BadgeCheck,
@@ -12,16 +13,21 @@ import {
   Info,
   Menu,
   MessageSquare,
+  X,
   ShieldCheck,
   Smartphone,
   SprayCan,
   Trash2,
-  Zap,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/site/brand-logo";
 import { EmailSignupForm } from "@/components/site/email-signup-form";
 import { Button } from "@/components/ui/button";
+import {
+  BUSINESS_INSTAGRAM_URL,
+  BUSINESS_PHONE_DISPLAY,
+  BUSINESS_PHONE_TEL,
+} from "@/lib/business";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -122,6 +128,15 @@ function SectionTitle({ children }: { children: ReactNode }) {
 }
 
 export function HomePage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuLinks = [
+    ["Home", "#top"],
+    ["Services", "#services"],
+    ["Areas", "#areas"],
+    ["FAQ", "/faq"],
+    ["Book", "/book"],
+  ] as const;
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-black text-white">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-black/92 backdrop-blur-md">
@@ -136,21 +151,52 @@ export function HomePage() {
             <Link href="#areas" className="hover:text-[#0B67F0]">
               Areas
             </Link>
+            <Link href="/faq" className="hover:text-[#0B67F0]">
+              FAQ
+            </Link>
             <Link href="#contact" className="hover:text-[#0B67F0]">
               Contact
             </Link>
           </div>
-          <Link
-            href="#services"
+          <button
+            type="button"
+            onClick={() => setMenuOpen((current) => !current)}
             className="flex size-11 items-center justify-center border border-white/16 bg-white/[0.03] text-white md:hidden"
-            aria-label="Jump to services"
+            aria-label="Open menu"
+            aria-expanded={menuOpen}
           >
-            <Menu className="size-6" />
-          </Link>
+            {menuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+          </button>
           <Button asChild className="hidden md:inline-flex">
             <Link href="/book">Book Now</Link>
           </Button>
         </nav>
+        {menuOpen ? (
+          <div className="border-t border-white/10 bg-black px-4 py-4 md:hidden">
+            <div className="mx-auto grid max-w-7xl gap-2">
+              {menuLinks.map(([label, href]) => (
+                <Link
+                  key={label}
+                  href={href}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 font-heading text-2xl font-black uppercase italic text-white"
+                >
+                  {label}
+                </Link>
+              ))}
+              <Link
+                href={BUSINESS_INSTAGRAM_URL}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-2xl border border-[#0B67F0] bg-[#0B67F0]/12 px-4 py-3 text-sm font-black uppercase italic tracking-[0.12em] text-white"
+              >
+                Text us photos on Instagram
+              </Link>
+              <p className="px-1 text-sm text-white/70">Prefer texting? Send photos to {BUSINESS_PHONE_DISPLAY}.</p>
+            </div>
+          </div>
+        ) : null}
       </header>
 
       <main id="top" className="pb-24 md:pb-0">
@@ -182,11 +228,14 @@ export function HomePage() {
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg" className="h-12 w-full sm:h-14">
-                <Link href="/book">
-                  <Zap className="size-4" />
-                  Get Instant Quote
+                <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
+                  <MessageSquare className="size-4" />
+                  Text Us Photos
                 </Link>
               </Button>
+              <p className="text-center text-xs font-bold uppercase italic tracking-[0.08em] text-white/72 sm:text-left">
+                Prefer texting? Send photos to {BUSINESS_PHONE_DISPLAY}.
+              </p>
             </FadeIn>
 
             <FadeIn delay={0.15} className="mt-7">
@@ -225,8 +274,10 @@ export function HomePage() {
           </div>
         </section>
 
-        <section id="services" className="bg-[#050505] px-4 py-8 sm:px-6 md:py-16 lg:px-8">
-          <div className="mx-auto max-w-7xl">
+        <section id="services" className="relative overflow-hidden bg-[#050505] px-4 py-8 sm:px-6 md:py-16 lg:px-8">
+          <div className="pointer-events-none absolute -right-24 top-8 h-48 w-96 rotate-[-10deg] rounded-[3rem] border border-white/45 bg-[#075BE6]/12" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/35" />
+          <div className="relative mx-auto max-w-7xl">
             <SectionTitle>Services</SectionTitle>
             <div className="mt-6 grid gap-3 md:grid-cols-4">
               {services.map((service) => (
@@ -321,12 +372,15 @@ export function HomePage() {
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg" className="border-white/80 bg-black/20">
-                <Link href="sms:+16787096690">
+                <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
                   <MessageSquare className="size-4" />
-                  Text Now
+                  Text Us Photos
                 </Link>
               </Button>
             </div>
+            <p className="text-sm font-bold uppercase italic tracking-[0.08em] text-white/82 md:text-right">
+              Prefer texting? <Link href={`sms:${BUSINESS_PHONE_TEL}`} className="underline">Send photos to {BUSINESS_PHONE_DISPLAY}</Link>.
+            </p>
           </div>
         </section>
       </main>
@@ -340,9 +394,9 @@ export function HomePage() {
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary" className="h-12">
-            <Link href="sms:+16787096690">
+            <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
               <MessageSquare className="size-4" />
-              Text Now
+              Text Us
             </Link>
           </Button>
         </div>

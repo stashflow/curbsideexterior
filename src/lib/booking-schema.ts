@@ -33,6 +33,7 @@ export const bookingFormSchema = z.object({
   patioSqft: z.coerce.number().min(0).optional().default(0),
   houseSqft: z.coerce.number().min(0).optional().default(0),
   fenceLinearFeet: z.coerce.number().min(0).optional().default(0),
+  photoUrls: z.array(z.string().url()).max(8).optional().default([]),
   binsCount: z.coerce.number().min(0).optional().default(0),
   heavyStainLevel: z.enum(["light", "moderate", "heavy"]).default("light"),
   gateCodeNeeded: z.boolean().default(false),

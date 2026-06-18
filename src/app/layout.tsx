@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Teko } from "next/font/google";
 import { InstallPrompt } from "@/components/site/install-prompt";
 import { PwaRegister } from "@/components/site/pwa-register";
@@ -63,9 +63,15 @@ export const metadata: Metadata = {
     title: "CURBSIDE",
   },
   icons: {
-    icon: [{ url: "/icon", type: "image/png" }],
-    apple: [{ url: "/apple-icon", type: "image/png" }],
+    icon: [{ url: "/favicon.png", type: "image/png", sizes: "1254x1254" }],
+    shortcut: [{ url: "/favicon.png", type: "image/png", sizes: "1254x1254" }],
+    apple: [{ url: "/favicon.png", type: "image/png", sizes: "1254x1254" }],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#000000",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -78,7 +84,7 @@ export default function RootLayout({
       lang="en"
       className={`${heading.variable} ${body.variable} h-full`}
     >
-      <body className="min-h-full bg-[#02060B] font-body text-white antialiased">
+      <body className="min-h-full bg-black font-body text-white antialiased">
         <script
           type="application/ld+json"
           suppressHydrationWarning

@@ -46,6 +46,7 @@ export interface BookingRecord {
   patio_sqft: number | null;
   house_sqft: number | null;
   fence_linear_feet: number | null;
+  photo_urls: string[] | null;
   notes: string | null;
   referral_source: string | null;
   owner_notes: string | null;
@@ -93,7 +94,7 @@ export async function createBookingSubmission(values: BookingFormValues) {
       property_type, address_line_1, city, state, zip, distance_miles, travel_surcharge,
       preferred_date, preferred_time_window, quote_total, deposit_due, payment_mode,
       heavy_stain_level, bins_count, gate_code_needed, gate_code, driveway_sqft, walkway_sqft,
-      patio_sqft, house_sqft, fence_linear_feet, notes, referral_source, terms_accepted,
+      patio_sqft, house_sqft, fence_linear_feet, photo_urls, notes, referral_source, terms_accepted,
       privacy_accepted, sms_opt_in, email_opt_in, quote_json
     ) VALUES (
       ${values.customerName},
@@ -124,6 +125,7 @@ export async function createBookingSubmission(values: BookingFormValues) {
       ${values.patioSqft || null},
       ${values.houseSqft || null},
       ${values.fenceLinearFeet || null},
+      ${JSON.stringify(values.photoUrls ?? [])},
       ${values.notes || null},
       ${values.referralSource || null},
       ${values.termsAccepted},

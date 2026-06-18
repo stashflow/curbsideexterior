@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   patio_sqft INTEGER,
   house_sqft INTEGER,
   fence_linear_feet INTEGER,
+  photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb,
   notes TEXT,
   referral_source TEXT,
   owner_notes TEXT,
@@ -48,6 +49,9 @@ CREATE TABLE IF NOT EXISTS bookings (
 
 CREATE INDEX IF NOT EXISTS bookings_status_idx ON bookings (status);
 CREATE INDEX IF NOT EXISTS bookings_created_at_idx ON bookings (created_at DESC);
+
+ALTER TABLE bookings
+  ADD COLUMN IF NOT EXISTS photo_urls JSONB NOT NULL DEFAULT '[]'::jsonb;
 
 CREATE TABLE IF NOT EXISTS subscribers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

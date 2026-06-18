@@ -7,13 +7,20 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Book exterior cleaning service, review pricing, and keep CURBSIDE on your home screen.",
     start_url: "/",
     display: "standalone",
-    background_color: "#02060B",
-    theme_color: "#02060B",
+    background_color: "#000000",
+    theme_color: "#000000",
     icons: [
       {
-        src: "/icon",
+        src: "/favicon.png",
         sizes: "512x512",
         type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/favicon.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
   };

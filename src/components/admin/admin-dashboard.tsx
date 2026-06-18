@@ -121,6 +121,7 @@ function SummaryPill({ label, value }: { label: string; value: string }) {
 function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolean }) {
   const quote = parseQuoteJson(booking.quote_json);
   const [isOpen, setIsOpen] = useState(isNew);
+  const photoUrls = Array.isArray(booking.photo_urls) ? booking.photo_urls : [];
 
   const summaryDate =
     booking.scheduled_date || booking.preferred_date
@@ -200,6 +201,37 @@ function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolea
             </div>
 
             <div className="space-y-5">
+              {photoUrls.length > 0 ? (
+                <div className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4">
+                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+                    Customer Photos
+                  </p>
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    {photoUrls.map((url, index) => (
+                      <a
+                        key={url}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03]"
+                      >
+                        <Image
+                          src={url}
+                          alt={`Customer upload ${index + 1}`}
+                          width={320}
+                          height={180}
+                          className="h-28 w-full object-cover"
+                          unoptimized
+                        />
+                        <span className="block px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/70">
+                          Photo {index + 1}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
               <div className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4">
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
                   Quote Breakdown

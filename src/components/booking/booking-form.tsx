@@ -3,11 +3,14 @@
 import { useMemo, useState, useTransition } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { upload } from "@vercel/blob/client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
   CalendarDays,
+  Camera,
   Check,
   CheckCircle2,
   ChevronRight,
@@ -21,6 +24,8 @@ import {
   Sparkles,
   SprayCan,
   Trash2,
+  UploadCloud,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -56,11 +61,16 @@ type FormState = {
   preferredMonth: string;
   preferredDay: string;
   preferredTimeWindow: TimeWindow;
+  drivewaySize: string;
+  walkwaySize: string;
+  patioSize: string;
+  houseWashSize: string;
   drivewaySqft: string;
   walkwaySqft: string;
   patioSqft: string;
   houseSqft: string;
   fenceLinearFeet: string;
+  photoUrls: string[];
   binsCount: string;
   heavyStainLevel: "light" | "moderate" | "heavy";
   gateCodeNeeded: boolean;
@@ -91,11 +101,16 @@ const initialState: FormState = {
   preferredMonth: String(defaultDate.getMonth() + 1),
   preferredDay: String(defaultDate.getDate()),
   preferredTimeWindow: "10-12",
+  drivewaySize: "",
+  walkwaySize: "",
+  patioSize: "",
+  houseWashSize: "",
   drivewaySqft: "",
   walkwaySqft: "",
   patioSqft: "",
   houseSqft: "",
   fenceLinearFeet: "",
+  photoUrls: [],
   binsCount: "2",
   heavyStainLevel: "light",
   gateCodeNeeded: false,
@@ -161,6 +176,44 @@ const serviceOptions = [
   },
 ] as const;
 
+type SizeOption = {
+  value: string;
+  label: string;
+  sqft: number;
+  image?: string;
+};
+
+const drivewaySizeOptions: SizeOption[] = [
+  { value: "one_car", label: "1-car driveway", sqft: 300, image: "/driveway-size-1-car.png" },
+  { value: "two_car", label: "2-car driveway", sqft: 600, image: "/driveway-size-2-car.png" },
+  { value: "three_car", label: "3-car driveway", sqft: 900, image: "/driveway-size-3-car.png" },
+  { value: "long", label: "Long driveway", sqft: 1200, image: "/driveway-size-long.png" },
+  { value: "not_sure", label: "Not sure / upload photo", sqft: 0 },
+];
+
+const walkwaySizeOptions: SizeOption[] = [
+  { value: "small", label: "Small walkway", sqft: 80 },
+  { value: "medium", label: "Medium walkway", sqft: 150 },
+  { value: "large", label: "Large walkway", sqft: 250 },
+  { value: "not_sure", label: "Not sure / upload photo", sqft: 0 },
+];
+
+const patioSizeOptions: SizeOption[] = [
+  { value: "small", label: "Small patio", sqft: 150 },
+  { value: "medium", label: "Medium patio", sqft: 300 },
+  { value: "large", label: "Large patio", sqft: 500 },
+  { value: "not_sure", label: "Not sure / upload photo", sqft: 0 },
+];
+
+const houseWashSizeOptions: SizeOption[] = [
+  { value: "front", label: "Front only", sqft: 500 },
+  { value: "back", label: "Back only", sqft: 500 },
+  { value: "one_side", label: "One side", sqft: 400 },
+  { value: "two_sides", label: "Two sides", sqft: 800 },
+  { value: "full_house", label: "Full house", sqft: 1800 },
+  { value: "not_sure", label: "Not sure / upload photo", sqft: 0 },
+];
+
 const monthOptions = [
   "January",
   "February",
@@ -184,6 +237,25 @@ const panelMotion = {
 
 function toNumber(value: string) {
   return Number(value || 0);
+}
+
+function getEstimateRange(total: number) {
+  if (total <= 0) {
+    return {
+      low: 0,
+      high: 0,
+      label: "Add details",
+    };
+  }
+
+  const low = Math.max(0, Math.round(total * 0.88));
+  const high = Math.round(total * 1.12);
+
+  return {
+    low,
+    high,
+    label: `${formatCurrency(low)}-${formatCurrency(high)}`,
+  };
 }
 
 function pad(value: number) {
@@ -306,11 +378,83 @@ function MobileSupportPanel({
   );
 }
 
+function SizeSelector({
+  label,
+  helper,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  helper?: string;
+  value: string;
+  options: SizeOption[];
+  onChange: (option: SizeOption) => void;
+}) {
+  return (
+    <section className="rounded-[1.4rem] border border-white/10 bg-black/25 p-4 sm:rounded-[1.75rem] sm:p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-heading text-3xl font-black uppercase italic leading-none text-white">
+            {label}
+          </h3>
+          {helper ? <p className="mt-2 text-sm leading-6 text-white/62">{helper}</p> : null}
+        </div>
+        <Camera className="mt-1 size-5 shrink-0 text-[#0B67F0]" />
+      </div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        {options.map((option) => {
+          const selected = value === option.value;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => onChange(option)}
+              className={`overflow-hidden rounded-[1.15rem] border text-left transition ${
+                selected
+                  ? "border-[#0B67F0] bg-[#0B67F0]/16 shadow-[0_0_30px_rgba(11,103,240,0.18)]"
+                  : "border-white/10 bg-white/[0.03] hover:border-[#0B67F0]/70"
+              }`}
+              aria-pressed={selected}
+            >
+              {option.image ? (
+                <Image
+                  src={option.image}
+                  alt=""
+                  width={420}
+                  height={236}
+                  className="h-20 w-full object-cover"
+                />
+              ) : null}
+              <div className="flex min-h-14 items-center justify-between gap-3 px-3 py-3">
+                <span className="text-sm font-black uppercase italic tracking-[0.06em] text-white">
+                  {option.label}
+                </span>
+                <span
+                  className={`flex size-5 shrink-0 items-center justify-center rounded-full border ${
+                    selected ? "border-[#0B67F0] bg-[#0B67F0]" : "border-white/20"
+                  }`}
+                >
+                  {selected ? <Check className="size-3.5 text-white" /> : null}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function BookingForm() {
   const [form, setForm] = useState<FormState>(initialState);
   const [error, setError] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [isPending, startTransition] = useTransition();
+  const [isUploading, startUploadTransition] = useTransition();
 
   const hasPressureWashing = form.selectedServices.includes("pressure_washing");
   const hasTrashCanCleaning = form.selectedServices.includes("trash_can_cleaning");
@@ -344,17 +488,29 @@ export function BookingForm() {
     [form],
   );
 
+  const estimateRange = useMemo(() => getEstimateRange(quote.total), [quote.total]);
+  const needsPhotoReview =
+    form.drivewaySize === "not_sure" ||
+    form.walkwaySize === "not_sure" ||
+    form.patioSize === "not_sure" ||
+    form.houseWashSize === "not_sure";
+  const estimateLabel = quote.total > 0 ? estimateRange.label : needsPhotoReview ? "Photo review" : "Add details";
+  const hasPressureWashingDetails =
+    [
+      toNumber(form.drivewaySqft),
+      toNumber(form.walkwaySqft),
+      toNumber(form.patioSqft),
+      toNumber(form.houseSqft),
+      toNumber(form.fenceLinearFeet),
+    ].some((value) => value > 0) ||
+    Boolean(form.drivewaySize || form.walkwaySize || form.patioSize || form.houseWashSize) ||
+    form.photoUrls.length > 0;
+
   const stepValidity = useMemo(
     () => [
       form.selectedServices.length > 0,
-      (!hasPressureWashing ||
-        [
-          toNumber(form.drivewaySqft),
-          toNumber(form.walkwaySqft),
-          toNumber(form.patioSqft),
-          toNumber(form.houseSqft),
-          toNumber(form.fenceLinearFeet),
-        ].some((value) => value > 0)) && (!hasTrashCanCleaning || toNumber(form.binsCount) >= 1),
+      (!hasPressureWashing || hasPressureWashingDetails) &&
+        (!hasTrashCanCleaning || toNumber(form.binsCount) >= 1),
       Boolean(
         form.addressLine1 &&
           form.city &&
@@ -371,7 +527,7 @@ export function BookingForm() {
           form.privacyAccepted,
       ),
     ],
-    [form, hasPressureWashing, hasTrashCanCleaning, preferredDate],
+    [form, hasPressureWashing, hasPressureWashingDetails, hasTrashCanCleaning, preferredDate],
   );
 
   const progress = Math.round(((currentStep + 1) / steps.length) * 100);
@@ -386,6 +542,72 @@ export function BookingForm() {
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateSize(
+    sizeKey: "drivewaySize" | "walkwaySize" | "patioSize" | "houseWashSize",
+    sqftKey: "drivewaySqft" | "walkwaySqft" | "patioSqft" | "houseSqft",
+    option: SizeOption,
+  ) {
+    setForm((current) => ({
+      ...current,
+      [sizeKey]: option.value,
+      [sqftKey]: option.sqft > 0 ? String(option.sqft) : "",
+    }));
+  }
+
+  function removePhoto(url: string) {
+    setForm((current) => ({
+      ...current,
+      photoUrls: current.photoUrls.filter((photoUrl) => photoUrl !== url),
+    }));
+  }
+
+  function handlePhotoUpload(files: FileList | null) {
+    const selectedFiles = Array.from(files ?? []).slice(0, 8 - form.photoUrls.length);
+    if (selectedFiles.length === 0) return;
+
+    setUploadError("");
+    setUploadProgress(1);
+
+    startUploadTransition(async () => {
+      try {
+        const uploadedUrls: string[] = [];
+
+        for (const file of selectedFiles) {
+          if (!file.type.startsWith("image/")) {
+            throw new Error("Only image uploads are supported.");
+          }
+
+          if (file.size > 8 * 1024 * 1024) {
+            throw new Error("Each photo must be 8 MB or smaller.");
+          }
+
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+          const blob = await upload(`booking-photos/${Date.now()}-${safeName}`, file, {
+            access: "public",
+            handleUploadUrl: "/api/uploads",
+            contentType: file.type,
+            onUploadProgress: ({ percentage }) => setUploadProgress(Math.max(1, percentage)),
+          });
+
+          uploadedUrls.push(blob.url);
+        }
+
+        setForm((current) => ({
+          ...current,
+          photoUrls: [...current.photoUrls, ...uploadedUrls].slice(0, 8),
+        }));
+        setUploadProgress(0);
+      } catch (uploadFailure) {
+        setUploadProgress(0);
+        setUploadError(
+          uploadFailure instanceof Error
+            ? uploadFailure.message
+            : "Photo upload failed. You can still DM photos on Instagram.",
+        );
+      }
+    });
   }
 
   function toggleService(service: PrimaryService) {
@@ -418,15 +640,9 @@ export function BookingForm() {
     if (index === 1) {
       if (
         hasPressureWashing &&
-        ![
-          toNumber(form.drivewaySqft),
-          toNumber(form.walkwaySqft),
-          toNumber(form.patioSqft),
-          toNumber(form.houseSqft),
-          toNumber(form.fenceLinearFeet),
-        ].some((value) => value > 0)
+        !hasPressureWashingDetails
       ) {
-        setError("For pressure washing, enter at least one surface that actually needs cleaning.");
+        setError("For pressure washing, choose at least one surface or upload photos.");
         return false;
       }
 
@@ -516,8 +732,8 @@ export function BookingForm() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl overflow-x-hidden px-4 py-6 pb-28 sm:px-6 sm:py-10 sm:pb-10 lg:px-8">
-      <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8">
+    <div className="mx-auto max-w-5xl overflow-x-hidden bg-black px-4 py-4 pb-28 text-white sm:px-6 sm:py-8 sm:pb-10 lg:px-8">
+      <div className="grid gap-5 lg:gap-6">
         <div className="space-y-6 sm:space-y-8">
           <motion.section
             initial={{ opacity: 0, y: 18 }}
@@ -601,16 +817,51 @@ export function BookingForm() {
           </motion.section>
 
           <form id="booking-form" onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <Button asChild variant="secondary" className="w-full sm:w-auto">
-                <Link href="/">
+            <div className="sticky top-3 z-40 rounded-[1.35rem] border border-[#0B67F0]/40 bg-black/94 p-3 shadow-[0_18px_60px_rgba(0,0,0,0.38)] backdrop-blur-xl">
+              <div className="flex items-center gap-2">
+                <Button asChild variant="secondary" className="hidden h-11 px-4 sm:inline-flex">
+                  <Link href="/">
+                    <ArrowLeft className="size-4" />
+                    Home
+                  </Link>
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="h-11 px-4"
+                  onClick={goBack}
+                  disabled={currentStep === 0 || isPending}
+                >
                   <ArrowLeft className="size-4" />
-                  Back To Home
-                </Link>
-              </Button>
-              <div className="hidden text-sm text-white/55 sm:block">
-                Prefer a quick message first? Text or DM us.
+                  Back
+                </Button>
+                <div className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                  <p className="text-[10px] font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
+                    Live Estimate
+                  </p>
+                  <p className="truncate font-heading text-2xl font-black uppercase italic leading-none text-white">
+                    {quote.total > 0 ? `Estimated price: ${estimateLabel}` : estimateLabel}
+                  </p>
+                </div>
+                <div className="hidden rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-center sm:block">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-white/48">Step</p>
+                  <p className="font-semibold text-white">{currentStep + 1}/{steps.length}</p>
+                </div>
+                {isLastStep ? (
+                  <Button type="submit" className="hidden h-11 px-4 sm:inline-flex" disabled={isPending}>
+                    {isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
+                    Send
+                  </Button>
+                ) : (
+                  <Button type="button" className="hidden h-11 px-4 sm:inline-flex" onClick={goNext}>
+                    Next
+                    <ArrowRight className="size-4" />
+                  </Button>
+                )}
               </div>
+              <p className="mt-2 text-center text-[11px] font-bold uppercase italic tracking-[0.08em] text-white/58">
+                Final price confirmed before service.
+              </p>
             </div>
 
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 sm:rounded-[2rem] sm:p-7">
@@ -718,37 +969,63 @@ export function BookingForm() {
 
                   {steps[currentStep].id === "measurements" ? (
                     <div className="space-y-5 sm:space-y-6">
-                      <div className="rounded-[1.35rem] border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100 sm:rounded-[1.6rem] sm:px-5 sm:py-5">
-                        Only enter the parts that actually need cleaning. If only one side of the
-                        house needs work, use only that area. Tiny changes in square footage should
-                        only make tiny changes in price.
+                      <div className="rounded-[1.35rem] border border-[#0B67F0]/30 bg-[#0B67F0]/10 px-4 py-4 text-sm leading-6 text-white sm:rounded-[1.6rem] sm:px-5 sm:py-5">
+                        Choose the closest size. We will confirm before charging.
                       </div>
 
                       {hasPressureWashing ? (
-                        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-                          {[
-                            ["drivewaySqft", "Driveway square feet", "Example: 900"],
-                            ["walkwaySqft", "Walkway square feet", "Example: 120"],
-                            ["patioSqft", "Patio square feet", "Example: 240"],
-                            ["houseSqft", "House area to wash", "Only the siding area that needs cleaning"],
-                            ["fenceLinearFeet", "Fence linear feet", "Example: 85"],
-                          ].map(([key, label, placeholder]) => (
-                            <label key={key} className="space-y-2">
-                              <span className="text-sm font-medium text-slate-200">{label}</span>
+                        <div className="grid gap-4">
+                          <SizeSelector
+                            label="Driveway size"
+                            helper="Choose the closest option. We’ll confirm before charging."
+                            value={form.drivewaySize}
+                            options={drivewaySizeOptions}
+                            onChange={(option) => updateSize("drivewaySize", "drivewaySqft", option)}
+                          />
+                          <SizeSelector
+                            label="Walkway size"
+                            value={form.walkwaySize}
+                            options={walkwaySizeOptions}
+                            onChange={(option) => updateSize("walkwaySize", "walkwaySqft", option)}
+                          />
+                          <SizeSelector
+                            label="Patio size"
+                            value={form.patioSize}
+                            options={patioSizeOptions}
+                            onChange={(option) => updateSize("patioSize", "patioSqft", option)}
+                          />
+                          <SizeSelector
+                            label="House area to wash"
+                            helper="Only choose the siding areas that actually need cleaning."
+                            value={form.houseWashSize}
+                            options={houseWashSizeOptions}
+                            onChange={(option) => updateSize("houseWashSize", "houseSqft", option)}
+                          />
+
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <label className="space-y-2">
+                              <span className="font-heading text-3xl font-black uppercase italic leading-none text-white">
+                                Fence linear feet
+                              </span>
+                              <span className="block text-sm leading-6 text-white/62">
+                                Estimate by fence panels. Most panels are about 6-8 feet wide.
+                              </span>
                               <input
                                 type="number"
                                 min="0"
-                                value={form[key as keyof FormState] as string}
-                                onChange={(event) =>
-                                  update(key as keyof FormState, event.target.value as never)
-                                }
-                                placeholder={placeholder}
-                                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                                value={form.fenceLinearFeet}
+                                onChange={(event) => update("fenceLinearFeet", event.target.value)}
+                                placeholder="Example: 80"
+                                className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                               />
                             </label>
-                          ))}
-                          <label className="space-y-2">
-                            <span className="text-sm font-medium text-slate-200">Stain level</span>
+                            <label className="space-y-2">
+                              <span className="font-heading text-3xl font-black uppercase italic leading-none text-white">
+                                Stain level
+                              </span>
+                              <span className="block text-sm leading-6 text-white/62">
+                                Keep this simple. We will confirm if anything looks heavier.
+                              </span>
                             <select
                               value={form.heavyStainLevel}
                               onChange={(event) =>
@@ -757,13 +1034,77 @@ export function BookingForm() {
                                   event.target.value as "light" | "moderate" | "heavy",
                                 )
                               }
-                              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                              className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             >
                               <option value="light">Light dirt</option>
                               <option value="moderate">Moderate buildup</option>
                               <option value="heavy">Heavy stains or deep buildup</option>
                             </select>
-                          </label>
+                            </label>
+                          </div>
+
+                          <div className="rounded-[1.4rem] border border-dashed border-[#0B67F0]/55 bg-[#0B67F0]/8 p-4 sm:rounded-[1.75rem] sm:p-5">
+                            <div className="flex items-start gap-3">
+                              <UploadCloud className="mt-1 size-6 shrink-0 text-[#0B67F0]" />
+                              <div className="min-w-0 flex-1">
+                                <h3 className="font-heading text-3xl font-black uppercase italic leading-none text-white">
+                                  Not sure?
+                                </h3>
+                                <p className="mt-2 text-sm leading-6 text-white/72">
+                                  Upload a photo or enter your address and we’ll estimate the size for you.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                              <label className="inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-md border border-[#126DFF] bg-[#0B67F0] px-6 py-3 text-sm font-bold uppercase italic tracking-[0.12em] text-white shadow-[0_12px_24px_rgba(0,82,220,0.24)] transition hover:bg-[#0A5CDF]">
+                                <UploadCloud className="size-4" />
+                                Upload photos
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  multiple
+                                  className="sr-only"
+                                  onChange={(event) => handlePhotoUpload(event.target.files)}
+                                  disabled={isUploading || form.photoUrls.length >= 8}
+                                />
+                              </label>
+                              <p className="text-xs font-bold uppercase italic tracking-[0.08em] text-white/60">
+                                {isUploading ? `Uploading ${uploadProgress}%` : `${form.photoUrls.length}/8 photos added`}
+                              </p>
+                            </div>
+                            {uploadError ? (
+                              <p className="mt-3 rounded-2xl border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm leading-6 text-amber-100">
+                                {uploadError}
+                              </p>
+                            ) : null}
+                            {form.photoUrls.length > 0 ? (
+                              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                                {form.photoUrls.map((url, index) => (
+                                  <div
+                                    key={url}
+                                    className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/25 px-3 py-2"
+                                  >
+                                    <a
+                                      href={url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="truncate text-sm text-white/88 underline"
+                                    >
+                                      Photo {index + 1}
+                                    </a>
+                                    <button
+                                      type="button"
+                                      onClick={() => removePhoto(url)}
+                                      className="flex size-8 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/70"
+                                      aria-label={`Remove photo ${index + 1}`}
+                                    >
+                                      <X className="size-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
                         </div>
                       ) : null}
 
@@ -1111,7 +1452,7 @@ export function BookingForm() {
           </form>
         </div>
 
-        <div className="space-y-4 lg:sticky lg:top-28 lg:self-start lg:space-y-5">
+        <div className="hidden">
           <motion.section
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}

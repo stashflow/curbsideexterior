@@ -69,6 +69,25 @@ function quoteSummaryTable(booking: BookingRecord) {
   `;
 }
 
+function bookingPhotoLinks(booking: BookingRecord) {
+  const photoUrls = Array.isArray(booking.photo_urls) ? booking.photo_urls : [];
+  if (photoUrls.length === 0) return "";
+
+  const links = photoUrls
+    .map(
+      (url, index) =>
+        `<li style="margin:0 0 8px 0;"><a href="${url}" style="color:#B6E9FF;">Photo ${index + 1}</a></li>`,
+    )
+    .join("");
+
+  return `
+    <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin:18px 0;">
+      <p style="margin:0 0 12px 0;"><strong>Uploaded photos:</strong></p>
+      <ul style="margin:0;padding-left:18px;">${links}</ul>
+    </div>
+  `;
+}
+
 export async function sendTransactionalEmail(payload: EmailPayload) {
   const apiUrl = process.env.ZEPTOMAIL_API_URL;
   const token = process.env.ZEPTOMAIL_API_TOKEN;
@@ -122,6 +141,7 @@ export function bookingAdminAlert(booking: BookingRecord) {
       <p style="margin:0;"><strong>Status:</strong> ${formatTitle(booking.status)}</p>
     </div>
     ${quoteSummaryTable(booking)}
+    ${bookingPhotoLinks(booking)}
   `;
 
   return sendTransactionalEmail({
@@ -152,6 +172,7 @@ export function customerRequestEmail(booking: BookingRecord) {
       <p style="margin:0;"><strong>${paymentLine}</strong></p>
     </div>
     ${quoteSummaryTable(booking)}
+    ${bookingPhotoLinks(booking)}
     <p style="margin:18px 0 0 0;">If we need anything else, we will keep it simple and reach out by text, email, or Instagram DM.</p>
   `;
 
@@ -298,6 +319,7 @@ export function customerInfoList(booking: BookingRecord) {
     ["Patio sqft", booking.patio_sqft ? String(booking.patio_sqft) : "Not given"],
     ["House sqft", booking.house_sqft ? String(booking.house_sqft) : "Not given"],
     ["Fence linear feet", booking.fence_linear_feet ? String(booking.fence_linear_feet) : "Not given"],
+    ["Uploaded photos", Array.isArray(booking.photo_urls) && booking.photo_urls.length > 0 ? `${booking.photo_urls.length} photo(s)` : "None"],
     ["Referral source", booking.referral_source || "Not given"],
     ["Customer notes", booking.notes || "None"],
     ["Owner notes", booking.owner_notes || "None"],
