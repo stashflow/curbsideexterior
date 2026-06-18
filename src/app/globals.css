@@ -35,6 +35,17 @@ body {
   font-family: var(--font-body);
 }
 
+.mobile-fixed-cta {
+  position: fixed;
+  right: 0;
+  bottom: env(safe-area-inset-bottom, 0);
+  left: 0;
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  contain: paint;
+}
+
 a,
 button {
   -webkit-tap-highlight-color: transparent;

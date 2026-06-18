@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { BUSINESS_INSTAGRAM_URL, BUSINESS_PHONE_DISPLAY } from "@/lib/business";
 
 export const metadata: Metadata = {
-  title: "FAQ | CURBSIDE EXTERIOR CO.",
-  description: "Quick answers about CURBSIDE EXTERIOR CO. quotes, photos, pricing, timing, and service areas.",
+  title: "Pressure Washing FAQ | CURBSIDE EXTERIOR CO.",
+  description:
+    "Quick answers about CURBSIDE EXTERIOR CO. pressure washing quotes, photo estimates, pricing, scheduling, payments, and service areas near Marietta.",
+  alternates: {
+    canonical: "/faq",
+  },
 };
 
 const faqs = [
@@ -46,11 +50,28 @@ const faqs = [
 ];
 
 export default function FaqPage() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-black px-4 py-8 text-white sm:px-6 lg:px-8">
-      <section className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#050505] p-5 shadow-[0_24px_90px_rgba(0,0,0,0.3)] sm:p-8">
-        <div className="pointer-events-none absolute -right-24 top-8 h-44 w-96 rotate-[-10deg] rounded-[3rem] border border-white/35 bg-[#075BE6]/12" />
-        <div className="relative">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <section className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#050505] p-5 shadow-[0_24px_90px_rgba(0,0,0,0.3)] sm:p-8">
+        <div>
           <Link href="/" className="text-xs font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
             Back Home
           </Link>

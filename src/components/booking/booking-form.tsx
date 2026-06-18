@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { upload } from "@vercel/blob/client";
@@ -9,19 +8,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
-  CalendarDays,
   Camera,
   Check,
-  CheckCircle2,
-  ChevronRight,
-  Clock3,
   Droplets,
   LoaderCircle,
-  Lock,
-  MapPinned,
-  MessageSquare,
-  ShieldCheck,
-  Sparkles,
   SprayCan,
   Trash2,
   UploadCloud,
@@ -29,12 +19,6 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  BUSINESS_INSTAGRAM_HANDLE,
-  BUSINESS_INSTAGRAM_URL,
-  BUSINESS_NAME,
-  PAYMENT_OPERATOR_NAME,
-} from "@/lib/business";
 import { formatCurrency, formatServiceList } from "@/lib/format";
 import {
   buildQuote,
@@ -312,72 +296,6 @@ function formatFriendlyDate(monthValue: string, dayValue: string) {
   }).format(date);
 }
 
-function StepBadge({
-  active,
-  complete,
-  number,
-  title,
-}: {
-  active: boolean;
-  complete: boolean;
-  number: string;
-  title: string;
-}) {
-  return (
-    <div
-      className={`rounded-[1.5rem] border px-4 py-4 transition ${
-        active
-          ? "border-cyan-300/35 bg-cyan-400/12 shadow-[0_0_40px_rgba(18,182,255,0.12)]"
-          : complete
-            ? "border-emerald-300/20 bg-emerald-400/10"
-            : "border-white/8 bg-white/[0.03]"
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className={`flex size-10 items-center justify-center rounded-full border text-sm font-semibold ${
-            active
-              ? "border-cyan-300/50 bg-cyan-300/12 text-cyan-100"
-              : complete
-                ? "border-emerald-300/40 bg-emerald-300/12 text-emerald-100"
-                : "border-white/10 bg-black/20 text-white/75"
-          }`}
-        >
-          {complete ? <CheckCircle2 className="size-4" /> : number}
-        </div>
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.16em] text-white/45">Step</p>
-          <p className="font-heading text-2xl font-black uppercase leading-none text-white">
-            {title}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MobileSupportPanel({
-  title,
-  defaultOpen = false,
-  children,
-}: {
-  title: string;
-  defaultOpen?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <details
-      className="rounded-[1.35rem] border border-white/10 bg-white/[0.04] p-4 sm:hidden"
-      open={defaultOpen}
-    >
-      <summary className="cursor-pointer list-none text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
-        {title}
-      </summary>
-      <div className="mt-4">{children}</div>
-    </details>
-  );
-}
-
 function SizeSelector({
   label,
   helper,
@@ -392,17 +310,17 @@ function SizeSelector({
   onChange: (option: SizeOption) => void;
 }) {
   return (
-    <section className="rounded-[1.4rem] border border-white/10 bg-black/25 p-4 sm:rounded-[1.75rem] sm:p-5">
-      <div className="flex items-start justify-between gap-4">
+    <section className="rounded-[1.15rem] border border-white/10 bg-black/25 p-3 sm:rounded-[1.5rem] sm:p-4">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-heading text-3xl font-black uppercase italic leading-none text-white">
+          <h3 className="font-heading text-2xl font-black uppercase italic leading-none text-white sm:text-3xl">
             {label}
           </h3>
           {helper ? <p className="mt-2 text-sm leading-6 text-white/62">{helper}</p> : null}
         </div>
         <Camera className="mt-1 size-5 shrink-0 text-[#0B67F0]" />
       </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {options.map((option) => {
           const selected = value === option.value;
 
@@ -419,16 +337,12 @@ function SizeSelector({
               aria-pressed={selected}
             >
               {option.image ? (
-                <Image
-                  src={option.image}
-                  alt=""
-                  width={420}
-                  height={236}
-                  className="h-20 w-full object-cover"
-                />
+                <div className="relative aspect-[16/9] w-full bg-black">
+                  <Image src={option.image} alt="" fill sizes="(max-width: 640px) 50vw, 33vw" className="object-contain" />
+                </div>
               ) : null}
-              <div className="flex min-h-14 items-center justify-between gap-3 px-3 py-3">
-                <span className="text-sm font-black uppercase italic tracking-[0.06em] text-white">
+              <div className="flex min-h-12 items-center justify-between gap-2 px-3 py-2">
+                <span className="text-xs font-black uppercase italic tracking-[0.06em] text-white sm:text-sm">
                   {option.label}
                 </span>
                 <span
@@ -505,30 +419,6 @@ export function BookingForm() {
     ].some((value) => value > 0) ||
     Boolean(form.drivewaySize || form.walkwaySize || form.patioSize || form.houseWashSize) ||
     form.photoUrls.length > 0;
-
-  const stepValidity = useMemo(
-    () => [
-      form.selectedServices.length > 0,
-      (!hasPressureWashing || hasPressureWashingDetails) &&
-        (!hasTrashCanCleaning || toNumber(form.binsCount) >= 1),
-      Boolean(
-        form.addressLine1 &&
-          form.city &&
-          form.state.length === 2 &&
-          /^\d{5}$/.test(form.zip) &&
-          preferredDate &&
-          form.preferredTimeWindow,
-      ),
-      Boolean(
-        form.customerName &&
-          form.phone &&
-          form.email &&
-          form.termsAccepted &&
-          form.privacyAccepted,
-      ),
-    ],
-    [form, hasPressureWashing, hasPressureWashingDetails, hasTrashCanCleaning, preferredDate],
-  );
 
   const progress = Math.round(((currentStep + 1) / steps.length) * 100);
 
@@ -732,94 +622,14 @@ export function BookingForm() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl overflow-x-hidden bg-black px-4 py-4 pb-28 text-white sm:px-6 sm:py-8 sm:pb-10 lg:px-8">
+    <div className="mx-auto min-h-screen max-w-5xl overflow-x-hidden bg-black px-3 pb-28 pt-[7.25rem] text-white sm:px-6 sm:pb-10 sm:pt-[7.75rem] lg:px-8">
       <div className="grid gap-5 lg:gap-6">
-        <div className="space-y-6 sm:space-y-8">
-          <motion.section
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-[1.7rem] border border-cyan-300/18 bg-[linear-gradient(135deg,rgba(18,182,255,0.14),rgba(7,17,29,0.98)_28%,rgba(2,6,11,0.98)_100%)] p-4 shadow-[0_24px_100px_rgba(0,0,0,0.35)] sm:rounded-[2.3rem] sm:p-8"
-          >
-            <div className="pointer-events-none absolute -right-16 top-0 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl" />
-            <div className="pointer-events-none absolute bottom-0 left-0 h-40 w-40 rounded-full bg-sky-500/14 blur-3xl" />
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100">
-                <Sparkles className="size-3.5" />
-                Book Online
-              </div>
-              <h1 className="mt-4 max-w-4xl font-heading text-[2rem] font-black uppercase leading-[0.92] text-white sm:mt-5 sm:text-6xl">
-                Fast quote. Clear steps. No confusing pricing.
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200 sm:mt-5 sm:text-lg sm:leading-8">
-                This booking flow is built to be simple. Pick the service, enter only the surfaces
-                that really need cleaning, choose a day, and send the request.
-              </p>
-
-              <div className="mt-4 grid grid-cols-2 gap-2 sm:hidden">
-                {steps.map((step, index) => (
-                  <div
-                    key={step.id}
-                    className={`rounded-2xl border px-3 py-3 ${
-                      currentStep === index
-                        ? "border-cyan-300/35 bg-cyan-400/12"
-                        : stepValidity[index]
-                          ? "border-emerald-300/20 bg-emerald-400/10"
-                          : "border-white/8 bg-white/[0.03]"
-                    }`}
-                  >
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-white/50">{step.number}</p>
-                    <p className="mt-1 text-sm font-semibold uppercase leading-5 text-white">
-                      {step.title}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="-mx-1 mt-5 hidden gap-3 overflow-x-auto px-1 pb-1 sm:mx-0 sm:mt-6 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:grid-cols-2 xl:grid-cols-4">
-                {steps.map((step, index) => (
-                  <div key={step.id} className="min-w-[15rem] sm:min-w-0">
-                    <StepBadge
-                      active={currentStep === index}
-                      complete={stepValidity[index]}
-                      number={step.number}
-                      title={step.title}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/8 sm:mt-6">
-                <motion.div
-                  className="h-full rounded-full bg-[linear-gradient(90deg,#12B6FF,#009DFF,#78E6FF)]"
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 0.35 }}
-                />
-              </div>
-
-              <div className="mt-4 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:gap-3">
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-white/88 sm:hidden">
-                  4 short steps. Live price updates. No call needed.
-                </div>
-                <Button asChild variant="secondary" className="sm:w-auto">
-                  <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
-                    <MessageSquare className="size-4" />
-                    DM {BUSINESS_INSTAGRAM_HANDLE}
-                  </Link>
-                </Button>
-                <Button asChild className="hidden sm:inline-flex">
-                  <Link href="/book">
-                    <CalendarDays className="size-4" />
-                    Book Online
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </motion.section>
-
-          <form id="booking-form" onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
-            <div className="sticky top-3 z-40 rounded-[1.35rem] border border-[#0B67F0]/40 bg-black/94 p-3 shadow-[0_18px_60px_rgba(0,0,0,0.38)] backdrop-blur-xl">
+        <div>
+          <form id="booking-form" onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+            <div className="fixed inset-x-0 top-0 z-50 border-b border-[#0B67F0]/40 bg-black/96 px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] shadow-[0_18px_60px_rgba(0,0,0,0.38)] backdrop-blur-xl sm:px-6">
+              <div className="mx-auto max-w-5xl">
               <div className="flex items-center gap-2">
-                <Button asChild variant="secondary" className="hidden h-11 px-4 sm:inline-flex">
+                <Button asChild variant="secondary" className="hidden h-10 px-4 sm:inline-flex">
                   <Link href="/">
                     <ArrowLeft className="size-4" />
                     Home
@@ -828,60 +638,45 @@ export function BookingForm() {
                 <Button
                   type="button"
                   variant="secondary"
-                  className="h-11 px-4"
+                  className="h-10 px-3"
                   onClick={goBack}
                   disabled={currentStep === 0 || isPending}
                 >
                   <ArrowLeft className="size-4" />
                   Back
                 </Button>
-                <div className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
-                  <p className="text-[10px] font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
-                    Live Estimate
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-heading text-xl font-black uppercase italic leading-none text-white sm:text-2xl">
+                    Step {currentStep + 1}: {steps[currentStep].title}
                   </p>
-                  <p className="truncate font-heading text-2xl font-black uppercase italic leading-none text-white">
-                    {quote.total > 0 ? `Estimated price: ${estimateLabel}` : estimateLabel}
+                  <p className="truncate text-[11px] font-bold uppercase italic tracking-[0.08em] text-white/62">
+                    {quote.total > 0 ? `Estimate ${estimateLabel}` : estimateLabel} • Final price confirmed
                   </p>
-                </div>
-                <div className="hidden rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-center sm:block">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-white/48">Step</p>
-                  <p className="font-semibold text-white">{currentStep + 1}/{steps.length}</p>
                 </div>
                 {isLastStep ? (
-                  <Button type="submit" className="hidden h-11 px-4 sm:inline-flex" disabled={isPending}>
+                  <Button type="submit" className="hidden h-10 px-4 sm:inline-flex" disabled={isPending}>
                     {isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
                     Send
                   </Button>
                 ) : (
-                  <Button type="button" className="hidden h-11 px-4 sm:inline-flex" onClick={goNext}>
+                  <Button type="button" className="hidden h-10 px-4 sm:inline-flex" onClick={goNext}>
                     Next
                     <ArrowRight className="size-4" />
                   </Button>
                 )}
               </div>
-              <p className="mt-2 text-center text-[11px] font-bold uppercase italic tracking-[0.08em] text-white/58">
-                Final price confirmed before service.
-              </p>
+              <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/10">
+                <motion.div
+                  className="h-full rounded-full bg-[#0B67F0]"
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.25 }}
+                />
+              </div>
+              </div>
             </div>
 
-            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 sm:rounded-[2rem] sm:p-7">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">
-                    Step {currentStep + 1} of {steps.length}
-                  </p>
-                  <h2 className="mt-2 font-heading text-[1.7rem] font-black uppercase leading-none text-white sm:mt-3 sm:text-5xl">
-                    {steps[currentStep].title}
-                  </h2>
-                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:mt-4 sm:text-base">
-                    {steps[currentStep].body}
-                  </p>
-                </div>
-                <div className="hidden rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center sm:block">
-                  <p className="text-[11px] uppercase tracking-[0.16em] text-white/50">Progress</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{progress}%</p>
-                </div>
-              </div>
+            <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.035] p-3 sm:rounded-[1.75rem] sm:p-5">
+              <p className="mb-3 text-sm leading-6 text-white/66">{steps[currentStep].body}</p>
 
               <AnimatePresence mode="wait">
                 <motion.div
@@ -968,47 +763,47 @@ export function BookingForm() {
                   ) : null}
 
                   {steps[currentStep].id === "measurements" ? (
-                    <div className="space-y-5 sm:space-y-6">
-                      <div className="rounded-[1.35rem] border border-[#0B67F0]/30 bg-[#0B67F0]/10 px-4 py-4 text-sm leading-6 text-white sm:rounded-[1.6rem] sm:px-5 sm:py-5">
-                        Choose the closest size. We will confirm before charging.
-                      </div>
-
+                    <div className="space-y-3 sm:space-y-4">
                       {hasPressureWashing ? (
-                        <div className="grid gap-4">
+                        <div className="grid gap-3 sm:gap-4">
                           <SizeSelector
                             label="Driveway size"
-                            helper="Choose the closest option. We’ll confirm before charging."
+                            helper="Closest option is fine. We confirm before charging."
                             value={form.drivewaySize}
                             options={drivewaySizeOptions}
                             onChange={(option) => updateSize("drivewaySize", "drivewaySqft", option)}
                           />
+
+                          <div className="grid gap-3 lg:grid-cols-2">
+                            <SizeSelector
+                              label="Walkway size"
+                              value={form.walkwaySize}
+                              options={walkwaySizeOptions}
+                              onChange={(option) => updateSize("walkwaySize", "walkwaySqft", option)}
+                            />
+                            <SizeSelector
+                              label="Patio size"
+                              value={form.patioSize}
+                              options={patioSizeOptions}
+                              onChange={(option) => updateSize("patioSize", "patioSqft", option)}
+                            />
+                          </div>
+
                           <SizeSelector
-                            label="Walkway size"
-                            value={form.walkwaySize}
-                            options={walkwaySizeOptions}
-                            onChange={(option) => updateSize("walkwaySize", "walkwaySqft", option)}
-                          />
-                          <SizeSelector
-                            label="Patio size"
-                            value={form.patioSize}
-                            options={patioSizeOptions}
-                            onChange={(option) => updateSize("patioSize", "patioSqft", option)}
-                          />
-                          <SizeSelector
-                            label="House area to wash"
-                            helper="Only choose the siding areas that actually need cleaning."
+                            label="House area"
+                            helper="Only choose siding areas that need cleaning."
                             value={form.houseWashSize}
                             options={houseWashSizeOptions}
                             onChange={(option) => updateSize("houseWashSize", "houseSqft", option)}
                           />
 
                           <div className="grid gap-3 sm:grid-cols-2">
-                            <label className="space-y-2">
-                              <span className="font-heading text-3xl font-black uppercase italic leading-none text-white">
-                                Fence linear feet
+                            <label className="space-y-2 rounded-[1.15rem] border border-white/10 bg-black/25 p-3">
+                              <span className="font-heading text-2xl font-black uppercase italic leading-none text-white">
+                                Fence
                               </span>
                               <span className="block text-sm leading-6 text-white/62">
-                                Estimate by fence panels. Most panels are about 6-8 feet wide.
+                                Most panels are 6-8 feet.
                               </span>
                               <input
                                 type="number"
@@ -1019,12 +814,12 @@ export function BookingForm() {
                                 className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                               />
                             </label>
-                            <label className="space-y-2">
-                              <span className="font-heading text-3xl font-black uppercase italic leading-none text-white">
-                                Stain level
+                            <label className="space-y-2 rounded-[1.15rem] border border-white/10 bg-black/25 p-3">
+                              <span className="font-heading text-2xl font-black uppercase italic leading-none text-white">
+                                Stains
                               </span>
                               <span className="block text-sm leading-6 text-white/62">
-                                Keep this simple. We will confirm if anything looks heavier.
+                                Pick what looks closest.
                               </span>
                             <select
                               value={form.heavyStainLevel}
@@ -1043,7 +838,7 @@ export function BookingForm() {
                             </label>
                           </div>
 
-                          <div className="rounded-[1.4rem] border border-dashed border-[#0B67F0]/55 bg-[#0B67F0]/8 p-4 sm:rounded-[1.75rem] sm:p-5">
+                          <div className="rounded-[1.15rem] border border-dashed border-[#0B67F0]/55 bg-[#0B67F0]/8 p-3 sm:rounded-[1.5rem] sm:p-4">
                             <div className="flex items-start gap-3">
                               <UploadCloud className="mt-1 size-6 shrink-0 text-[#0B67F0]" />
                               <div className="min-w-0 flex-1">
@@ -1425,226 +1220,11 @@ export function BookingForm() {
               </div>
             ) : null}
 
-            <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center sm:justify-between">
-              <Button
-                type="button"
-                variant="secondary"
-                className="w-full sm:w-auto"
-                onClick={goBack}
-                disabled={currentStep === 0 || isPending}
-              >
-                <ArrowLeft className="size-4" />
-                Back
-              </Button>
-
-              {currentStep < steps.length - 1 ? (
-                <Button type="button" size="lg" className="w-full sm:w-auto" onClick={goNext}>
-                  Continue
-                  <ArrowRight className="size-4" />
-                </Button>
-              ) : (
-                <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isPending}>
-                  {isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
-                  {bookingButtonLabel}
-                </Button>
-              )}
-            </div>
           </form>
-        </div>
-
-        <div className="hidden">
-          <motion.section
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-[1.5rem] border border-cyan-300/18 bg-[linear-gradient(180deg,rgba(7,17,29,0.95),rgba(2,6,11,0.98))] p-4 shadow-[0_20px_70px_rgba(0,0,0,0.35)] sm:rounded-[2rem] sm:p-6"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-200">
-                  Live Estimate
-                </p>
-                <h2 className="mt-2 font-heading text-[1.45rem] font-black uppercase leading-tight text-white sm:mt-3 sm:text-4xl sm:leading-none">
-                  {quote.summary || "Smart pricing"}
-                </h2>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-center sm:px-4 sm:py-3">
-                <p className="text-[11px] uppercase tracking-[0.16em] text-white/50">Step</p>
-                <p className="mt-1 text-base font-semibold text-white sm:text-xl">
-                  {currentStep + 1}/{steps.length}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-[1.35rem] border border-white/8 bg-black/20 p-4 sm:mt-5 sm:rounded-[1.6rem] sm:p-5">
-              <p className="text-xs uppercase tracking-[0.16em] text-white/50">Selected services</p>
-              <p className="mt-2 text-sm leading-6 text-white/92">
-                {formatServiceList(form.selectedServices)}
-              </p>
-            </div>
-
-            <div className="mt-4 space-y-3 sm:mt-6">
-              {quote.lineItems.length > 0 ? (
-                quote.lineItems.map((item) => (
-                  <div
-                    key={`${item.label}-${item.amount}`}
-                    className="rounded-2xl border border-white/8 bg-white/[0.04] p-4"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <span className="text-sm leading-6 text-white/92">{item.label}</span>
-                      <span className="text-sm font-semibold text-cyan-100">
-                        {item.amount > 0 ? formatCurrency(item.amount) : "Manual"}
-                      </span>
-                    </div>
-                    {item.note ? (
-                      <p className="mt-2 text-xs leading-5 text-white/55">{item.note}</p>
-                    ) : null}
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-2xl border border-white/8 bg-white/[0.04] p-4 text-sm text-slate-300">
-                  Pick a service and add the job details to see the estimate update.
-                </div>
-              )}
-            </div>
-
-            <div className="mt-5 space-y-3 rounded-[1.35rem] border border-white/8 bg-black/20 p-4 sm:mt-6 sm:rounded-[1.6rem] sm:p-5">
-              <div className="flex items-center justify-between text-sm text-white/88">
-                <span>Estimated total</span>
-                <strong>{formatCurrency(quote.total)}</strong>
-              </div>
-              <div className="flex items-center justify-between text-sm text-white/88">
-                <span>Due today</span>
-                <strong>
-                  {quote.depositDue > 0 ? formatCurrency(quote.depositDue) : "Nothing due yet"}
-                </strong>
-              </div>
-              <div className="rounded-2xl border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100">
-                <div className="flex gap-3">
-                  <MapPinned className="mt-0.5 size-4 shrink-0" />
-                  <span>{quote.serviceArea.message}</span>
-                </div>
-              </div>
-              <p className="text-xs leading-5 text-slate-400">{quote.disclaimer}</p>
-            </div>
-          </motion.section>
-
-          <MobileSupportPanel title="Why this feels easy" defaultOpen={false}>
-            <div className="space-y-4 text-sm leading-6 text-white/88">
-              <div className="flex gap-3">
-                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                The form moves one clear step at a time
-              </div>
-              <div className="flex gap-3">
-                <Lock className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                Stripe is only used when payment is actually needed
-              </div>
-              <div className="flex gap-3">
-                <Clock3 className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                The date picker is simple and does not ask you for a year
-              </div>
-              <div className="flex gap-3">
-                <Sparkles className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                Pricing moves up with the area entered instead of big jumps
-              </div>
-            </div>
-            <div className="mt-4 rounded-2xl border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100">
-              If Stripe asks for payment, it may show <strong>{PAYMENT_OPERATOR_NAME}</strong>.
-              That is the software company that securely handles online payments for {BUSINESS_NAME}.
-            </div>
-          </MobileSupportPanel>
-
-          <motion.section
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="hidden rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:block sm:rounded-[2rem] sm:p-6"
-          >
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-200">
-              Why this feels easy
-            </p>
-            <div className="mt-5 space-y-4 text-sm leading-6 text-white/88">
-              <div className="flex gap-3">
-                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                The form moves one clear step at a time
-              </div>
-              <div className="flex gap-3">
-                <Lock className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                Stripe is only used when payment is actually needed
-              </div>
-              <div className="flex gap-3">
-                <Clock3 className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                The date picker is simple and does not ask you for a year
-              </div>
-              <div className="flex gap-3">
-                <Sparkles className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                Pricing moves up with the area entered instead of big jumps
-              </div>
-            </div>
-            <div className="mt-6 rounded-2xl border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100">
-              If Stripe asks for payment, it may show <strong>{PAYMENT_OPERATOR_NAME}</strong>.
-              That is the software company that securely handles online payments for {BUSINESS_NAME}.
-            </div>
-          </motion.section>
-
-          <MobileSupportPanel title="What happens next" defaultOpen={false}>
-            <div className="space-y-4 text-sm leading-6 text-white/88">
-              <div className="flex gap-3">
-                <CalendarDays className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                We review the request details
-              </div>
-              <div className="flex gap-3">
-                <ChevronRight className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                If payment is needed, Stripe handles it safely
-              </div>
-              <div className="flex gap-3">
-                <Check className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                We confirm your date and time window
-              </div>
-            </div>
-            <div className="mt-4 rounded-2xl border border-white/8 bg-black/20 p-4 text-sm text-slate-300">
-              Current visit target:{" "}
-              <span className="font-semibold text-white">
-                {formatFriendlyDate(form.preferredMonth, form.preferredDay)} -{" "}
-                {getTimeWindowLabel(form.preferredTimeWindow)}
-              </span>
-            </div>
-          </MobileSupportPanel>
-
-          <motion.section
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="hidden rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 sm:block sm:rounded-[2rem] sm:p-6"
-          >
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-200">
-              What happens next
-            </p>
-            <div className="mt-5 space-y-4 text-sm leading-6 text-white/88">
-              <div className="flex gap-3">
-                <CalendarDays className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                We review the request details
-              </div>
-              <div className="flex gap-3">
-                <ChevronRight className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                If payment is needed, Stripe handles it safely
-              </div>
-              <div className="flex gap-3">
-                <Check className="mt-0.5 size-4 shrink-0 text-cyan-200" />
-                We confirm your date and time window
-              </div>
-            </div>
-            <div className="mt-6 rounded-2xl border border-white/8 bg-black/20 p-4 text-sm text-slate-300">
-              Current visit target:{" "}
-              <span className="font-semibold text-white">
-                {formatFriendlyDate(form.preferredMonth, form.preferredDay)} -{" "}
-                {getTimeWindowLabel(form.preferredTimeWindow)}
-              </span>
-            </div>
-          </motion.section>
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-cyan-300/14 bg-[#02060B]/96 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-xl sm:hidden">
+      <div className="mobile-fixed-cta inset-x-0 z-50 border-t border-[#0B67F0]/30 bg-black/96 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-xl sm:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <Button
             type="button"

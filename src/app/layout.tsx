@@ -109,6 +109,21 @@ export default function RootLayout({
                 telephone: BUSINESS_PHONE_DISPLAY,
                 contactType: "customer service",
               },
+              makesOffer: [
+                "Driveway pressure washing",
+                "House washing",
+                "Patio cleaning",
+                "Walkway cleaning",
+                "Fence cleaning",
+                "Trash can cleaning",
+              ].map((serviceName) => ({
+                "@type": "Offer",
+                itemOffered: {
+                  "@type": "Service",
+                  name: serviceName,
+                  areaServed: "Marietta, GA",
+                },
+              })),
             }),
           }}
         />

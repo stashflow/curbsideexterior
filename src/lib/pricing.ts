@@ -50,27 +50,27 @@ export interface QuoteResult {
 
 function drivewayPrice(squareFeet = 0) {
   if (squareFeet <= 0) return 0;
-  return Math.round(squareFeet * 0.12);
+  return Math.max(129, Math.round(squareFeet * 0.22));
 }
 
 function walkwayPrice(squareFeet = 0) {
   if (squareFeet <= 0) return 0;
-  return Math.round(squareFeet * 0.18);
+  return Math.max(49, Math.round(squareFeet * 0.2));
 }
 
 function patioPrice(squareFeet = 0) {
   if (squareFeet <= 0) return 0;
-  return Math.round(squareFeet * 0.2);
+  return Math.max(99, Math.round(squareFeet * 0.32));
 }
 
 function houseWashPrice(squareFeet = 0) {
   if (squareFeet <= 0) return 0;
-  return Math.round(squareFeet * 0.09);
+  return Math.max(149, Math.round(squareFeet * 0.12));
 }
 
 function fencePrice(linearFeet = 0) {
   if (linearFeet <= 0) return 0;
-  return Math.round(linearFeet * 1.45);
+  return Math.max(119, Math.round(linearFeet * 1.65));
 }
 
 function trashCanOneTimePrice(binCount = 1) {

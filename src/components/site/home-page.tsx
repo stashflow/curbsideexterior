@@ -274,10 +274,8 @@ export function HomePage() {
           </div>
         </section>
 
-        <section id="services" className="relative overflow-hidden bg-[#050505] px-4 py-8 sm:px-6 md:py-16 lg:px-8">
-          <div className="pointer-events-none absolute -right-24 top-8 h-48 w-96 rotate-[-10deg] rounded-[3rem] border border-white/45 bg-[#075BE6]/12" />
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/35" />
-          <div className="relative mx-auto max-w-7xl">
+        <section id="services" className="bg-[#050505] px-4 py-8 sm:px-6 md:py-16 lg:px-8">
+          <div className="mx-auto max-w-7xl">
             <SectionTitle>Services</SectionTitle>
             <div className="mt-6 grid gap-3 md:grid-cols-4">
               {services.map((service) => (
@@ -385,7 +383,7 @@ export function HomePage() {
         </section>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-black/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-md md:hidden">
+      <div className="mobile-fixed-cta inset-x-0 z-50 border-t border-white/10 bg-black/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-md md:hidden">
         <div className="grid grid-cols-2 gap-3">
           <Button asChild size="lg" className="h-12">
             <Link href="/book">
