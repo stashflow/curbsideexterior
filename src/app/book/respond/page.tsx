@@ -3,7 +3,12 @@ import Link from "next/link";
 
 import { getBookingByCustomerActionToken } from "@/lib/bookings";
 import { formatCurrency, formatDateOnly, formatServiceList } from "@/lib/format";
-import { getTimeWindowLabel, type TimeWindow } from "@/lib/pricing";
+import { getTimeWindowLabel } from "@/lib/pricing";
+import {
+  formatDateInputValue,
+  getNextBookableServiceDate,
+  timeWindowOptions,
+} from "@/lib/scheduling";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +20,6 @@ export const metadata: Metadata = {
   },
 };
 
-const timeWindows: TimeWindow[] = ["8-10", "10-12", "12-2", "2-4", "4-6"];
-
 export default async function BookingResponsePage({
   searchParams,
 }: {
@@ -27,13 +30,14 @@ export default async function BookingResponsePage({
   const success = typeof params.success === "string" ? params.success : "";
   const error = typeof params.error === "string" ? params.error : "";
   const booking = token ? await getBookingByCustomerActionToken(token) : null;
+  const nextBookableDate = formatDateInputValue(getNextBookableServiceDate(new Date()));
 
   if (success) {
     return (
       <main className="mx-auto flex min-h-[72vh] max-w-xl items-center px-4 py-16">
-        <div className="rounded-[2rem] border border-cyan-300/20 bg-white/[0.04] p-7 text-center shadow-[0_0_70px_rgba(11,103,240,0.18)]">
-          <p className="text-sm font-black uppercase tracking-[0.24em] text-cyan-200">Response Sent</p>
-          <h1 className="mt-4 font-heading text-5xl font-black uppercase leading-none text-white">
+        <div className="rounded-[2rem] border border-[#0B67F0]/20 bg-white/[0.04] p-7 text-center shadow-[0_0_70px_rgba(11,103,240,0.18)]">
+          <p className="text-sm font-black uppercase italic tracking-[0.24em] text-[#0B67F0]">Response Sent</p>
+          <h1 className="mt-4 font-heading text-5xl font-black uppercase italic leading-none text-white">
             Thank You
           </h1>
           <p className="mt-4 text-sm leading-6 text-slate-300">
@@ -41,7 +45,7 @@ export default async function BookingResponsePage({
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex h-12 items-center justify-center rounded-full border border-cyan-300/80 bg-[linear-gradient(135deg,#12B6FF_0%,#009DFF_55%,#0567D8_100%)] px-6 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+            className="mt-6 inline-flex h-12 items-center justify-center rounded-full border border-[#0B67F0]/80 bg-[linear-gradient(135deg,#0B67F0_0%,#075BE6_100%)] px-6 text-sm font-black uppercase italic tracking-[0.18em] text-white"
           >
             Back Home
           </Link>
@@ -54,8 +58,8 @@ export default async function BookingResponsePage({
     return (
       <main className="mx-auto flex min-h-[72vh] max-w-xl items-center px-4 py-16">
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-7 text-center">
-          <p className="text-sm font-black uppercase tracking-[0.24em] text-cyan-200">Booking Response</p>
-          <h1 className="mt-4 font-heading text-5xl font-black uppercase leading-none text-white">
+          <p className="text-sm font-black uppercase italic tracking-[0.24em] text-[#0B67F0]">Booking Response</p>
+          <h1 className="mt-4 font-heading text-5xl font-black uppercase italic leading-none text-white">
             Link Not Found
           </h1>
           <p className="mt-4 text-sm leading-6 text-slate-300">
@@ -71,8 +75,8 @@ export default async function BookingResponsePage({
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-[0_24px_90px_rgba(0,0,0,0.28)] sm:p-7">
-        <p className="text-sm font-black uppercase tracking-[0.24em] text-cyan-200">Confirm Your Time</p>
-        <h1 className="mt-4 font-heading text-5xl font-black uppercase leading-none text-white">
+        <p className="text-sm font-black uppercase italic tracking-[0.24em] text-[#0B67F0]">Confirm Your Time</p>
+        <h1 className="mt-4 font-heading text-5xl font-black uppercase italic leading-none text-white">
           Does This Work?
         </h1>
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -86,7 +90,7 @@ export default async function BookingResponsePage({
           <form action="/api/bookings/respond" method="post">
             <input type="hidden" name="token" value={token} />
             <input type="hidden" name="action" value="accept" />
-            <button className="h-12 w-full rounded-full border border-cyan-300/80 bg-[linear-gradient(135deg,#12B6FF_0%,#009DFF_55%,#0567D8_100%)] px-5 text-sm font-black uppercase tracking-[0.18em] text-white">
+            <button className="h-12 w-full rounded-full border border-[#0B67F0]/80 bg-[linear-gradient(135deg,#0B67F0_0%,#075BE6_100%)] px-5 text-sm font-black uppercase italic tracking-[0.18em] text-white">
               Accept This Time
             </button>
           </form>
@@ -101,7 +105,7 @@ export default async function BookingResponsePage({
       </section>
 
       <section className="mt-5 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 sm:p-7">
-        <p className="text-sm font-black uppercase tracking-[0.24em] text-cyan-200">Need Another Time?</p>
+        <p className="text-sm font-black uppercase italic tracking-[0.24em] text-[#0B67F0]">Need Another Time?</p>
         <form action="/api/bookings/respond" method="post" className="mt-4 grid gap-4">
           <input type="hidden" name="token" value={token} />
           <input type="hidden" name="action" value="choose_other" />
@@ -110,9 +114,12 @@ export default async function BookingResponsePage({
             <input
               type="date"
               name="preferredDate"
+              defaultValue={nextBookableDate}
+              min={nextBookableDate}
               required
               className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white"
             />
+            <span className="block text-xs leading-5 text-white/45">Closed Sundays.</span>
           </label>
           <label className="space-y-2">
             <span className="text-xs uppercase tracking-[0.16em] text-white/60">Preferred time</span>
@@ -121,7 +128,7 @@ export default async function BookingResponsePage({
               required
               className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white"
             >
-              {timeWindows.map((window) => (
+              {timeWindowOptions.map((window) => (
                 <option key={window} value={window}>
                   {getTimeWindowLabel(window)}
                 </option>
@@ -131,6 +138,11 @@ export default async function BookingResponsePage({
           {error === "pick-time" ? (
             <p className="rounded-2xl border border-rose-300/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
               Please choose a date and time.
+            </p>
+          ) : null}
+          {error === "sunday-closed" ? (
+            <p className="rounded-2xl border border-rose-300/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+              We are closed Sundays. Please choose another day.
             </p>
           ) : null}
           <button className="h-12 rounded-full border border-white/10 bg-white/[0.06] px-5 text-sm font-black uppercase tracking-[0.18em] text-white">

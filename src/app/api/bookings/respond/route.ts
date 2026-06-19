@@ -8,6 +8,7 @@ import {
   updateBookingCustomerTimeRequest,
 } from "@/lib/bookings";
 import { customerJobDeclinedEmail } from "@/lib/email";
+import { isClosedServiceDate } from "@/lib/scheduling";
 
 export const runtime = "nodejs";
 
@@ -70,6 +71,10 @@ async function handleResponse(body: unknown, origin: string) {
 
   if (!parsed.data.preferredDate || !parsed.data.preferredTimeWindow) {
     return NextResponse.redirect(`${origin}/book/respond?token=${parsed.data.token}&error=pick-time`);
+  }
+
+  if (isClosedServiceDate(parsed.data.preferredDate)) {
+    return NextResponse.redirect(`${origin}/book/respond?token=${parsed.data.token}&error=sunday-closed`);
   }
 
   const updated = await updateBookingCustomerTimeRequest(booking.id, {

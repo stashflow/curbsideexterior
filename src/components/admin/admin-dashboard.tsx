@@ -27,11 +27,15 @@ import QRCode from "qrcode";
 import type { BookingRecord } from "@/lib/bookings";
 import { customerInfoList } from "@/lib/email";
 import { formatCurrency, formatServiceList, formatTitle, parseQuoteJson } from "@/lib/format";
+import {
+  formatDateInputValue,
+  getNextBookableServiceDate,
+  timeWindowOptions,
+} from "@/lib/scheduling";
 import { getSubscriberCampaignSummary, type SubscriberRecord } from "@/lib/subscribers";
 import type { TestimonialRecord } from "@/lib/testimonials";
 
 const SECTION_STORAGE_PREFIX = "curbside-admin-viewed";
-const timeWindowOptions = ["8-10", "10-12", "12-2", "2-4", "4-6"];
 const drivewayGuide = [
   { label: "1-car driveway", sqft: 300, price: "$129", image: "/driveway-size-1-car.png" },
   { label: "2-car driveway", sqft: 600, price: "$132", image: "/driveway-size-2-car.png" },
@@ -397,6 +401,7 @@ function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolea
                         defaultValue={booking.scheduled_date ?? booking.preferred_date ?? ""}
                         className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white"
                       />
+                      <span className="block text-xs leading-5 text-white/45">Closed Sundays.</span>
                     </label>
                     <label className="space-y-2">
                       <span className="text-xs uppercase tracking-[0.16em] text-white/60">Time window</span>
@@ -676,9 +681,7 @@ function InvoiceBuilder() {
 }
 
 function OwnerQuickQuoteForm() {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const defaultDate = tomorrow.toISOString().slice(0, 10);
+  const defaultDate = formatDateInputValue(getNextBookableServiceDate(new Date()));
 
   return (
     <form
@@ -776,7 +779,8 @@ function OwnerQuickQuoteForm() {
         </label>
         <label className="space-y-2">
           <span className="text-xs uppercase tracking-[0.16em] text-white/60">Date</span>
-          <input type="date" name="preferredDate" defaultValue={defaultDate} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+          <input type="date" name="preferredDate" defaultValue={defaultDate} min={defaultDate} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+          <span className="block text-xs leading-5 text-white/45">Closed Sundays.</span>
         </label>
         <label className="space-y-2">
           <span className="text-xs uppercase tracking-[0.16em] text-white/60">Time</span>

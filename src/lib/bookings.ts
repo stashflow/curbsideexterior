@@ -10,6 +10,7 @@ import {
 import { buildQuote } from "@/lib/pricing";
 import type { BookingFormValues } from "@/lib/booking-schema";
 import type { PrimaryService, PropertyType, TimeWindow } from "@/lib/pricing";
+import { closedDayTimeWindows, isClosedServiceDate } from "@/lib/scheduling";
 
 export interface BookingRecord {
   id: string;
@@ -60,6 +61,10 @@ export interface BookingRecord {
 }
 
 export async function getUnavailablePreferredTimeWindows(preferredDate: string) {
+  if (isClosedServiceDate(preferredDate)) {
+    return closedDayTimeWindows;
+  }
+
   const sql = getSql();
   if (!sql) return [];
 
@@ -90,6 +95,10 @@ export async function getUnavailablePreferredTimeWindows(preferredDate: string) 
 }
 
 export async function isPreferredTimeWindowAvailable(preferredDate: string, preferredTimeWindow: TimeWindow) {
+  if (isClosedServiceDate(preferredDate)) {
+    return false;
+  }
+
   const unavailable = await getUnavailablePreferredTimeWindows(preferredDate);
   return !unavailable.includes(preferredTimeWindow);
 }

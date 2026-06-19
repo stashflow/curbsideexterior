@@ -41,7 +41,7 @@ export function EmailSignupForm() {
 
   return (
     <form onSubmit={handleSubmit} className="rounded-lg border border-white/12 bg-white/[0.035] p-4 sm:p-6">
-      <div className="flex items-center gap-3 text-cyan-200">
+      <div className="flex items-center gap-3 text-[#0B67F0]">
         <Mail className="size-5" />
         <p className="text-xs font-bold uppercase italic tracking-[0.16em]">Stay In The Loop</p>
       </div>
@@ -79,13 +79,13 @@ export function EmailSignupForm() {
         </div>
       ) : null}
       {message ? (
-        <div className="mt-4 rounded-md border border-cyan-300/20 bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100">
+        <div className="mt-4 rounded-md border border-[#0B67F0]/20 bg-[#0B67F0]/10 px-4 py-3 text-sm text-[#BFD7FF]">
           {message}
         </div>
       ) : null}
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3 text-sm leading-6 text-slate-300">
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-cyan-200" />
+          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#0B67F0]" />
           We use this list for useful updates. Every email includes a one-click unsubscribe link.
         </div>
         <Button type="submit" disabled={isPending} className="w-full sm:w-auto">

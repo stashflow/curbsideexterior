@@ -220,7 +220,7 @@ export function HomePage() {
       <main id="top" className="pb-24 md:pb-0">
         <section className="relative min-h-[calc(100svh-73px)] overflow-hidden px-4 pb-7 pt-6 sm:px-6 lg:px-8">
           <div className="absolute inset-0 bg-[linear-gradient(180deg,#000_0%,#030303_62%,#0047BD_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 h-28 bg-[#075BE6]" />
+          <div className="absolute inset-x-0 bottom-0 h-28 border-t border-white/70 bg-[#075BE6]" />
           <div className="absolute -right-24 bottom-8 h-28 w-80 rotate-[-12deg] border-t border-white/70 bg-[#075BE6]" />
           <div className="absolute inset-0 opacity-45 [background-image:linear-gradient(120deg,transparent_0%,transparent_55%,rgba(255,255,255,0.08)_56%,transparent_72%)]" />
 

@@ -7,6 +7,7 @@ import {
   updateBookingById,
 } from "@/lib/bookings";
 import { formatServiceList } from "@/lib/format";
+import { isClosedServiceDate } from "@/lib/scheduling";
 import { getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -30,7 +31,11 @@ export async function POST(request: Request) {
 
     if (!slotAvailable) {
       return NextResponse.json(
-        { error: "That time was just booked. Please choose another time window." },
+        {
+          error: isClosedServiceDate(parsed.data.preferredDate)
+            ? "We are closed Sundays. Please choose another day."
+            : "That time was just booked. Please choose another time window.",
+        },
         { status: 409 },
       );
     }

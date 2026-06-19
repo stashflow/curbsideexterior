@@ -63,9 +63,16 @@ export const metadata: Metadata = {
     title: "CURBSIDE",
   },
   icons: {
-    icon: [{ url: "/favicon.png", type: "image/png", sizes: "1254x1254" }],
-    shortcut: [{ url: "/favicon.png", type: "image/png", sizes: "1254x1254" }],
-    apple: [{ url: "/favicon.png", type: "image/png", sizes: "1254x1254" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "1254x1254" },
+      { url: "/favicon.png", type: "image/png", sizes: "1254x1254" },
+    ],
+    shortcut: [{ url: "/favicon.ico", sizes: "any" }],
+    apple: [
+      { url: "/apple-touch-icon.png", type: "image/png", sizes: "1254x1254" },
+      { url: "/apple-icon.png", type: "image/png", sizes: "1254x1254" },
+    ],
   },
 };
 

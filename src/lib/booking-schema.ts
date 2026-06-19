@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isBookableServiceDate } from "@/lib/scheduling";
+
 export const bookingFormSchema = z.object({
   customerName: z.string().min(2, "Please enter your name."),
   phone: z
@@ -26,7 +28,10 @@ export const bookingFormSchema = z.object({
   city: z.string().min(2, "Please enter the city."),
   state: z.string().length(2).transform((value) => value.toUpperCase()),
   zip: z.string().regex(/^\d{5}$/, "Enter a 5-digit ZIP code."),
-  preferredDate: z.string().min(1, "Please choose a preferred date."),
+  preferredDate: z
+    .string()
+    .min(1, "Please choose a preferred date.")
+    .refine(isBookableServiceDate, "We are closed Sundays. Please choose another day."),
   preferredTimeWindow: z.enum(["8-10", "10-12", "12-2", "2-4", "4-6"]),
   drivewaySqft: z.coerce.number().min(0).optional().default(0),
   walkwaySqft: z.coerce.number().min(0).optional().default(0),

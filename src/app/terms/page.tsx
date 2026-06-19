@@ -2,10 +2,10 @@ export default function TermsPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
       <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-200">
+        <p className="text-sm font-black uppercase italic tracking-[0.24em] text-[#0B67F0]">
           Legal
         </p>
-        <h1 className="mt-4 font-heading text-5xl font-black uppercase leading-none text-white">
+        <h1 className="mt-4 font-heading text-5xl font-black uppercase italic leading-none text-white">
           Terms Of Service
         </h1>
         <div className="mt-8 space-y-8 text-base leading-8 text-slate-200">

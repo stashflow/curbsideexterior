@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
 import { createOwnerBooking } from "@/lib/bookings";
 import type { PrimaryService, PropertyType, TimeWindow } from "@/lib/pricing";
+import { isBookableServiceDate } from "@/lib/scheduling";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,7 @@ const ownerBookingSchema = z.object({
   city: z.string().min(2),
   state: z.string().length(2),
   zip: z.string().regex(/^\d{5}$/),
-  preferredDate: z.string().min(1),
+  preferredDate: z.string().min(1).refine(isBookableServiceDate),
   preferredTimeWindow: z.enum(["8-10", "10-12", "12-2", "2-4", "4-6"]),
   drivewaySqft: z.coerce.number().min(0).default(0),
   walkwaySqft: z.coerce.number().min(0).default(0),

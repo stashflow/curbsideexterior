@@ -27,6 +27,11 @@ import {
   type PropertyType,
   type TimeWindow,
 } from "@/lib/pricing";
+import {
+  getBookableDaysForMonth,
+  getNextBookableServiceDate,
+  timeWindowOptions,
+} from "@/lib/scheduling";
 
 type StepId = "services" | "measurements" | "schedule" | "contact";
 
@@ -68,7 +73,7 @@ type FormState = {
 };
 
 const now = new Date();
-const defaultDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 3);
+const defaultDate = getNextBookableServiceDate(now, 3);
 
 const initialState: FormState = {
   customerName: "",
@@ -217,8 +222,6 @@ const monthOptions = [
   "December",
 ];
 
-const timeWindowOptions: TimeWindow[] = ["8-10", "10-12", "12-2", "2-4", "4-6"];
-
 const panelMotion = {
   hidden: { opacity: 0, y: 18, filter: "blur(6px)" },
   visible: { opacity: 1, y: 0, filter: "blur(0px)" },
@@ -282,8 +285,7 @@ function getDaysForMonth(monthValue: string, dayValue: string) {
   if (!month) return [];
 
   const year = inferPreferredYear(month, Number(dayValue || 1));
-  const totalDays = new Date(year, month, 0).getDate();
-  return Array.from({ length: totalDays }, (_, index) => index + 1);
+  return getBookableDaysForMonth(year, month);
 }
 
 function formatFriendlyDate(monthValue: string, dayValue: string) {
@@ -777,17 +779,17 @@ export function BookingForm() {
                               onClick={() => toggleService(option.value)}
                               className={`rounded-[1.25rem] border p-4 text-left transition sm:rounded-[1.7rem] sm:p-5 ${
                                 selected
-                                  ? "border-cyan-300/40 bg-cyan-400/10 shadow-[0_0_40px_rgba(18,182,255,0.08)]"
+                                  ? "border-[#0B67F0]/40 bg-[#0B67F0]/10 shadow-[0_0_40px_rgba(11,103,240,0.12)]"
                                   : "border-white/10 bg-black/20 hover:border-white/20"
                               }`}
                               aria-pressed={selected}
                             >
-                              <option.icon className="size-6 text-cyan-200" />
+                              <option.icon className="size-6 text-[#0B67F0]" />
                               <p className="mt-3 font-heading text-[1.35rem] font-black uppercase leading-none text-white sm:mt-4 sm:text-2xl">
                                 {option.label}
                               </p>
                               <p className="mt-2 text-sm leading-6 text-slate-300">{option.body}</p>
-                              <div className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">
+                              <div className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#BFD7FF]">
                                 {selected ? "Selected" : "Tap to add"}
                               </div>
                             </button>
@@ -801,7 +803,7 @@ export function BookingForm() {
                           <select
                             value={form.propertyType}
                             onChange={(event) => update("propertyType", event.target.value as PropertyType)}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                           >
                             <option value="single_family">Single-family home</option>
                             <option value="townhome">Townhome</option>
@@ -822,7 +824,7 @@ export function BookingForm() {
                               onChange={(event) =>
                                 update("frequency", event.target.value as "one_time" | "monthly")
                               }
-                              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             >
                               <option value="one_time">One-time service</option>
                               <option value="monthly">Monthly service</option>
@@ -1007,7 +1009,7 @@ export function BookingForm() {
                               min="1"
                               value={form.binsCount}
                               onChange={(event) => update("binsCount", event.target.value)}
-                              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             />
                           </label>
                           <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-4 text-sm leading-6 text-white/80">
@@ -1033,7 +1035,7 @@ export function BookingForm() {
                           <input
                             value={form.addressLine1}
                             onChange={(event) => update("addressLine1", event.target.value)}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             required
                           />
                         </label>
@@ -1042,7 +1044,7 @@ export function BookingForm() {
                           <input
                             value={form.city}
                             onChange={(event) => update("city", event.target.value)}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             required
                           />
                         </label>
@@ -1052,7 +1054,7 @@ export function BookingForm() {
                             value={form.state}
                             onChange={(event) => update("state", event.target.value.toUpperCase())}
                             maxLength={2}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             required
                           />
                         </label>
@@ -1062,13 +1064,13 @@ export function BookingForm() {
                             value={form.zip}
                             onChange={(event) => update("zip", event.target.value)}
                             maxLength={5}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             required
                           />
                         </label>
                         <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-4 text-sm leading-6 text-white/80">
                           We figure out the year automatically, so you only need to pick the month
-                          and day.
+                          and day. Sundays are skipped because we are closed.
                         </div>
                       </div>
 
@@ -1085,7 +1087,7 @@ export function BookingForm() {
                                 update("preferredDay", String(nextDays[0] ?? ""));
                               }
                             }}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                           >
                             {monthOptions.map((month, index) => (
                               <option key={month} value={index + 1}>
@@ -1099,7 +1101,7 @@ export function BookingForm() {
                           <select
                             value={form.preferredDay}
                             onChange={(event) => update("preferredDay", event.target.value)}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                           >
                             {availableDays.map((day) => (
                               <option key={day} value={day}>
@@ -1115,7 +1117,7 @@ export function BookingForm() {
                             onChange={(event) =>
                               update("preferredTimeWindow", event.target.value as TimeWindow)
                             }
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                           >
                             {selectedTimeWindowUnavailable ? (
                               <option value="" disabled>
@@ -1144,7 +1146,7 @@ export function BookingForm() {
 
                       {!availabilityLoading && openTimeWindows.length === 0 ? (
                         <div className="rounded-2xl border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm leading-6 text-amber-100">
-                          This day is full. Pick another day.
+                          This day is unavailable. Pick another day.
                         </div>
                       ) : null}
 
@@ -1154,7 +1156,7 @@ export function BookingForm() {
                         </div>
                       ) : null}
 
-                      <div className="rounded-2xl border border-cyan-300/16 bg-cyan-400/8 px-4 py-4 text-sm leading-6 text-cyan-100">
+                      <div className="rounded-2xl border border-[#0B67F0]/16 bg-[#0B67F0]/8 px-4 py-4 text-sm leading-6 text-[#BFD7FF]">
                         Preferred visit:{" "}
                         <strong>
                           {formatFriendlyDate(form.preferredMonth, form.preferredDay)} at{" "}
@@ -1182,7 +1184,7 @@ export function BookingForm() {
                           <input
                             value={form.gateCode}
                             onChange={(event) => update("gateCode", event.target.value)}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                           />
                         </label>
                       ) : null}
@@ -1197,7 +1199,7 @@ export function BookingForm() {
                           <input
                             value={form.customerName}
                             onChange={(event) => update("customerName", event.target.value)}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             required
                           />
                         </label>
@@ -1207,7 +1209,7 @@ export function BookingForm() {
                             value={form.phone}
                             onChange={(event) => update("phone", event.target.value)}
                             placeholder="678-709-6690"
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             required
                           />
                         </label>
@@ -1217,7 +1219,7 @@ export function BookingForm() {
                             type="email"
                             value={form.email}
                             onChange={(event) => update("email", event.target.value)}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             required
                           />
                         </label>
@@ -1229,7 +1231,7 @@ export function BookingForm() {
                             value={form.instagramHandle}
                             onChange={(event) => update("instagramHandle", event.target.value)}
                             placeholder="@yourhandle"
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                           />
                         </label>
                       </div>
@@ -1242,7 +1244,7 @@ export function BookingForm() {
                           <textarea
                             value={form.notes}
                             onChange={(event) => update("notes", event.target.value)}
-                            className="min-h-28 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="min-h-28 w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             placeholder="Steep driveway, HOA limits, pets in yard, strong bin odor, or anything else that helps."
                           />
                         </label>
@@ -1253,14 +1255,14 @@ export function BookingForm() {
                           <input
                             value={form.referralSource}
                             onChange={(event) => update("referralSource", event.target.value)}
-                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-cyan-300/40"
+                            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             placeholder="Google, Instagram, a neighbor, HOA, a sign, or something else"
                           />
                         </label>
                       </div>
 
                       <div className="rounded-[1.35rem] border border-white/8 bg-black/20 p-4 sm:rounded-[1.6rem] sm:p-5">
-                        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+                        <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
                           Request summary
                         </p>
                         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -1311,7 +1313,7 @@ export function BookingForm() {
                             required
                           />
                           I agree to the{" "}
-                          <Link href="/terms" className="text-cyan-200 underline">
+                          <Link href="/terms" className="text-[#0B67F0] underline">
                             terms of service
                           </Link>
                           .
@@ -1325,7 +1327,7 @@ export function BookingForm() {
                             required
                           />
                           I agree to the{" "}
-                          <Link href="/privacy" className="text-cyan-200 underline">
+                          <Link href="/privacy" className="text-[#0B67F0] underline">
                             privacy policy
                           </Link>
                           .

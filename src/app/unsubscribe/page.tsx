@@ -24,10 +24,10 @@ export default async function UnsubscribePage({
   return (
     <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
       <div className="rounded-[2.4rem] border border-white/10 bg-white/[0.04] p-8 text-center shadow-[0_18px_80px_rgba(0,0,0,0.35)] sm:p-12">
-        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-200">
+        <p className="text-sm font-black uppercase italic tracking-[0.24em] text-[#0B67F0]">
           Email Preferences
         </p>
-        <h1 className="mt-4 font-heading text-5xl font-black uppercase leading-none text-white">
+        <h1 className="mt-4 font-heading text-5xl font-black uppercase italic leading-none text-white">
           {subscriber ? "You Are Unsubscribed" : "We Could Not Find That Link"}
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-slate-200">

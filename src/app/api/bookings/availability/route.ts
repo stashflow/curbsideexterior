@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getUnavailablePreferredTimeWindows } from "@/lib/bookings";
+import { isClosedServiceDate } from "@/lib/scheduling";
 
 export const runtime = "nodejs";
 
@@ -14,5 +15,9 @@ export async function GET(request: Request) {
 
   const unavailable = await getUnavailablePreferredTimeWindows(date);
 
-  return NextResponse.json({ unavailable });
+  return NextResponse.json({
+    unavailable,
+    closed: isClosedServiceDate(date),
+    message: isClosedServiceDate(date) ? "We are closed Sundays. Please choose another day." : null,
+  });
 }

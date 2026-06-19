@@ -8,6 +8,7 @@ import {
   customerRescheduleRequestedEmail,
 } from "@/lib/email";
 import { formatServiceList } from "@/lib/format";
+import { isClosedServiceDate } from "@/lib/scheduling";
 import { getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -43,6 +44,10 @@ export async function POST(request: Request) {
     const nextDate = scheduledDate || booking.scheduled_date || booking.preferred_date;
     const nextWindow = scheduledTimeWindow || booking.scheduled_time_window || booking.preferred_time_window;
 
+    if (isClosedServiceDate(nextDate)) {
+      return NextResponse.redirect(new URL("/admin?error=sunday-closed", request.url));
+    }
+
     updated = await updateBookingById(id, {
       status: needsPayment ? "payment_required" : "confirmed",
       scheduledDate: nextDate,
@@ -70,6 +75,10 @@ export async function POST(request: Request) {
       return NextResponse.redirect(new URL("/admin?error=reschedule-needs-time", request.url));
     }
 
+    if (isClosedServiceDate(scheduledDate)) {
+      return NextResponse.redirect(new URL("/admin?error=sunday-closed", request.url));
+    }
+
     updated = await updateBookingById(id, {
       status: "reschedule_requested",
       scheduledDate,
@@ -87,6 +96,11 @@ export async function POST(request: Request) {
     });
   } else {
     const status = String(formData.get("status") ?? "");
+
+    if (scheduledDate && isClosedServiceDate(scheduledDate)) {
+      return NextResponse.redirect(new URL("/admin?error=sunday-closed", request.url));
+    }
+
     updated = await updateBookingById(id, {
       status: status || undefined,
       scheduledDate: scheduledDate || null,

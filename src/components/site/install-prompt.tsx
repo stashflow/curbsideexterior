@@ -106,7 +106,7 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="fixed inset-x-3 bottom-24 z-50 rounded-[1.6rem] border border-cyan-300/18 bg-[#06111D]/94 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl md:bottom-6 md:left-auto md:right-6 md:w-[25rem]">
+    <div className="fixed inset-x-3 bottom-24 z-50 rounded-[1.6rem] border border-[#0B67F0]/18 bg-black/94 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl md:bottom-6 md:left-auto md:right-6 md:w-[25rem]">
       <button
         type="button"
         onClick={rememberDismissal}
@@ -116,11 +116,11 @@ export function InstallPrompt() {
         <X className="size-4" />
       </button>
       <div className="flex items-start gap-3 pr-8">
-        <div className="mt-1 inline-flex size-11 items-center justify-center rounded-2xl border border-cyan-300/18 bg-cyan-400/10 text-cyan-200">
+        <div className="mt-1 inline-flex size-11 items-center justify-center rounded-2xl border border-[#0B67F0]/18 bg-[#0B67F0]/10 text-[#0B67F0]">
           <Smartphone className="size-5" />
         </div>
         <div className="space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">
+          <p className="text-sm font-black uppercase italic tracking-[0.18em] text-[#0B67F0]">
             Save To Home Screen
           </p>
           <p className="text-sm leading-6 text-white/88">
