@@ -47,6 +47,26 @@ const faqs = [
     question: "What if I am not sure what to pick?",
     answer: "Choose Not sure / upload photo or DM photos. Simple beats perfect.",
   },
+  {
+    question: "Do I need to have a hose?",
+    answer: "Yes. For pressure washing and house washing, we need access to a working outdoor water spigot or hose hookup.",
+  },
+  {
+    question: "Do I need to be home?",
+    answer: "Usually no, as long as we have access to the areas being cleaned, working water, and any gate or access instructions.",
+  },
+  {
+    question: "Should I move cars or furniture?",
+    answer: "Yes. Move cars, planters, toys, patio furniture, and anything fragile away from the cleaning area before service.",
+  },
+  {
+    question: "Can you quote me without the full form?",
+    answer: "Yes. If we meet you in person or you send photos, we can create the quote for you and text the next step.",
+  },
+  {
+    question: "What does trash can cleaning cost?",
+    answer: "One bin is $30. Two or more bins are $35 total for one-time trash can cleaning.",
+  },
 ];
 
 export default function FaqPage() {

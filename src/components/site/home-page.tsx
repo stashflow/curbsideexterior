@@ -83,10 +83,16 @@ const services = [
 
 const seoLinks = [
   ["Pressure Washing Marietta", "/services/pressure-washing-marietta-ga"],
+  ["Pressure Washing Near Me", "/services/pressure-washing-near-me-marietta-ga"],
   ["Driveway Cleaning Marietta", "/services/driveway-cleaning-marietta-ga"],
+  ["Driveway Washing Near Me", "/services/driveway-pressure-washing-near-me"],
   ["House Washing Marietta", "/services/house-washing-marietta-ga"],
   ["Trash Can Cleaning Marietta", "/services/trash-can-cleaning-marietta-ga"],
+  ["Trash Can Cleaning Near Me", "/services/trash-can-cleaning-near-me"],
   ["Exterior Cleaning Marietta", "/areas/marietta-ga-exterior-cleaning"],
+  ["East Cobb Pressure Washing", "/areas/east-cobb-ga-pressure-washing"],
+  ["Kennesaw Pressure Washing", "/areas/kennesaw-ga-pressure-washing"],
+  ["Smyrna Pressure Washing", "/areas/smyrna-ga-pressure-washing"],
 ] as const;
 
 const why = [

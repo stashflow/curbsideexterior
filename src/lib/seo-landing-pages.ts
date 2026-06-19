@@ -177,6 +177,123 @@ export const serviceLandingPages: SeoLandingPage[] = [
       },
     ],
   },
+  {
+    slug: "pressure-washing-near-me-marietta-ga",
+    title: "Pressure Washing Near Me In Marietta GA",
+    metaTitle: "Pressure Washing Near Me Marietta GA | CURBSIDE",
+    description:
+      "Searching pressure washing near me in Marietta GA? CURBSIDE offers driveway, walkway, patio, siding, fence, and trash can cleaning with fast quotes.",
+    eyebrow: "Near Me Search",
+    headline: "Pressure Washing Near Me In Marietta",
+    intro:
+      "If you are in Marietta and need exterior cleaning nearby, CURBSIDE makes it easy to get a quote without measuring square footage.",
+    primaryKeyword: "pressure washing near me Marietta GA",
+    serviceName: "Pressure Washing Near Me",
+    canonical: "/services/pressure-washing-near-me-marietta-ga",
+    highlights: ["Near Marietta", "Driveways", "Patios", "Walkways", "Siding", "Photo Quotes"],
+    sections: [
+      {
+        title: "Built For Local Searchers",
+        body: "This page helps Marietta homeowners who search for pressure washing near me find a local exterior cleaning option with clear next steps.",
+      },
+      {
+        title: "Quote Without Measuring",
+        body: "Pick simple sizes, send photos, or let us create the quote for you if we are already talking in person.",
+      },
+      {
+        title: "Fast Booking Path",
+        body: "Book online, text photos, or scan a QR code from a flyer or door hanger to get started.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Do you offer pressure washing near Marietta?",
+        answer: "Yes. CURBSIDE serves Marietta and nearby areas around East Cobb, Kennesaw, Smyrna, Woodstock, and Roswell.",
+      },
+      {
+        question: "Can I just text photos?",
+        answer: "Yes. Photos are often the fastest way to quote pressure washing work.",
+      },
+    ],
+  },
+  {
+    slug: "driveway-pressure-washing-near-me",
+    title: "Driveway Pressure Washing Near Me",
+    metaTitle: "Driveway Pressure Washing Near Me | Marietta GA",
+    description:
+      "Driveway pressure washing near Marietta GA with simple driveway size options, photo quotes, and fast online booking.",
+    eyebrow: "Driveway Near Me",
+    headline: "Driveway Pressure Washing Nearby",
+    intro:
+      "For homeowners searching driveway pressure washing near me, CURBSIDE keeps the quote simple with 1-car, 2-car, 3-car, and long driveway choices.",
+    primaryKeyword: "driveway pressure washing near me",
+    serviceName: "Driveway Pressure Washing",
+    canonical: "/services/driveway-pressure-washing-near-me",
+    highlights: ["1-Car", "2-Car", "3-Car", "Long Driveway", "Photo Help", "Marietta"],
+    sections: [
+      {
+        title: "Simple Driveway Choices",
+        body: "Use easy driveway size options instead of guessing exact square footage.",
+      },
+      {
+        title: "Great For Curb Appeal",
+        body: "A clean driveway can make the whole front of the home feel better kept.",
+      },
+      {
+        title: "Quote Before Service",
+        body: "You see a live estimate first, and the final price is confirmed before service.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Can you quote a driveway from photos?",
+        answer: "Yes. Send photos or choose the closest driveway size online.",
+      },
+      {
+        question: "Do oil spots cost more?",
+        answer: "Heavy stains can add extra treatment cost, and we confirm that before service.",
+      },
+    ],
+  },
+  {
+    slug: "trash-can-cleaning-near-me",
+    title: "Trash Can Cleaning Near Me",
+    metaTitle: "Trash Can Cleaning Near Me | Marietta GA $30-$35",
+    description:
+      "Trash can cleaning near Marietta GA with clear $30-$35 pricing for homeowners who want cleaner bins and less odor.",
+    eyebrow: "Bin Cleaning Near Me",
+    headline: "Trash Can Cleaning Near Me",
+    intro:
+      "One bin is $30 and two or more bins are $35 total. Add bin cleaning to a pressure washing request or book it by itself.",
+    primaryKeyword: "trash can cleaning near me",
+    serviceName: "Trash Can Cleaning Near Me",
+    canonical: "/services/trash-can-cleaning-near-me",
+    highlights: ["1 Bin $30", "2+ Bins $35", "Odor Help", "Marietta", "Easy Booking", "Add-On Service"],
+    sections: [
+      {
+        title: "Clear Bin Pricing",
+        body: "No confusing tiers. One bin is $30 and two or more bins are $35 total.",
+      },
+      {
+        title: "Easy Add-On",
+        body: "Add trash can cleaning while booking driveway, patio, walkway, or house washing.",
+      },
+      {
+        title: "Local And Convenient",
+        body: "Great for Marietta homeowners who want bins cleaned without a full exterior cleaning project.",
+      },
+    ],
+    faqs: [
+      {
+        question: "How much is bin cleaning near me?",
+        answer: "For CURBSIDE, one bin is $30 and two or more bins are $35 total.",
+      },
+      {
+        question: "Can I book just trash can cleaning?",
+        answer: "Yes. You can book trash can cleaning by itself or add it to pressure washing.",
+      },
+    ],
+  },
 ];
 
 export const areaLandingPages: SeoLandingPage[] = [
@@ -216,6 +333,123 @@ export const areaLandingPages: SeoLandingPage[] = [
       {
         question: "Can I get a quote online?",
         answer: "Yes. The booking tool gives a live estimate and lets you upload photos if needed.",
+      },
+    ],
+  },
+  {
+    slug: "east-cobb-ga-pressure-washing",
+    title: "Pressure Washing East Cobb GA",
+    metaTitle: "Pressure Washing East Cobb GA | CURBSIDE",
+    description:
+      "Pressure washing and exterior cleaning near East Cobb GA for driveways, patios, walkways, siding, fences, and trash bins.",
+    eyebrow: "East Cobb Service Area",
+    headline: "Pressure Washing In East Cobb",
+    intro:
+      "CURBSIDE helps East Cobb homeowners request fast quotes for concrete, siding, patios, fences, and bin cleaning.",
+    primaryKeyword: "pressure washing East Cobb GA",
+    serviceName: "Pressure Washing",
+    canonical: "/areas/east-cobb-ga-pressure-washing",
+    highlights: ["East Cobb", "Driveways", "Patios", "House Washing", "Trash Bins", "Photo Quotes"],
+    sections: [
+      {
+        title: "East Cobb Exterior Cleaning",
+        body: "Get a simple quote for the areas that actually need cleaning.",
+      },
+      {
+        title: "Homeowner-Friendly Estimates",
+        body: "Use simple size choices or send photos if you are not sure.",
+      },
+      {
+        title: "Clear Scheduling",
+        body: "Pick a preferred date and we confirm route timing before service.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Do you serve East Cobb?",
+        answer: "Yes. East Cobb is part of the nearby service area for CURBSIDE.",
+      },
+      {
+        question: "Can I get an online estimate?",
+        answer: "Yes. Use the booking tool or send photos for a fast quote.",
+      },
+    ],
+  },
+  {
+    slug: "kennesaw-ga-pressure-washing",
+    title: "Pressure Washing Kennesaw GA",
+    metaTitle: "Pressure Washing Kennesaw GA | CURBSIDE",
+    description:
+      "Pressure washing near Kennesaw GA for driveways, walkways, patios, siding, fences, and trash can cleaning.",
+    eyebrow: "Kennesaw Service Area",
+    headline: "Pressure Washing In Kennesaw",
+    intro:
+      "CURBSIDE serves Kennesaw-area homeowners with simple exterior cleaning quotes and mobile-friendly booking.",
+    primaryKeyword: "pressure washing Kennesaw GA",
+    serviceName: "Pressure Washing",
+    canonical: "/areas/kennesaw-ga-pressure-washing",
+    highlights: ["Kennesaw", "Driveways", "Walkways", "Patios", "Siding", "Trash Bins"],
+    sections: [
+      {
+        title: "Clean Up Curb Appeal",
+        body: "Quote driveway, walkway, patio, house wash, fence, and bin cleaning in one request.",
+      },
+      {
+        title: "No Square Footage Needed",
+        body: "Choose the closest size option and we confirm before charging.",
+      },
+      {
+        title: "Text Photos",
+        body: "If the job is unusual, photos are often enough to get a fast quote.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Do you pressure wash near Kennesaw?",
+        answer: "Yes. Kennesaw is included in the nearby service area when route timing works.",
+      },
+      {
+        question: "Is there a travel fee?",
+        answer: "Some farther ZIP codes may include a small travel fee, shown in the estimate.",
+      },
+    ],
+  },
+  {
+    slug: "smyrna-ga-pressure-washing",
+    title: "Pressure Washing Smyrna GA",
+    metaTitle: "Pressure Washing Smyrna GA | CURBSIDE",
+    description:
+      "Pressure washing near Smyrna GA with online estimates for driveways, patios, walkways, siding, fences, and trash cans.",
+    eyebrow: "Smyrna Service Area",
+    headline: "Pressure Washing In Smyrna",
+    intro:
+      "For Smyrna homeowners, CURBSIDE provides a simple quote flow for exterior cleaning and trash bin cleaning.",
+    primaryKeyword: "pressure washing Smyrna GA",
+    serviceName: "Pressure Washing",
+    canonical: "/areas/smyrna-ga-pressure-washing",
+    highlights: ["Smyrna", "Concrete", "Siding", "Patios", "Fences", "Bins"],
+    sections: [
+      {
+        title: "Exterior Cleaning Nearby",
+        body: "Request a quote for the surfaces that need attention and skip the ones that do not.",
+      },
+      {
+        title: "Live Estimate",
+        body: "The booking page shows a range while you choose services.",
+      },
+      {
+        title: "Final Confirmation",
+        body: "Final pricing is confirmed before service so there are no weird surprises.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Do you serve Smyrna?",
+        answer: "Yes. Smyrna is part of the nearby service area when route timing works.",
+      },
+      {
+        question: "Can I book from my phone?",
+        answer: "Yes. The booking flow is mobile-first.",
       },
     ],
   },

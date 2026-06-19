@@ -5,6 +5,7 @@ import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { getAdminSession } from "@/lib/auth";
 import { getAllBookings } from "@/lib/bookings";
 import { getAllSubscribers } from "@/lib/subscribers";
+import { getAllTestimonials } from "@/lib/testimonials";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -19,7 +20,18 @@ export default async function AdminPage() {
   const session = await getAdminSession();
   if (!session) redirect("/admin/login");
 
-  const [bookings, subscribers] = await Promise.all([getAllBookings(), getAllSubscribers()]);
+  const [bookings, subscribers, testimonials] = await Promise.all([
+    getAllBookings(),
+    getAllSubscribers(),
+    getAllTestimonials(),
+  ]);
 
-  return <AdminDashboard bookings={bookings} subscribers={subscribers} username={session.username} />;
+  return (
+    <AdminDashboard
+      bookings={bookings}
+      subscribers={subscribers}
+      testimonials={testimonials}
+      username={session.username}
+    />
+  );
 }

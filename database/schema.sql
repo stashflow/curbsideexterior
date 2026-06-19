@@ -81,6 +81,20 @@ CREATE TABLE IF NOT EXISTS subscribers (
 CREATE INDEX IF NOT EXISTS subscribers_status_idx ON subscribers (status);
 CREATE INDEX IF NOT EXISTS subscribers_next_send_idx ON subscribers (next_send_at);
 
+CREATE TABLE IF NOT EXISTS testimonials (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  customer_name TEXT NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  source TEXT NOT NULL DEFAULT 'website'
+);
+
+CREATE INDEX IF NOT EXISTS testimonials_status_idx ON testimonials (status);
+CREATE INDEX IF NOT EXISTS testimonials_created_at_idx ON testimonials (created_at DESC);
+
 CREATE TABLE IF NOT EXISTS stripe_webhook_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   stripe_event_id TEXT NOT NULL UNIQUE,

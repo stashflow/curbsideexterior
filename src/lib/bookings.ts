@@ -9,7 +9,7 @@ import {
 } from "@/lib/email";
 import { buildQuote } from "@/lib/pricing";
 import type { BookingFormValues } from "@/lib/booking-schema";
-import type { TimeWindow } from "@/lib/pricing";
+import type { PrimaryService, PropertyType, TimeWindow } from "@/lib/pricing";
 
 export interface BookingRecord {
   id: string;
@@ -249,6 +249,124 @@ export async function createBookingSubmission(values: BookingFormValues) {
     quote,
     status: initialStatus,
   };
+}
+
+export async function createOwnerBooking(values: {
+  customerName: string;
+  phone: string;
+  email?: string;
+  selectedServices: PrimaryService[];
+  propertyType: PropertyType;
+  addressLine1: string;
+  city: string;
+  state: string;
+  zip: string;
+  preferredDate: string;
+  preferredTimeWindow: TimeWindow;
+  drivewaySqft?: number;
+  walkwaySqft?: number;
+  patioSqft?: number;
+  houseSqft?: number;
+  fenceLinearFeet?: number;
+  binsCount?: number;
+  heavyStainLevel?: "light" | "moderate" | "heavy";
+  quoteTotal?: number;
+  notes?: string;
+}) {
+  const sql = getSql();
+  const quote = buildQuote({
+    selectedServices: values.selectedServices,
+    frequency: "one_time",
+    propertyType: values.propertyType,
+    zip: values.zip,
+    drivewaySqft: values.drivewaySqft ?? 0,
+    walkwaySqft: values.walkwaySqft ?? 0,
+    patioSqft: values.patioSqft ?? 0,
+    houseSqft: values.houseSqft ?? 0,
+    fenceLinearFeet: values.fenceLinearFeet ?? 0,
+    binsCount: values.binsCount ?? 0,
+    heavyStainLevel: values.heavyStainLevel ?? "light",
+  });
+
+  const total = values.quoteTotal && values.quoteTotal > 0 ? values.quoteTotal : quote.total;
+  const hasPressureWashing = values.selectedServices.includes("pressure_washing");
+  const paymentMode = total <= 0 ? "lead_only" : hasPressureWashing ? "deposit" : "full";
+  const depositDue = paymentMode === "deposit" ? (total >= 300 ? 100 : 50) : paymentMode === "full" ? total : 0;
+  const storedQuote = {
+    ...quote,
+    subtotal: total,
+    total,
+    depositDue,
+    paymentMode,
+    manualReview: true,
+    lineItems:
+      values.quoteTotal && values.quoteTotal > 0
+        ? [
+            {
+              label: "Owner quick quote",
+              amount: total,
+              note: "Created manually from the admin app during a customer interaction.",
+            },
+          ]
+        : quote.lineItems,
+  };
+
+  if (!sql) {
+    return null;
+  }
+
+  const result = await sql`
+    INSERT INTO bookings (
+      customer_name, phone, email, instagram_handle, primary_service, frequency, status,
+      property_type, address_line_1, city, state, zip, distance_miles, travel_surcharge,
+      preferred_date, preferred_time_window, quote_total, deposit_due, payment_mode, customer_action_token,
+      heavy_stain_level, bins_count, gate_code_needed, gate_code, driveway_sqft, walkway_sqft,
+      patio_sqft, house_sqft, fence_linear_feet, photo_urls, notes, referral_source, terms_accepted,
+      privacy_accepted, sms_opt_in, email_opt_in, quote_json
+    ) VALUES (
+      ${values.customerName},
+      ${values.phone.replace(/\D/g, "")},
+      ${values.email || "no-email@curbside.local"},
+      ${null},
+      ${values.selectedServices.join(",")},
+      ${"one_time"},
+      ${"lead"},
+      ${values.propertyType},
+      ${values.addressLine1},
+      ${values.city},
+      ${values.state.toUpperCase()},
+      ${values.zip},
+      ${quote.serviceArea.miles ?? null},
+      ${quote.serviceArea.travelSurcharge},
+      ${values.preferredDate},
+      ${values.preferredTimeWindow},
+      ${total},
+      ${depositDue},
+      ${paymentMode},
+      ${crypto.randomUUID()},
+      ${values.heavyStainLevel ?? "light"},
+      ${values.binsCount || null},
+      ${false},
+      ${null},
+      ${values.drivewaySqft || null},
+      ${values.walkwaySqft || null},
+      ${values.patioSqft || null},
+      ${values.houseSqft || null},
+      ${values.fenceLinearFeet || null},
+      ${JSON.stringify([])},
+      ${values.notes || "Owner-created quote from admin app."},
+      ${"owner_created"},
+      ${true},
+      ${true},
+      ${true},
+      ${true},
+      ${JSON.stringify(storedQuote)}
+    )
+    RETURNING *
+  `;
+
+  revalidatePath("/admin");
+  return ((result as BookingRecord[])[0] ?? null);
 }
 
 function isMissingPhotoUrlsColumnError(error: unknown) {

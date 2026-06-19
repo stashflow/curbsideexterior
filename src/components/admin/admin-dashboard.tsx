@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { useMemo, useState, useTransition } from "react";
 import type { ComponentType, ReactNode } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
+  BookOpen,
   CalendarDays,
-  CheckCircle2,
   ChevronDown,
   Clock3,
   Copy,
@@ -14,9 +15,12 @@ import {
   Mail,
   MapPinned,
   MessageSquareWarning,
+  Plus,
   QrCode,
   Search,
+  Settings,
   ShieldCheck,
+  Star,
 } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -24,6 +28,7 @@ import type { BookingRecord } from "@/lib/bookings";
 import { customerInfoList } from "@/lib/email";
 import { formatCurrency, formatServiceList, formatTitle, parseQuoteJson } from "@/lib/format";
 import { getSubscriberCampaignSummary, type SubscriberRecord } from "@/lib/subscribers";
+import type { TestimonialRecord } from "@/lib/testimonials";
 
 const SECTION_STORAGE_PREFIX = "curbside-admin-viewed";
 const timeWindowOptions = ["8-10", "10-12", "12-2", "2-4", "4-6"];
@@ -45,7 +50,7 @@ function SectionCard({
 }) {
   return (
     <div className="rounded-[1.8rem] border border-white/10 bg-white/[0.04] p-5">
-      <Icon className="size-6 text-cyan-200" />
+      <Icon className="size-6 text-[#0B67F0]" />
       <p className="mt-4 text-sm uppercase tracking-[0.18em] text-white/60">{label}</p>
       <p className="mt-2 font-heading text-5xl font-black text-white">{value}</p>
     </div>
@@ -55,13 +60,13 @@ function SectionCard({
 function statusPill(status: string) {
   const palette: Record<string, string> = {
     lead: "border-amber-300/20 bg-amber-400/10 text-amber-100",
-    pending_payment: "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
-    payment_required: "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
-    pending_confirmation: "border-sky-300/20 bg-sky-400/10 text-sky-100",
+    pending_payment: "border-[#0B67F0]/20 bg-[#0B67F0]/10 text-[#BFD7FF]",
+    payment_required: "border-[#0B67F0]/20 bg-[#0B67F0]/10 text-[#BFD7FF]",
+    pending_confirmation: "border-[#0B67F0]/20 bg-[#0B67F0]/10 text-[#BFD7FF]",
     reschedule_requested: "border-amber-300/20 bg-amber-400/10 text-amber-100",
     confirmed: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
     completed: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
-    subscribed: "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
+    subscribed: "border-[#0B67F0]/20 bg-[#0B67F0]/10 text-[#BFD7FF]",
     unsubscribed: "border-white/12 bg-white/8 text-white/85",
     cancelled: "border-rose-300/20 bg-rose-400/10 text-rose-100",
     declined_area: "border-rose-300/20 bg-rose-400/10 text-rose-100",
@@ -82,6 +87,7 @@ function loadViewedSections() {
     upcoming: JSON.parse(localStorage.getItem(getSectionStorageKey("upcoming")) ?? "[]"),
     past: JSON.parse(localStorage.getItem(getSectionStorageKey("past")) ?? "[]"),
     subscribers: JSON.parse(localStorage.getItem(getSectionStorageKey("subscribers")) ?? "[]"),
+    testimonials: JSON.parse(localStorage.getItem(getSectionStorageKey("testimonials")) ?? "[]"),
   } as Record<string, string[]>;
 }
 
@@ -156,7 +162,7 @@ function DrivewayPricingGuide({ squareFeet }: { squareFeet: number | null }) {
 
   return (
     <div className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+      <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
         Driveway Price Guide
       </p>
       <p className="mt-2 text-xs leading-5 text-white/58">
@@ -170,7 +176,7 @@ function DrivewayPricingGuide({ squareFeet }: { squareFeet: number | null }) {
             <div
               key={option.label}
               className={`overflow-hidden rounded-2xl border bg-white/[0.03] ${
-                isMatch ? "border-cyan-300/60 shadow-[0_0_28px_rgba(11,103,240,0.28)]" : "border-white/8"
+                isMatch ? "border-[#0B67F0]/60 shadow-[0_0_28px_rgba(11,103,240,0.28)]" : "border-white/8"
               }`}
             >
               <Image
@@ -182,7 +188,7 @@ function DrivewayPricingGuide({ squareFeet }: { squareFeet: number | null }) {
               />
               <div className="border-t border-white/8 px-3 py-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white">{option.label}</p>
-                <p className="mt-1 text-xs text-cyan-100">
+                <p className="mt-1 text-xs text-[#BFD7FF]">
                   Suggest: {option.price}
                   {isMatch ? " - closest" : ""}
                 </p>
@@ -201,8 +207,8 @@ function PaymentCoach({ booking }: { booking: BookingRecord }) {
   const total = formatCurrency(booking.quote_total);
 
   return (
-    <div className="rounded-[1.5rem] border border-cyan-300/14 bg-cyan-400/[0.06] p-4">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-100">
+    <div className="rounded-[1.5rem] border border-[#0B67F0]/14 bg-[#0B67F0]/[0.06] p-4">
+      <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#BFD7FF]">
         Payment Plan
       </p>
       <div className="mt-3 grid gap-2 text-sm leading-6 text-white/82">
@@ -284,7 +290,7 @@ function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolea
         <div className="border-t border-white/8 px-5 pb-5 pt-5 sm:px-6 sm:pb-6">
           <div className="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
             <div className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4">
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+              <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
                 Everything We Know
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -308,7 +314,7 @@ function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolea
             <div className="space-y-5">
               {photoUrls.length > 0 ? (
                 <div className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4">
-                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+                  <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
                     Customer Photos
                   </p>
                   <div className="mt-4 grid grid-cols-2 gap-3">
@@ -338,7 +344,7 @@ function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolea
               ) : null}
 
               <div className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4">
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+                <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
                   Quote Breakdown
                 </p>
                 <div className="mt-4 space-y-3">
@@ -350,7 +356,7 @@ function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolea
                       >
                         <div className="flex items-start justify-between gap-4">
                           <span className="text-sm text-white/92">{item.label}</span>
-                          <span className="text-sm font-semibold text-cyan-100">
+                          <span className="text-sm font-semibold text-[#BFD7FF]">
                             {item.amount > 0 ? formatCurrency(item.amount) : "Manual"}
                           </span>
                         </div>
@@ -371,10 +377,10 @@ function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolea
               <form
                 action="/api/admin/bookings/update"
                 method="post"
-                className="rounded-[1.5rem] border border-cyan-300/18 bg-black/20 p-4 shadow-[0_0_45px_rgba(11,103,240,0.12)]"
+                className="rounded-[1.5rem] border border-[#0B67F0]/18 bg-black/20 p-4 shadow-[0_0_45px_rgba(11,103,240,0.12)]"
               >
                 <input type="hidden" name="id" value={booking.id} />
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">
+                <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
                   Decision Center
                 </p>
                 <div className="mt-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
@@ -423,7 +429,7 @@ function BookingCard({ booking, isNew }: { booking: BookingRecord; isNew: boolea
                       type="submit"
                       name="action"
                       value="accept"
-                      className="inline-flex h-12 items-center justify-center rounded-full border border-cyan-300/80 bg-[linear-gradient(135deg,#12B6FF_0%,#009DFF_55%,#0567D8_100%)] px-5 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+                      className="inline-flex h-12 items-center justify-center rounded-full border border-[#0B67F0]/80 bg-[linear-gradient(135deg,#0B67F0_0%,#075BE6_100%)] px-5 text-sm font-black uppercase italic tracking-[0.18em] text-white"
                     >
                       Accept Job + Send Payment
                     </button>
@@ -612,7 +618,7 @@ function InvoiceBuilder() {
           <button
             type="submit"
             disabled={isPending}
-            className="inline-flex h-12 items-center justify-center rounded-full border border-cyan-300/80 bg-[linear-gradient(135deg,#12B6FF_0%,#009DFF_55%,#0567D8_100%)] px-5 text-sm font-semibold uppercase tracking-[0.18em] text-white"
+            className="inline-flex h-12 items-center justify-center rounded-full border border-[#0B67F0]/80 bg-[linear-gradient(135deg,#0B67F0_0%,#075BE6_100%)] px-5 text-sm font-black uppercase italic tracking-[0.18em] text-white"
           >
             {isPending ? "Creating..." : "Create Payment Link"}
           </button>
@@ -620,7 +626,7 @@ function InvoiceBuilder() {
       </form>
 
       <div className="rounded-[1.6rem] border border-white/8 bg-black/20 p-5">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">Ready To Send</p>
+        <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">Ready To Send</p>
         {result ? (
           <div className="mt-4 space-y-4">
             <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
@@ -635,7 +641,7 @@ function InvoiceBuilder() {
             </div>
             <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-white/50">Payment Link</p>
-              <p className="mt-2 break-all text-sm text-cyan-100">{result.url}</p>
+              <p className="mt-2 break-all text-sm text-[#BFD7FF]">{result.url}</p>
               <button
                 type="button"
                 onClick={() => handleCopy(result.url)}
@@ -669,6 +675,232 @@ function InvoiceBuilder() {
   );
 }
 
+function OwnerQuickQuoteForm() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const defaultDate = tomorrow.toISOString().slice(0, 10);
+
+  return (
+    <form
+      action="/api/admin/bookings/create"
+      method="post"
+      className="rounded-[1.6rem] border border-[#0B67F0]/25 bg-black/25 p-5 shadow-[0_0_55px_rgba(11,103,240,0.12)]"
+    >
+      <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">Door-Knock Quote</p>
+      <h3 className="mt-3 font-heading text-4xl font-black uppercase italic leading-none text-white">
+        Add A Booking Fast
+      </h3>
+      <p className="mt-2 text-sm leading-6 text-white/62">
+        Use this when you are with a homeowner. Enter the basics, give the quote, and follow up later.
+      </p>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Name</span>
+          <input name="customerName" required className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+        </label>
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Phone</span>
+          <input name="phone" required className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+        </label>
+        <label className="space-y-2 sm:col-span-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Email optional</span>
+          <input type="email" name="email" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+        </label>
+        <label className="space-y-2 sm:col-span-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Address</span>
+          <input name="addressLine1" required className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+        </label>
+        <input type="hidden" name="city" value="Marietta" />
+        <input type="hidden" name="state" value="GA" />
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">ZIP</span>
+          <input name="zip" required maxLength={5} defaultValue="30060" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+        </label>
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Property</span>
+          <select name="propertyType" defaultValue="single_family" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white">
+            <option value="single_family">Single-family</option>
+            <option value="townhome">Townhome</option>
+            <option value="rental">Rental</option>
+            <option value="hoa">HOA</option>
+            <option value="multi_unit">Multi-unit</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="mt-4 grid gap-3 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+        <p className="text-xs uppercase tracking-[0.16em] text-white/60">Services</p>
+        <label className="flex items-center gap-3 text-sm text-white/88">
+          <input type="checkbox" name="services" value="pressure_washing" defaultChecked />
+          Pressure washing
+        </label>
+        <label className="flex items-center gap-3 text-sm text-white/88">
+          <input type="checkbox" name="services" value="trash_can_cleaning" />
+          Trash can cleaning
+        </label>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Driveway size</span>
+          <select name="drivewaySqft" defaultValue="600" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white">
+            <option value="0">No driveway</option>
+            <option value="300">1-car</option>
+            <option value="600">2-car</option>
+            <option value="900">3-car</option>
+            <option value="1200">Long</option>
+          </select>
+        </label>
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Walkway</span>
+          <select name="walkwaySqft" defaultValue="0" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white">
+            <option value="0">No walkway</option>
+            <option value="80">Small</option>
+            <option value="150">Medium</option>
+            <option value="250">Large</option>
+          </select>
+        </label>
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Bins</span>
+          <input type="number" name="binsCount" min="0" defaultValue="0" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+        </label>
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Stains</span>
+          <select name="heavyStainLevel" defaultValue="light" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white">
+            <option value="light">Light</option>
+            <option value="moderate">Moderate</option>
+            <option value="heavy">Heavy</option>
+          </select>
+        </label>
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Date</span>
+          <input type="date" name="preferredDate" defaultValue={defaultDate} className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+        </label>
+        <label className="space-y-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Time</span>
+          <select name="preferredTimeWindow" defaultValue="10-12" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white">
+            {timeWindowOptions.map((window) => (
+              <option key={window} value={window}>
+                {window}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="space-y-2 sm:col-span-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Quote amount optional</span>
+          <input type="number" name="quoteTotal" min="0" placeholder="Leave blank to auto-price" className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" />
+        </label>
+        <label className="space-y-2 sm:col-span-2">
+          <span className="text-xs uppercase tracking-[0.16em] text-white/60">Notes</span>
+          <textarea name="notes" className="min-h-24 w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white" placeholder="Door knocked, homeowner wants driveway, text payment link later." />
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full border border-[#0B67F0]/80 bg-[linear-gradient(135deg,#0B67F0_0%,#075BE6_100%)] px-5 text-sm font-black uppercase italic tracking-[0.18em] text-white"
+      >
+        Save Quote
+      </button>
+    </form>
+  );
+}
+
+function TestimonialsPanel({ testimonials }: { testimonials: TestimonialRecord[] }) {
+  return (
+    <div className="grid gap-4">
+      <div className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
+        <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">Customer Proof</p>
+        <p className="mt-2 text-sm leading-6 text-white/65">
+          Public submissions arrive here as pending. Use the best notes for follow-up, screenshots, and future proof sections.
+        </p>
+      </div>
+      {testimonials.length === 0 ? (
+        <div className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5 text-slate-300">
+          No testimonials yet. Send customers to /testimonial after a good job.
+        </div>
+      ) : (
+        testimonials.map((testimonial) => (
+          <article key={testimonial.id} className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-heading text-3xl font-black uppercase italic leading-none text-white">
+                  {testimonial.customer_name}
+                </p>
+                <p className="mt-2 text-sm text-[#0B67F0]">{"★".repeat(testimonial.rating)}{"☆".repeat(5 - testimonial.rating)}</p>
+              </div>
+              <span className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${statusPill(testimonial.status)}`}>
+                {formatTitle(testimonial.status)}
+              </span>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-white/78">{testimonial.message}</p>
+            <p className="mt-4 text-xs uppercase tracking-[0.16em] text-white/40">
+              {formatStableDate(testimonial.created_at, { withTime: true })}
+            </p>
+          </article>
+        ))
+      )}
+    </div>
+  );
+}
+
+function HowToGuide() {
+  const lessons = [
+    ["Daily flow", "Open Jobs first. Handle Needs Attention, then confirm Upcoming Work."],
+    ["Door knocking", "Use Field Quote. Get name, phone, address, surface size, and a quote amount. Save it before walking away."],
+    ["Payments", "If someone is ready, open Payment Tools and create a payment link or QR code."],
+    ["Reschedules", "Use Propose Reschedule from the job card. The customer can accept or pick another time."],
+    ["Testimonials", "After a good job, send /testimonial. Keep strong reviews for social proof and SEO."],
+  ];
+
+  return (
+    <div className="grid gap-4">
+      <div className="rounded-[1.8rem] border border-[#0B67F0]/25 bg-[#0B67F0]/10 p-5">
+        <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">Mini Course</p>
+        <h3 className="mt-3 font-heading text-4xl font-black uppercase italic leading-none text-white">
+          How To Use This App
+        </h3>
+        <p className="mt-3 text-sm leading-6 text-white/70">
+          The app is built around one idea: capture the customer interaction while it is fresh, then let admin workflows handle follow-up.
+        </p>
+      </div>
+      {lessons.map(([title, body], index) => (
+        <article key={title} className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5">
+          <p className="text-xs font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
+            Lesson {index + 1}
+          </p>
+          <h4 className="mt-2 font-heading text-3xl font-black uppercase italic leading-none text-white">{title}</h4>
+          <p className="mt-3 text-sm leading-6 text-white/72">{body}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function InteractionMap() {
+  const interactions = [
+    ["Website booking", "Customer uses /book, uploads photos, picks a time, and gets a live estimate."],
+    ["QR code", "Send people to /qr now. It redirects home today and can become a campaign landing page later."],
+    ["Door knocking", "Owner uses Field Quote so the homeowner never has to fight the form on the porch."],
+    ["Instagram/text photos", "Customer sends photos for a fast quote when forms feel like too much."],
+    ["Testimonials", "Happy customer submits name, rating, and message at /testimonial."],
+    ["Admin follow-up", "Accept, deny, reschedule, request payment, or mark complete from the app."],
+  ];
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {interactions.map(([title, body]) => (
+        <article key={title} className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4">
+          <h4 className="font-heading text-2xl font-black uppercase italic leading-none text-white">{title}</h4>
+          <p className="mt-2 text-sm leading-6 text-white/68">{body}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 function SectionPanel({
   id,
   title,
@@ -697,7 +929,7 @@ function SectionPanel({
         onClick={onToggle}
         className="flex w-full items-start gap-4 p-5 text-left sm:p-6"
       >
-        <div className="mt-1 flex size-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/16 bg-cyan-400/10 text-cyan-200">
+        <div className="mt-1 flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#0B67F0]/16 bg-[#0B67F0]/10 text-[#0B67F0]">
           <Icon className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
@@ -722,14 +954,17 @@ function SectionPanel({
 export function AdminDashboard({
   bookings,
   subscribers,
+  testimonials,
   username,
 }: {
   bookings: BookingRecord[];
   subscribers: SubscriberRecord[];
+  testimonials: TestimonialRecord[];
   username: string;
 }) {
   const [query, setQuery] = useState("");
   const [activeSection, setActiveSection] = useState("leads");
+  const [quickOpen, setQuickOpen] = useState(false);
   const [viewedBySection, setViewedBySection] = useState<Record<string, string[]>>(() => loadViewedSections());
 
   const filtered = useMemo(() => {
@@ -771,8 +1006,9 @@ export function AdminDashboard({
       upcoming: upcoming.map((booking) => booking.id),
       past: past.map((booking) => booking.id),
       subscribers: subscribers.map((subscriber) => subscriber.id),
+      testimonials: testimonials.map((testimonial) => testimonial.id),
     }),
-    [leads, upcoming, past, subscribers],
+    [leads, upcoming, past, subscribers, testimonials],
   );
 
   function getNewCount(sectionId: keyof typeof sectionIds) {
@@ -788,9 +1024,10 @@ export function AdminDashboard({
     setViewedBySection((current) => ({ ...current, [sectionId]: ids }));
   }
 
-  function toggleSection(sectionId: keyof typeof sectionIds | "invoices") {
+  function toggleSection(sectionId: keyof typeof sectionIds | "invoices" | "quote" | "settings") {
     setActiveSection((current) => (current === sectionId ? "" : sectionId));
-    if (sectionId !== "invoices") {
+    setQuickOpen(false);
+    if (sectionId !== "invoices" && sectionId !== "quote" && sectionId !== "settings") {
       markSectionViewed(sectionId);
     }
   }
@@ -800,6 +1037,7 @@ export function AdminDashboard({
     upcoming: getNewCount("upcoming"),
     past: getNewCount("past"),
     subscribers: getNewCount("subscribers"),
+    testimonials: getNewCount("testimonials"),
   };
 
   const workspaceCards = [
@@ -807,21 +1045,37 @@ export function AdminDashboard({
     { id: "upcoming", label: "Schedule", count: upcoming.length, newCount: newCounts.upcoming, icon: CalendarDays },
     { id: "past", label: "History", count: past.length, newCount: newCounts.past, icon: MapPinned },
     { id: "subscribers", label: "Email", count: subscribers.length, newCount: newCounts.subscribers, icon: Mail },
+    { id: "testimonials", label: "Reviews", count: testimonials.length, newCount: newCounts.testimonials, icon: Star },
+    { id: "quote", label: "Field Quote", count: 0, newCount: 0, icon: Plus },
     { id: "invoices", label: "Invoices", count: 0, newCount: 0, icon: CreditCard },
+    { id: "settings", label: "How-To", count: 0, newCount: 0, icon: Settings },
+  ] as const;
+
+  const bottomTabs = [
+    { id: "leads", label: "Jobs", icon: MessageSquareWarning },
+    { id: "upcoming", label: "Schedule", icon: CalendarDays },
+    { id: "testimonials", label: "Reviews", icon: Star },
+    { id: "settings", label: "Settings", icon: Settings },
+  ] as const;
+
+  const quickActions = [
+    { id: "quote", label: "Door quote", icon: Plus },
+    { id: "invoices", label: "Payment link", icon: CreditCard },
+    { id: "testimonials", label: "Reviews", icon: Star },
+    { id: "settings", label: "How-to", icon: BookOpen },
   ] as const;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 pb-32 pt-6 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-cyan-200">Owner Portal</p>
-            <h1 className="mt-3 font-heading text-4xl font-black uppercase leading-none text-white sm:text-5xl">
+            <p className="text-sm font-black uppercase italic tracking-[0.24em] text-[#0B67F0]">Owner Portal</p>
+            <h1 className="mt-3 font-heading text-4xl font-black uppercase italic leading-none text-white sm:text-5xl">
               CURBSIDE Admin
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-              Built like a work app: tap a section, check what is new, open one customer at a time,
-              and keep every detail close by without a giant scroll.
+              Built like an iPhone work app: bottom tabs, one-tap field quotes, reviews, payments, and how-to guidance.
             </p>
           </div>
           <form action="/api/admin/logout" method="post">
@@ -841,7 +1095,7 @@ export function AdminDashboard({
             <p className="mt-2 text-lg font-semibold text-white">{username}</p>
           </div>
           <label className="flex items-center gap-3 rounded-[1.6rem] border border-white/8 bg-black/20 px-4 py-4">
-            <Search className="size-5 text-cyan-200" />
+            <Search className="size-5 text-[#0B67F0]" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -863,13 +1117,13 @@ export function AdminDashboard({
                   onClick={() => toggleSection(id)}
                   className={`flex min-w-[9rem] items-center justify-between gap-3 rounded-[1.4rem] border px-4 py-3 text-left transition ${
                     selected
-                      ? "border-cyan-300/30 bg-cyan-400/12 shadow-[0_0_30px_rgba(18,182,255,0.18)]"
+                      ? "border-[#0B67F0]/30 bg-[#0B67F0]/12 shadow-[0_0_30px_rgba(11,103,240,0.18)]"
                       : "border-white/8 bg-black/20"
                   }`}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <Icon className="size-4 text-cyan-200" />
+                      <Icon className="size-4 text-[#0B67F0]" />
                       <p className="text-xs uppercase tracking-[0.16em] text-white/58">{label}</p>
                     </div>
                     <p className="mt-2 text-lg font-semibold text-white">{id === "invoices" ? "Tools" : count}</p>
@@ -885,7 +1139,7 @@ export function AdminDashboard({
       <div className="mt-8 grid gap-4 md:grid-cols-4">
         <SectionCard label="Needs attention" value={leads.length} icon={MessageSquareWarning} />
         <SectionCard label="Upcoming" value={upcoming.length} icon={CalendarDays} />
-        <SectionCard label="Finished" value={past.length} icon={CheckCircle2} />
+        <SectionCard label="Reviews" value={testimonials.length} icon={Star} />
         <SectionCard label="Total shown" value={filtered.length} icon={ShieldCheck} />
       </div>
 
@@ -914,6 +1168,36 @@ export function AdminDashboard({
                 />
               ))
             )}
+          </div>
+        </SectionPanel>
+
+        <SectionPanel
+          id="quote"
+          title="Field Quote"
+          description="Create a booking yourself when you are door knocking or talking to a customer in person."
+          icon={Plus}
+          count={1}
+          newCount={0}
+          isOpen={activeSection === "quote"}
+          onToggle={() => toggleSection("quote")}
+        >
+          <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
+            <OwnerQuickQuoteForm />
+            <div className="rounded-[1.8rem] border border-white/10 bg-black/20 p-5">
+              <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">Quote Cheatsheet</p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {drivewayGuide.map((option) => (
+                  <div key={option.label} className="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
+                    <Image src={option.image} alt={option.label} width={260} height={150} className="h-24 w-full object-contain" />
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-white">{option.label}</p>
+                    <p className="mt-1 text-xs text-[#BFD7FF]">{option.price}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-sm leading-6 text-white/62">
+                Door-knock script: “I can save you the form. I just need your name, phone, address, what you want cleaned, and I’ll text the quote/payment link.”
+              </p>
+            </div>
           </div>
         </SectionPanel>
 
@@ -983,7 +1267,7 @@ export function AdminDashboard({
         >
           <div className="grid gap-5 xl:grid-cols-[0.7fr_1.3fr]">
             <div className="rounded-[1.8rem] border border-white/10 bg-black/20 p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">At A Glance</p>
+              <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">At A Glance</p>
               <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
                 <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
                   <p className="text-xs uppercase tracking-[0.16em] text-white/55">Subscribed</p>
@@ -1061,6 +1345,112 @@ export function AdminDashboard({
         >
           <InvoiceBuilder />
         </SectionPanel>
+
+        <SectionPanel
+          id="testimonials"
+          title="Testimonials"
+          description="Customer proof submitted from /testimonial."
+          icon={Star}
+          count={testimonials.length}
+          newCount={newCounts.testimonials}
+          isOpen={activeSection === "testimonials"}
+          onToggle={() => toggleSection("testimonials")}
+        >
+          <TestimonialsPanel testimonials={testimonials} />
+        </SectionPanel>
+
+        <SectionPanel
+          id="settings"
+          title="Settings + How-To"
+          description="App training, customer interaction map, and operating rhythm."
+          icon={Settings}
+          count={1}
+          newCount={0}
+          isOpen={activeSection === "settings"}
+          onToggle={() => toggleSection("settings")}
+        >
+          <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+            <HowToGuide />
+            <div className="space-y-5">
+              <div className="rounded-[1.8rem] border border-white/10 bg-black/20 p-5">
+                <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">Interaction Map</p>
+                <h3 className="mt-3 font-heading text-4xl font-black uppercase italic leading-none text-white">
+                  Every Way Customers Can Interact
+                </h3>
+              </div>
+              <InteractionMap />
+            </div>
+          </div>
+        </SectionPanel>
+      </div>
+
+      <AnimatePresence>
+        {quickOpen ? (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.96 }}
+            className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-[2rem] border border-[#0B67F0]/30 bg-black/95 p-4 shadow-[0_28px_90px_rgba(0,0,0,0.6)] backdrop-blur-xl md:bottom-28"
+          >
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+              <Search className="size-4 text-[#0B67F0]" />
+              <input
+                placeholder="Search or pick an action"
+                className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/40"
+              />
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {quickActions.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => toggleSection(id)}
+                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-[#0B67F0]"
+                >
+                  <Icon className="size-5 text-[#0B67F0]" />
+                  <p className="mt-3 text-xs font-black uppercase italic tracking-[0.12em] text-white">{label}</p>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.65rem)] pt-2 backdrop-blur-xl">
+        <div className="mx-auto grid max-w-md grid-cols-5 items-end gap-1">
+          {bottomTabs.slice(0, 2).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => toggleSection(id)}
+              className={`rounded-2xl px-2 py-2 text-center ${activeSection === id ? "text-[#0B67F0]" : "text-white/62"}`}
+            >
+              <Icon className="mx-auto size-5" />
+              <span className="mt-1 block text-[10px] font-black uppercase italic tracking-[0.08em]">{label}</span>
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setQuickOpen((current) => !current)}
+            className="mx-auto -mt-8 flex size-16 items-center justify-center rounded-full border border-[#126DFF] bg-[#0B67F0] text-white shadow-[0_0_35px_rgba(11,103,240,0.5)]"
+            aria-label="Open quick actions"
+          >
+            <motion.span animate={{ rotate: quickOpen ? 45 : 0 }}>
+              <Plus className="size-8" />
+            </motion.span>
+          </button>
+          {bottomTabs.slice(2).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => toggleSection(id)}
+              className={`rounded-2xl px-2 py-2 text-center ${activeSection === id ? "text-[#0B67F0]" : "text-white/62"}`}
+            >
+              <Icon className="mx-auto size-5" />
+              <span className="mt-1 block text-[10px] font-black uppercase italic tracking-[0.08em]">{label}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
