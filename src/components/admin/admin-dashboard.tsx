@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import type { ComponentType, ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen,
   CalendarDays,
+  Camera,
   ChevronDown,
   Clock3,
   Copy,
@@ -1126,7 +1128,26 @@ export function AdminDashboard({
           </form>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="grid gap-4 lg:grid-cols-[1fr_0.75fr_1.15fr]">
+          <div className="rounded-[1.6rem] border border-[#0B67F0]/24 bg-[#0B67F0]/10 p-4 shadow-[0_0_35px_rgba(11,103,240,0.14)]">
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#0B67F0]/22 bg-black/24 text-[#BFD7FF]">
+                <Camera className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-lg font-semibold leading-6 text-white">Curbside Estimator</p>
+                <p className="mt-1 text-sm leading-6 text-white/66">
+                  Take photos and generate intelligent pricing recommendations for exterior cleaning jobs.
+                </p>
+                <Link
+                  href="/admin/estimator"
+                  className="mt-4 inline-flex h-10 items-center justify-center rounded-full border border-[#0B67F0]/70 bg-[#0B67F0] px-4 text-xs font-black uppercase italic tracking-[0.14em] text-white transition hover:bg-[#075BE6]"
+                >
+                  Open Estimator
+                </Link>
+              </div>
+            </div>
+          </div>
           <div className="rounded-[1.6rem] border border-white/8 bg-black/20 p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-white/55">Signed in as</p>
             <p className="mt-2 text-lg font-semibold text-white">{username}</p>
