@@ -47,6 +47,19 @@ body {
   isolation: isolate;
 }
 
+.mobile-app-tabbar {
+  position: fixed !important;
+  right: 0;
+  bottom: 0 !important;
+  left: 0;
+  width: 100%;
+  transform: none;
+  will-change: auto;
+  backface-visibility: hidden;
+  isolation: isolate;
+  pointer-events: auto;
+}
+
 a,
 button {
   -webkit-tap-highlight-color: transparent;

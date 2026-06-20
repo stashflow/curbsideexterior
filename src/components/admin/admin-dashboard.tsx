@@ -36,6 +36,16 @@ import { getSubscriberCampaignSummary, type SubscriberRecord } from "@/lib/subsc
 import type { TestimonialRecord } from "@/lib/testimonials";
 
 const SECTION_STORAGE_PREFIX = "curbside-admin-viewed";
+type AdminSectionId =
+  | "leads"
+  | "upcoming"
+  | "past"
+  | "subscribers"
+  | "testimonials"
+  | "invoices"
+  | "quote"
+  | "settings";
+
 const drivewayGuide = [
   { label: "1-car driveway", sqft: 300, price: "$129", image: "/driveway-size-1-car.png" },
   { label: "2-car driveway", sqft: 600, price: "$132", image: "/driveway-size-2-car.png" },
@@ -967,7 +977,7 @@ export function AdminDashboard({
   username: string;
 }) {
   const [query, setQuery] = useState("");
-  const [activeSection, setActiveSection] = useState("leads");
+  const [activeSection, setActiveSection] = useState<AdminSectionId>("leads");
   const [quickOpen, setQuickOpen] = useState(false);
   const [viewedBySection, setViewedBySection] = useState<Record<string, string[]>>(() => loadViewedSections());
 
@@ -1028,12 +1038,35 @@ export function AdminDashboard({
     setViewedBySection((current) => ({ ...current, [sectionId]: ids }));
   }
 
-  function toggleSection(sectionId: keyof typeof sectionIds | "invoices" | "quote" | "settings") {
-    setActiveSection((current) => (current === sectionId ? "" : sectionId));
-    setQuickOpen(false);
-    if (sectionId !== "invoices" && sectionId !== "quote" && sectionId !== "settings") {
-      markSectionViewed(sectionId);
+  function markViewedIfTracked(sectionId: AdminSectionId) {
+    if (sectionId in sectionIds) {
+      markSectionViewed(sectionId as keyof typeof sectionIds);
     }
+  }
+
+  function scrollToSection(sectionId: AdminSectionId) {
+    window.requestAnimationFrame(() => {
+      document.getElementById(sectionId)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }
+
+  function openSection(sectionId: AdminSectionId, options?: { scroll?: boolean }) {
+    setActiveSection(sectionId);
+    setQuickOpen(false);
+    markViewedIfTracked(sectionId);
+
+    if (options?.scroll) {
+      scrollToSection(sectionId);
+    }
+  }
+
+  function toggleSection(sectionId: AdminSectionId) {
+    setActiveSection((current) => (current === sectionId ? "leads" : sectionId));
+    setQuickOpen(false);
+    markViewedIfTracked(sectionId);
   }
 
   const newCounts = {
@@ -1118,7 +1151,7 @@ export function AdminDashboard({
                 <button
                   key={id}
                   type="button"
-                  onClick={() => toggleSection(id)}
+                  onClick={() => openSection(id)}
                   className={`flex min-w-[9rem] items-center justify-between gap-3 rounded-[1.4rem] border px-4 py-3 text-left transition ${
                     selected
                       ? "border-[#0B67F0]/30 bg-[#0B67F0]/12 shadow-[0_0_30px_rgba(11,103,240,0.18)]"
@@ -1408,7 +1441,7 @@ export function AdminDashboard({
                 <button
                   key={id}
                   type="button"
-                  onClick={() => toggleSection(id)}
+                  onClick={() => openSection(id, { scroll: true })}
                   className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-[#0B67F0]"
                 >
                   <Icon className="size-5 text-[#0B67F0]" />
@@ -1420,13 +1453,13 @@ export function AdminDashboard({
         ) : null}
       </AnimatePresence>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.65rem)] pt-2 backdrop-blur-xl">
+      <div className="mobile-app-tabbar z-50 border-t border-white/10 bg-black/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.65rem)] pt-2 backdrop-blur-xl">
         <div className="mx-auto grid max-w-md grid-cols-5 items-end gap-1">
           {bottomTabs.slice(0, 2).map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               type="button"
-              onClick={() => toggleSection(id)}
+              onClick={() => openSection(id, { scroll: true })}
               className={`rounded-2xl px-2 py-2 text-center ${activeSection === id ? "text-[#0B67F0]" : "text-white/62"}`}
             >
               <Icon className="mx-auto size-5" />
@@ -1436,7 +1469,7 @@ export function AdminDashboard({
           <button
             type="button"
             onClick={() => setQuickOpen((current) => !current)}
-            className="mx-auto -mt-8 flex size-16 items-center justify-center rounded-full border border-[#126DFF] bg-[#0B67F0] text-white shadow-[0_0_35px_rgba(11,103,240,0.5)]"
+            className="relative z-10 mx-auto -mt-8 flex size-16 items-center justify-center rounded-full border border-[#126DFF] bg-[#0B67F0] text-white shadow-[0_0_35px_rgba(11,103,240,0.5)]"
             aria-label="Open quick actions"
           >
             <motion.span animate={{ rotate: quickOpen ? 45 : 0 }}>
@@ -1447,7 +1480,7 @@ export function AdminDashboard({
             <button
               key={id}
               type="button"
-              onClick={() => toggleSection(id)}
+              onClick={() => openSection(id, { scroll: true })}
               className={`rounded-2xl px-2 py-2 text-center ${activeSection === id ? "text-[#0B67F0]" : "text-white/62"}`}
             >
               <Icon className="mx-auto size-5" />
