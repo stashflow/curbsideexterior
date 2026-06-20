@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { ComponentType, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen,
@@ -23,6 +24,7 @@ import {
   Settings,
   ShieldCheck,
   Star,
+  X,
 } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -978,9 +980,12 @@ export function AdminDashboard({
   testimonials: TestimonialRecord[];
   username: string;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [activeSection, setActiveSection] = useState<AdminSectionId>("leads");
   const [quickOpen, setQuickOpen] = useState(false);
+  const [quickQuery, setQuickQuery] = useState("");
+  const quickInputRef = useRef<HTMLInputElement>(null);
   const [viewedBySection, setViewedBySection] = useState<Record<string, string[]>>(() => loadViewedSections());
 
   const filtered = useMemo(() => {
@@ -1058,6 +1063,7 @@ export function AdminDashboard({
   function openSection(sectionId: AdminSectionId, options?: { scroll?: boolean }) {
     setActiveSection(sectionId);
     setQuickOpen(false);
+    setQuickQuery("");
     markViewedIfTracked(sectionId);
 
     if (options?.scroll) {
@@ -1097,12 +1103,126 @@ export function AdminDashboard({
     { id: "settings", label: "Settings", icon: Settings },
   ] as const;
 
-  const quickActions = [
-    { id: "quote", label: "Door quote", icon: Plus },
-    { id: "invoices", label: "Payment link", icon: CreditCard },
-    { id: "testimonials", label: "Reviews", icon: Star },
-    { id: "settings", label: "How-to", icon: BookOpen },
-  ] as const;
+  const quickActions = useMemo(
+    () =>
+      [
+        {
+          type: "link",
+          href: "/admin/estimator",
+          label: "Curbside Estimator",
+          description: "Analyze photos and build an exterior cleaning estimate.",
+          keywords: "estimate estimator ai photos quote pricing driveway pressure washing",
+          icon: Camera,
+        },
+        {
+          type: "section",
+          id: "quote",
+          label: "Field Quote",
+          description: "Create a booking while door knocking or talking in person.",
+          keywords: "door quote booking customer porch manual estimate",
+          icon: Plus,
+        },
+        {
+          type: "section",
+          id: "leads",
+          label: "Jobs Inbox",
+          description: "Review new requests, unpaid jobs, and leads.",
+          keywords: "jobs inbox leads attention requests customer",
+          icon: MessageSquareWarning,
+        },
+        {
+          type: "section",
+          id: "upcoming",
+          label: "Schedule",
+          description: "See pending, rescheduled, and confirmed work.",
+          keywords: "schedule upcoming confirmed calendar work",
+          icon: CalendarDays,
+        },
+        {
+          type: "section",
+          id: "past",
+          label: "Estimate History",
+          description: "Review completed and cancelled jobs.",
+          keywords: "history past completed cancelled estimates",
+          icon: MapPinned,
+        },
+        {
+          type: "section",
+          id: "invoices",
+          label: "Payment Link",
+          description: "Create a Stripe payment link or QR code.",
+          keywords: "payment invoice stripe qr charge money",
+          icon: CreditCard,
+        },
+        {
+          type: "section",
+          id: "testimonials",
+          label: "Reviews",
+          description: "Read customer proof submitted from the testimonial form.",
+          keywords: "reviews testimonials rating proof customer",
+          icon: Star,
+        },
+        {
+          type: "section",
+          id: "subscribers",
+          label: "Email List",
+          description: "View subscribers and seasonal email status.",
+          keywords: "email subscribers list marketing",
+          icon: Mail,
+        },
+        {
+          type: "section",
+          id: "settings",
+          label: "How-To",
+          description: "Open training notes and operating rhythm.",
+          keywords: "settings help how to guide training",
+          icon: BookOpen,
+        },
+      ] as const,
+    [],
+  );
+
+  const filteredQuickActions = useMemo(() => {
+    const normalized = quickQuery.trim().toLowerCase();
+    if (!normalized) return quickActions;
+
+    return quickActions.filter((action) =>
+      [action.label, action.description, action.keywords].join(" ").toLowerCase().includes(normalized),
+    );
+  }, [quickActions, quickQuery]);
+
+  function runQuickAction(action: (typeof quickActions)[number]) {
+    if (action.type === "link") {
+      setQuickOpen(false);
+      setQuickQuery("");
+      router.push(action.href);
+      return;
+    }
+
+    openSection(action.id, { scroll: true });
+  }
+
+  useEffect(() => {
+    if (!quickOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.setTimeout(() => quickInputRef.current?.focus(), 80);
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setQuickOpen(false);
+        setQuickQuery("");
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [quickOpen]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-32 pt-6 sm:px-6 lg:px-8">
@@ -1445,31 +1565,103 @@ export function AdminDashboard({
       <AnimatePresence>
         {quickOpen ? (
           <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.96 }}
-            className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-[2rem] border border-[#0B67F0]/30 bg-black/95 p-4 shadow-[0_28px_90px_rgba(0,0,0,0.6)] backdrop-blur-xl md:bottom-28"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/82 backdrop-blur-2xl"
           >
-            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
-              <Search className="size-4 text-[#0B67F0]" />
-              <input
-                placeholder="Search or pick an action"
-                className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/40"
-              />
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {quickActions.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => openSection(id, { scroll: true })}
-                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-[#0B67F0]"
-                >
-                  <Icon className="size-5 text-[#0B67F0]" />
-                  <p className="mt-3 text-xs font-black uppercase italic tracking-[0.12em] text-white">{label}</p>
-                </button>
-              ))}
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.98 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="mx-auto flex h-full max-w-3xl flex-col px-4 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-6 sm:pb-8 sm:pt-8"
+            >
+              <div className="sticky top-0 z-10 rounded-[1.45rem] border border-[#0B67F0]/22 bg-black/80 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.55)]">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#0B67F0]/18 bg-[#0B67F0]/10 text-[#BFD7FF]">
+                    <Search className="size-5" />
+                  </div>
+                  <input
+                    ref={quickInputRef}
+                    value={quickQuery}
+                    onChange={(event) => setQuickQuery(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" && filteredQuickActions[0]) {
+                        event.preventDefault();
+                        runQuickAction(filteredQuickActions[0]);
+                      }
+                    }}
+                    placeholder="Search estimator, jobs, payments, reviews..."
+                    className="h-12 min-w-0 flex-1 bg-transparent text-base font-medium text-white outline-none placeholder:text-white/35"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuickOpen(false);
+                      setQuickQuery("");
+                    }}
+                    className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-white/72 transition hover:text-white"
+                    aria-label="Close quick search"
+                  >
+                    <X className="size-5" />
+                  </button>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3 px-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/42">
+                    {filteredQuickActions.length} result{filteredQuickActions.length === 1 ? "" : "s"}
+                  </p>
+                  <p className="hidden text-[11px] font-semibold uppercase tracking-[0.16em] text-white/32 sm:block">
+                    Enter opens top result
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 min-h-0 flex-1 overflow-y-auto pr-1">
+                <div className="grid gap-3">
+                  {filteredQuickActions.length > 0 ? (
+                    filteredQuickActions.map((action, index) => {
+                      const Icon = action.icon;
+
+                      return (
+                        <motion.button
+                          key={action.label}
+                          type="button"
+                          onClick={() => runQuickAction(action)}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: Math.min(index * 0.025, 0.16), duration: 0.16 }}
+                          className={`group flex items-center gap-4 rounded-[1.35rem] border p-4 text-left transition ${
+                            index === 0
+                              ? "border-[#0B67F0]/40 bg-[#0B67F0]/14 shadow-[0_0_38px_rgba(11,103,240,0.18)]"
+                              : "border-white/10 bg-white/[0.045] hover:border-[#0B67F0]/35 hover:bg-[#0B67F0]/10"
+                          }`}
+                        >
+                          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/28 text-[#BFD7FF] transition group-hover:border-[#0B67F0]/30">
+                            <Icon className="size-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-base font-semibold text-white">{action.label}</p>
+                              {index === 0 ? (
+                                <span className="rounded-full border border-[#0B67F0]/24 bg-[#0B67F0]/12 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.13em] text-[#BFD7FF]">
+                                  Top
+                                </span>
+                              ) : null}
+                            </div>
+                            <p className="mt-1 line-clamp-2 text-sm leading-6 text-white/58">{action.description}</p>
+                          </div>
+                        </motion.button>
+                      );
+                    })
+                  ) : (
+                    <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.045] p-5 text-sm leading-6 text-white/62">
+                      No matching action. Try estimator, payment, jobs, reviews, or schedule.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         ) : null}
       </AnimatePresence>
