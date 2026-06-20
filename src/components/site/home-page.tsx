@@ -418,7 +418,7 @@ export function HomePage() {
         </section>
       </main>
 
-      <div className="mobile-fixed-cta inset-x-0 z-50 border-t border-white/10 bg-black/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-md md:hidden">
+      <div className="mobile-fixed-cta inset-x-0 bottom-0 z-50 border-t border-white/10 bg-black/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-md md:hidden">
         <div className="grid grid-cols-2 gap-3">
           <Button asChild size="lg" className="h-12">
             <Link href="/book">

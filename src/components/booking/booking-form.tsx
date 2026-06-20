@@ -1349,7 +1349,7 @@ export function BookingForm() {
         </div>
       </div>
 
-      <div className="mobile-fixed-cta inset-x-0 z-50 border-t border-[#0B67F0]/30 bg-black/96 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-xl sm:hidden">
+      <div className="mobile-fixed-cta inset-x-0 bottom-0 z-50 border-t border-[#0B67F0]/30 bg-black/96 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-xl sm:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <Button
             type="button"

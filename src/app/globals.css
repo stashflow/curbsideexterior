@@ -36,14 +36,15 @@ body {
 }
 
 .mobile-fixed-cta {
-  position: fixed;
+  position: fixed !important;
   right: 0;
-  bottom: env(safe-area-inset-bottom, 0);
+  bottom: 0 !important;
   left: 0;
-  transform: translateZ(0);
-  will-change: transform;
+  width: 100%;
+  transform: none;
+  will-change: auto;
   backface-visibility: hidden;
-  contain: paint;
+  isolation: isolate;
 }
 
 a,
