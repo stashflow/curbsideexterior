@@ -1255,7 +1255,9 @@ export function AdminDashboard({
                 <Camera className="size-5" />
               </div>
               <div className="min-w-0">
-                <p className="text-lg font-semibold leading-6 text-white">Curbside Estimator</p>
+                <p className="font-heading text-3xl font-black uppercase italic leading-none text-white">
+                  Curbside Estimator
+                </p>
                 <p className="mt-1 text-sm leading-6 text-white/66">
                   Take photos and generate intelligent pricing recommendations for exterior cleaning jobs.
                 </p>
