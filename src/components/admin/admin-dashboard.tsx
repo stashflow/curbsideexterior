@@ -1123,6 +1123,38 @@ export function AdminDashboard({
           icon: Plus,
         },
         {
+          type: "link",
+          href: "/admin/grind",
+          label: "Grind Board",
+          description: "Daily plays, scripts, apartment visits, calls, and site walkthroughs.",
+          keywords: "grind sales calls apartments property managers door knocking scripts",
+          icon: BookOpen,
+        },
+        {
+          type: "link",
+          href: "/admin/postgame",
+          label: "Postgame",
+          description: "Finish a job, split the money, pay workers, and save history.",
+          keywords: "postgame job complete money split labor payout profit",
+          icon: ShieldCheck,
+        },
+        {
+          type: "link",
+          href: "/admin/expenses",
+          label: "Expenses",
+          description: "Track gas, chemicals, ads, software, reimbursements, and receipts.",
+          keywords: "expenses gas chemicals equipment reimburse receipt",
+          icon: CreditCard,
+        },
+        {
+          type: "link",
+          href: "/admin/money",
+          label: "Money Dashboard",
+          description: "See revenue, expenses, profit, reserves, and business money history.",
+          keywords: "money dashboard profit tax reserve expenses revenue",
+          icon: CalendarDays,
+        },
+        {
           type: "section",
           id: "leads",
           label: "Jobs Inbox",
@@ -1283,6 +1315,27 @@ export function AdminDashboard({
               className="w-full bg-transparent text-white outline-none placeholder:text-white/35"
             />
           </label>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            { title: "Grind Board", body: "Scripts, visits, calls, and daily sales plays.", href: "/admin/grind", icon: BookOpen },
+            { title: "Postgame", body: "Split job money after the work is done.", href: "/admin/postgame", icon: ShieldCheck },
+            { title: "Expenses", body: "Track gas, chemicals, ads, and reimbursements.", href: "/admin/expenses", icon: CreditCard },
+            { title: "Money", body: "Revenue, profit, reserves, and history.", href: "/admin/money", icon: CalendarDays },
+          ].map(({ title, body, href, icon: Icon }) => (
+            <Link
+              key={title}
+              href={href}
+              className="rounded-[1.35rem] border border-white/8 bg-black/20 p-4 transition hover:border-[#0B67F0]/35 hover:bg-[#0B67F0]/10"
+            >
+              <Icon className="size-5 text-[#BFD7FF]" />
+              <p className="mt-3 font-heading text-3xl font-black uppercase italic leading-none text-white">
+                {title}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-white/58">{body}</p>
+            </Link>
+          ))}
         </div>
 
         <div className="sticky top-3 z-20 -mx-1 overflow-x-auto pb-1">

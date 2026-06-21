@@ -916,7 +916,7 @@ export function BookingForm() {
                                 Stains
                               </span>
                               <span className="block text-sm leading-6 text-white/62">
-                                Pick what looks closest.
+                                Pick which is the closest.
                               </span>
                             <select
                               value={form.heavyStainLevel}
@@ -1069,8 +1069,7 @@ export function BookingForm() {
                           />
                         </label>
                         <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-4 text-sm leading-6 text-white/80">
-                          We figure out the year automatically, so you only need to pick the month
-                          and day. Sundays are skipped because we are closed.
+                          Pick the month and day that work best. Sundays are skipped because we are closed.
                         </div>
                       </div>
 
