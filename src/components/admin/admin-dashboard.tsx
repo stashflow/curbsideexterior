@@ -1317,24 +1317,42 @@ export function AdminDashboard({
           </label>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 xl:grid-cols-[0.92fr_1.08fr]">
           {[
-            { title: "Grind Board", body: "Scripts, visits, calls, and daily sales plays.", href: "/admin/grind", icon: BookOpen },
-            { title: "Postgame", body: "Split job money after the work is done.", href: "/admin/postgame", icon: ShieldCheck },
-            { title: "Expenses", body: "Track gas, chemicals, ads, and reimbursements.", href: "/admin/expenses", icon: CreditCard },
-            { title: "Money", body: "Revenue, profit, reserves, and history.", href: "/admin/money", icon: CalendarDays },
-          ].map(({ title, body, href, icon: Icon }) => (
-            <Link
-              key={title}
-              href={href}
-              className="rounded-[1.35rem] border border-white/8 bg-black/20 p-4 transition hover:border-[#0B67F0]/35 hover:bg-[#0B67F0]/10"
-            >
-              <Icon className="size-5 text-[#BFD7FF]" />
-              <p className="mt-3 font-heading text-3xl font-black uppercase italic leading-none text-white">
-                {title}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-white/58">{body}</p>
-            </Link>
+            {
+              label: "Growth",
+              tools: [
+                { title: "Grind Board", body: "Scripts, apartment visits, property manager calls, and daily sales plays.", href: "/admin/grind", icon: BookOpen },
+                { title: "Estimator", body: "Open the photo estimator for driveway, house wash, patio, walkway, fence, and trash can jobs.", href: "/admin/estimator", icon: Camera },
+              ],
+            },
+            {
+              label: "Money",
+              tools: [
+                { title: "Postgame", body: "Close out the job, split labor, protect reserves, and save the record.", href: "/admin/postgame", icon: ShieldCheck },
+                { title: "Expenses", body: "Track gas, chemicals, ads, software, reimbursements, and receipts.", href: "/admin/expenses", icon: CreditCard },
+                { title: "Dashboard", body: "Revenue, profit, reserves, expenses, and job history in one place.", href: "/admin/money", icon: CalendarDays },
+              ],
+            },
+          ].map((group) => (
+            <section key={group.label} className="rounded-[1.6rem] border border-white/8 bg-black/18 p-4">
+              <p className="text-xs font-black uppercase italic tracking-[0.18em] text-[#0B67F0]">{group.label}</p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {group.tools.map(({ title, body, href, icon: Icon }) => (
+                  <Link
+                    key={title}
+                    href={href}
+                    className="rounded-[1.35rem] border border-white/8 bg-white/[0.035] p-4 transition hover:border-[#0B67F0]/35 hover:bg-[#0B67F0]/10"
+                  >
+                    <Icon className="size-5 text-[#BFD7FF]" />
+                    <p className="mt-3 font-heading text-3xl font-black uppercase italic leading-none text-white">
+                      {title}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-white/58">{body}</p>
+                  </Link>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
 

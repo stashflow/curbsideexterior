@@ -16,137 +16,28 @@ import {
   WalletCards,
 } from "lucide-react";
 
+import {
+  calculateSplit,
+  createExpenseDraft,
+  createWorker,
+  expenseCategories,
+  moneyServices,
+  roleWeights,
+  type ExpenseCategory,
+  type ExpenseEntry,
+  type MoneyData,
+  type PostgameRecord,
+  type WorkerEntry,
+  type WorkerRole,
+} from "@/lib/admin-money-shared";
 import { formatCurrency } from "@/lib/format";
 
 type Mode = "postgame" | "expenses" | "money";
-type WorkerRole = "Job Lead" | "Helper" | "Sales / Booking" | "Driver" | "Owner/Admin";
-type ExpenseCategory =
-  | "Gas"
-  | "Chemicals"
-  | "Equipment"
-  | "Supplies"
-  | "Advertising"
-  | "Website / Software"
-  | "Insurance"
-  | "Payment Processing"
-  | "Vehicle"
-  | "Payroll / Labor"
-  | "Refund"
-  | "Other";
-
-type WorkerEntry = {
-  id: string;
-  name: string;
-  role: WorkerRole;
-  hours: number;
-  bonus: number;
-  notes: string;
-  overridePay: number | null;
-};
-
-type ExpenseEntry = {
-  id: string;
-  date: string;
-  name: string;
-  category: ExpenseCategory;
-  amount: number;
-  paidBy: string;
-  paymentMethod: string;
-  reimbursable: boolean;
-  reimbursed: boolean;
-  relatedJob: string;
-  notes: string;
-};
-
-type PostgameRecord = {
-  id: string;
-  customerName: string;
-  customerAddress: string;
-  jobDate: string;
-  services: string[];
-  notes: string;
-  originalQuote: number;
-  finalCharged: number;
-  discountType: string;
-  discountAmount: number;
-  paymentMethod: string;
-  paymentStatus: string;
-  workers: WorkerEntry[];
-  expenses: ExpenseEntry[];
-  split: MoneySplit;
-  createdAt: string;
-};
-
-type MoneySplit = {
-  directExpenses: number;
-  netJobMoney: number;
-  taxExpenseReserve: number;
-  laborPool: number;
-  businessProfit: number;
-  workerPayouts: Array<WorkerEntry & { suggestedPay: number; finalPay: number }>;
-};
-
-const STORAGE_POSTGAMES = "curbside-admin-postgames";
-const STORAGE_EXPENSES = "curbside-admin-expenses";
 
 const today = new Date().toISOString().slice(0, 10);
-const services = ["House Washing", "Driveway Cleaning", "Sidewalk Cleaning", "Soft Washing", "Trash Can Cleaning", "Curb Number Painting", "Other"];
-const categories: ExpenseCategory[] = ["Gas", "Chemicals", "Equipment", "Supplies", "Advertising", "Website / Software", "Insurance", "Payment Processing", "Vehicle", "Payroll / Labor", "Refund", "Other"];
-const roleWeights: Record<WorkerRole, number> = {
-  "Job Lead": 1.5,
-  Helper: 1,
-  "Sales / Booking": 1.25,
-  Driver: 1.1,
-  "Owner/Admin": 0.75,
-};
-
-function emptyWorker(name = "Emerson"): WorkerEntry {
-  return { id: crypto.randomUUID(), name, role: "Job Lead", hours: 1.5, bonus: 0, notes: "", overridePay: null };
-}
-
-function emptyExpense(): ExpenseEntry {
-  return {
-    id: crypto.randomUUID(),
-    date: today,
-    name: "",
-    category: "Gas",
-    amount: 0,
-    paidBy: "Business",
-    paymentMethod: "Card",
-    reimbursable: false,
-    reimbursed: false,
-    relatedJob: "",
-    notes: "",
-  };
-}
-
-function readStored<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try {
-    return JSON.parse(localStorage.getItem(key) ?? "") as T;
-  } catch {
-    return fallback;
-  }
-}
 
 function money(value: number) {
   return Number.isFinite(value) ? value : 0;
-}
-
-function calculateSplit(finalCharged: number, workers: WorkerEntry[], expenses: ExpenseEntry[]): MoneySplit {
-  const directExpenses = expenses.reduce((sum, expense) => sum + money(expense.amount), 0);
-  const netJobMoney = Math.max(0, money(finalCharged) - directExpenses);
-  const taxExpenseReserve = Math.round(netJobMoney * 0.25);
-  const laborPool = Math.round(netJobMoney * 0.5);
-  const businessProfit = netJobMoney - taxExpenseReserve - laborPool;
-  const totalWeight = workers.reduce((sum, worker) => sum + roleWeights[worker.role] * Math.max(0, worker.hours), 0);
-  const workerPayouts = workers.map((worker) => {
-    const suggestedPay = totalWeight > 0 ? Math.round(laborPool * ((roleWeights[worker.role] * Math.max(0, worker.hours)) / totalWeight)) : 0;
-    const finalPay = worker.overridePay ?? suggestedPay + money(worker.bonus);
-    return { ...worker, suggestedPay, finalPay };
-  });
-
-  return { directExpenses, netJobMoney, taxExpenseReserve, laborPool, businessProfit, workerPayouts };
 }
 
 function StatCard({ label, value }: { label: string; value: string }) {
@@ -170,6 +61,10 @@ function TextInput({ label, value, onChange, type = "text" }: { label: string; v
 export function MoneyWorkspace({ mode }: { mode: Mode }) {
   const [postgames, setPostgames] = useState<PostgameRecord[]>([]);
   const [expenses, setExpenses] = useState<ExpenseEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [databaseReady, setDatabaseReady] = useState(true);
+  const [statusMessage, setStatusMessage] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [jobDate, setJobDate] = useState(today);
@@ -181,23 +76,45 @@ export function MoneyWorkspace({ mode }: { mode: Mode }) {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("Card");
   const [paymentStatus, setPaymentStatus] = useState("Paid");
-  const [workers, setWorkers] = useState<WorkerEntry[]>([emptyWorker("Emerson")]);
+  const [workers, setWorkers] = useState<WorkerEntry[]>([createWorker("Emerson")]);
   const [jobExpenses, setJobExpenses] = useState<ExpenseEntry[]>([]);
-  const [expenseDraft, setExpenseDraft] = useState<ExpenseEntry>(emptyExpense());
+  const [expenseDraft, setExpenseDraft] = useState<ExpenseEntry>(createExpenseDraft());
 
   useEffect(() => {
-    setPostgames(readStored<PostgameRecord[]>(STORAGE_POSTGAMES, []));
-    setExpenses(readStored<ExpenseEntry[]>(STORAGE_EXPENSES, []));
+    let active = true;
+
+    async function loadMoneyData() {
+      try {
+        const response = await fetch("/api/admin/money", { cache: "no-store" });
+        const data = (await response.json()) as MoneyData & { error?: string };
+
+        if (!active) return;
+        if (!response.ok) throw new Error(data.error ?? "Could not load money data.");
+
+        setPostgames(data.postgames);
+        setExpenses(data.expenses);
+        setDatabaseReady(data.usingDatabase);
+        setStatusMessage(data.usingDatabase ? "" : "Neon is not connected yet. Add DATABASE_URL in Vercel to save money data.");
+      } catch (error) {
+        if (!active) return;
+        setDatabaseReady(false);
+        setStatusMessage(error instanceof Error ? error.message : "Could not load money data.");
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    }
+
+    loadMoneyData();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  function savePostgames(next: PostgameRecord[]) {
-    setPostgames(next);
-    localStorage.setItem(STORAGE_POSTGAMES, JSON.stringify(next));
-  }
-
-  function saveExpenses(next: ExpenseEntry[]) {
-    setExpenses(next);
-    localStorage.setItem(STORAGE_EXPENSES, JSON.stringify(next));
+  function syncMoneyData(data: MoneyData) {
+    setPostgames(data.postgames);
+    setExpenses(data.expenses);
+    setDatabaseReady(data.usingDatabase);
   }
 
   const split = useMemo(() => calculateSplit(finalCharged, workers, jobExpenses), [finalCharged, workers, jobExpenses]);
@@ -212,10 +129,13 @@ export function MoneyWorkspace({ mode }: { mode: Mode }) {
   }
 
   function addJobExpense() {
-    setJobExpenses((current) => [...current, { ...emptyExpense(), relatedJob: customerName || "Current job" }]);
+    setJobExpenses((current) => [...current, { ...createExpenseDraft(), relatedJob: customerName || "Current job" }]);
   }
 
-  function savePostgame() {
+  async function savePostgame() {
+    setIsSaving(true);
+    setStatusMessage("");
+
     const record: PostgameRecord = {
       id: crypto.randomUUID(),
       customerName: customerName || "Unnamed customer",
@@ -235,21 +155,97 @@ export function MoneyWorkspace({ mode }: { mode: Mode }) {
       createdAt: new Date().toISOString(),
     };
 
-    savePostgames([record, ...postgames]);
-    saveExpenses([...jobExpenses.map((expense) => ({ ...expense, relatedJob: record.customerName })), ...expenses]);
-    setCustomerName("");
-    setCustomerAddress("");
-    setOriginalQuote(0);
-    setFinalCharged(0);
-    setNotes("");
-    setJobExpenses([]);
-    setWorkers([emptyWorker("Emerson")]);
+    try {
+      const response = await fetch("/api/admin/money/postgame", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(record),
+      });
+      const data = (await response.json()) as MoneyData & { error?: string };
+
+      if (!response.ok) throw new Error(data.error ?? "Could not save postgame.");
+
+      syncMoneyData(data);
+      setCustomerName("");
+      setCustomerAddress("");
+      setOriginalQuote(0);
+      setFinalCharged(0);
+      setNotes("");
+      setJobExpenses([]);
+      setWorkers([createWorker("Emerson")]);
+      setStatusMessage("Postgame saved to Neon.");
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Could not save postgame.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  function saveExpense() {
+  async function saveExpense() {
     if (!expenseDraft.name || expenseDraft.amount <= 0) return;
-    saveExpenses([{ ...expenseDraft, id: crypto.randomUUID() }, ...expenses]);
-    setExpenseDraft(emptyExpense());
+    setIsSaving(true);
+    setStatusMessage("");
+
+    try {
+      const response = await fetch("/api/admin/money/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...expenseDraft, id: crypto.randomUUID() }),
+      });
+      const data = (await response.json()) as MoneyData & { error?: string };
+
+      if (!response.ok) throw new Error(data.error ?? "Could not save expense.");
+
+      syncMoneyData(data);
+      setExpenseDraft(createExpenseDraft());
+      setStatusMessage("Expense saved to Neon.");
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Could not save expense.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function deletePostgame(id: string) {
+    setIsSaving(true);
+    setStatusMessage("");
+
+    try {
+      const response = await fetch(`/api/admin/money/postgame?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      const data = (await response.json()) as MoneyData & { error?: string };
+
+      if (!response.ok) throw new Error(data.error ?? "Could not delete postgame.");
+
+      syncMoneyData(data);
+      setStatusMessage("Postgame deleted.");
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Could not delete postgame.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function deleteExpense(id: string) {
+    setIsSaving(true);
+    setStatusMessage("");
+
+    try {
+      const response = await fetch(`/api/admin/money/expenses?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+      const data = (await response.json()) as MoneyData & { error?: string };
+
+      if (!response.ok) throw new Error(data.error ?? "Could not delete expense.");
+
+      syncMoneyData(data);
+      setStatusMessage("Expense deleted.");
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Could not delete expense.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -277,6 +273,18 @@ export function MoneyWorkspace({ mode }: { mode: Mode }) {
         </div>
       </div>
 
+      {isLoading || statusMessage ? (
+        <div
+          className={`mt-5 rounded-[1.4rem] border px-4 py-3 text-sm leading-6 ${
+            databaseReady
+              ? "border-[#0B67F0]/20 bg-[#0B67F0]/10 text-[#BFD7FF]"
+              : "border-amber-300/24 bg-amber-400/10 text-amber-100"
+          }`}
+        >
+          {isLoading ? "Loading money workspace..." : statusMessage}
+        </div>
+      ) : null}
+
       {mode === "money" ? (
         <div className="mt-5 grid gap-5">
           <div className="grid gap-3 md:grid-cols-5">
@@ -286,7 +294,7 @@ export function MoneyWorkspace({ mode }: { mode: Mode }) {
             <StatCard label="All expenses" value={formatCurrency(allTimeExpenses)} />
             <StatCard label="Unreimbursed" value={formatCurrency(unreimbursed)} />
           </div>
-          <History postgames={postgames} expenses={expenses} onDeleteJob={(id) => savePostgames(postgames.filter((job) => job.id !== id))} />
+          <History postgames={postgames} expenses={expenses} onDeleteJob={deletePostgame} onDeleteExpense={deleteExpense} />
         </div>
       ) : null}
 
@@ -298,19 +306,19 @@ export function MoneyWorkspace({ mode }: { mode: Mode }) {
               <TextInput label="Date" type="date" value={expenseDraft.date} onChange={(value) => setExpenseDraft({ ...expenseDraft, date: value })} />
               <TextInput label="Expense name" value={expenseDraft.name} onChange={(value) => setExpenseDraft({ ...expenseDraft, name: value })} />
               <TextInput label="Amount" type="number" value={expenseDraft.amount} onChange={(value) => setExpenseDraft({ ...expenseDraft, amount: Number(value) })} />
-              <Select label="Category" value={expenseDraft.category} options={categories} onChange={(value) => setExpenseDraft({ ...expenseDraft, category: value as ExpenseCategory })} />
+              <Select label="Category" value={expenseDraft.category} options={expenseCategories} onChange={(value) => setExpenseDraft({ ...expenseDraft, category: value as ExpenseCategory })} />
               <Select label="Paid by" value={expenseDraft.paidBy} options={["Business Account", "Emerson", "Mom/Owner", "Worker", "Other"]} onChange={(value) => setExpenseDraft({ ...expenseDraft, paidBy: value })} />
               <Select label="Payment method" value={expenseDraft.paymentMethod} options={["Cash", "Card", "Zelle", "Cash App", "Check", "Other"]} onChange={(value) => setExpenseDraft({ ...expenseDraft, paymentMethod: value })} />
               <TextInput label="Related job" value={expenseDraft.relatedJob} onChange={(value) => setExpenseDraft({ ...expenseDraft, relatedJob: value })} />
               <label className="flex items-center gap-3 text-sm text-white/78"><input type="checkbox" checked={expenseDraft.reimbursable} onChange={(event) => setExpenseDraft({ ...expenseDraft, reimbursable: event.target.checked })} /> Reimbursable</label>
               <label className="flex items-center gap-3 text-sm text-white/78"><input type="checkbox" checked={expenseDraft.reimbursed} onChange={(event) => setExpenseDraft({ ...expenseDraft, reimbursed: event.target.checked })} /> Reimbursed</label>
-              <button type="button" onClick={saveExpense} className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[#0B67F0]/70 bg-[#0B67F0] px-5 text-sm font-black uppercase italic tracking-[0.14em] text-white">
+              <button type="button" onClick={saveExpense} disabled={isSaving || isLoading || !databaseReady} className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[#0B67F0]/70 bg-[#0B67F0] px-5 text-sm font-black uppercase italic tracking-[0.14em] text-white disabled:cursor-not-allowed disabled:opacity-45">
                 <Save className="size-4" />
-                Save Expense
+                {isSaving ? "Saving..." : "Save Expense"}
               </button>
             </div>
           </section>
-          <History postgames={postgames} expenses={expenses} onDeleteJob={(id) => savePostgames(postgames.filter((job) => job.id !== id))} />
+          <History postgames={postgames} expenses={expenses} onDeleteJob={deletePostgame} onDeleteExpense={deleteExpense} />
         </div>
       ) : null}
 
@@ -325,7 +333,7 @@ export function MoneyWorkspace({ mode }: { mode: Mode }) {
                 <Select label="Payment status" value={paymentStatus} options={["Paid", "Partially Paid", "Unpaid"]} onChange={setPaymentStatus} />
               </div>
               <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-4">
-                {services.map((service) => (
+                {moneyServices.map((service) => (
                   <button key={service} type="button" onClick={() => toggleService(service)} className={`rounded-2xl border px-3 py-2 text-xs font-semibold uppercase tracking-[0.1em] ${selectedServices.includes(service) ? "border-[#0B67F0]/60 bg-[#0B67F0]/16 text-white" : "border-white/10 bg-black/20 text-white/58"}`}>{service}</button>
                 ))}
               </div>
@@ -360,7 +368,7 @@ export function MoneyWorkspace({ mode }: { mode: Mode }) {
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={() => setWorkers([...workers, emptyWorker(`Worker ${workers.length + 1}`)])} className="mt-4 inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white">
+              <button type="button" onClick={() => setWorkers([...workers, createWorker(`Worker ${workers.length + 1}`)])} className="mt-4 inline-flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-xs font-bold uppercase tracking-[0.12em] text-white">
                 <Plus className="size-4" />
                 Add Worker
               </button>
@@ -407,15 +415,15 @@ export function MoneyWorkspace({ mode }: { mode: Mode }) {
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={savePostgame} className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#0B67F0]/70 bg-[#0B67F0] px-5 text-sm font-black uppercase italic tracking-[0.14em] text-white">
+              <button type="button" onClick={savePostgame} disabled={isSaving || isLoading || !databaseReady} className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#0B67F0]/70 bg-[#0B67F0] px-5 text-sm font-black uppercase italic tracking-[0.14em] text-white disabled:cursor-not-allowed disabled:opacity-45">
                 <Save className="size-4" />
-                Save Postgame
+                {isSaving ? "Saving..." : "Save Postgame"}
               </button>
             </Panel>
           </section>
 
           <div className="xl:col-span-2">
-            <History postgames={postgames} expenses={expenses} onDeleteJob={(id) => savePostgames(postgames.filter((job) => job.id !== id))} />
+            <History postgames={postgames} expenses={expenses} onDeleteJob={deletePostgame} onDeleteExpense={deleteExpense} />
           </div>
         </div>
       ) : null}
@@ -455,7 +463,17 @@ function MoneyLine({ label, value, strong }: { label: string; value: number; str
   );
 }
 
-function History({ postgames, expenses, onDeleteJob }: { postgames: PostgameRecord[]; expenses: ExpenseEntry[]; onDeleteJob: (id: string) => void }) {
+function History({
+  postgames,
+  expenses,
+  onDeleteJob,
+  onDeleteExpense,
+}: {
+  postgames: PostgameRecord[];
+  expenses: ExpenseEntry[];
+  onDeleteJob: (id: string) => void;
+  onDeleteExpense: (id: string) => void;
+}) {
   return (
     <section className="rounded-[1.6rem] border border-white/10 bg-black/24 p-5">
       <div className="flex items-center gap-3">
@@ -492,7 +510,10 @@ function History({ postgames, expenses, onDeleteJob }: { postgames: PostgameReco
                   <p className="mt-1 text-xs text-white/46">{expense.date} • {expense.category} • Paid by {expense.paidBy}</p>
                   {expense.relatedJob ? <p className="mt-1 text-xs text-[#BFD7FF]">{expense.relatedJob}</p> : null}
                 </div>
-                <p className="font-semibold text-[#BFD7FF]">{formatCurrency(expense.amount)}</p>
+                <div className="flex items-center gap-3">
+                  <p className="font-semibold text-[#BFD7FF]">{formatCurrency(expense.amount)}</p>
+                  <button type="button" onClick={() => confirm("Delete this expense?") && onDeleteExpense(expense.id)} className="text-white/42"><Trash2 className="size-4" /></button>
+                </div>
               </div>
             </article>
           ))}

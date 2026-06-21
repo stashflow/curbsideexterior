@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { BrandLogo } from "@/components/site/brand-logo";
 import { Button } from "@/components/ui/button";
 import { BUSINESS_INSTAGRAM_URL, BUSINESS_PHONE_DISPLAY } from "@/lib/business";
 
@@ -28,16 +29,34 @@ export type VerticalLandingPageData = {
 export function VerticalLandingPage({ page }: { page: VerticalLandingPageData }) {
   return (
     <main className="min-h-screen overflow-x-hidden bg-black text-white">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/92 backdrop-blur-md">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <Link href="/" aria-label="CURBSIDE home">
+            <BrandLogo className="h-12 w-44 sm:h-14 sm:w-56" />
+          </Link>
+          <div className="hidden items-center gap-8 text-xs font-bold uppercase italic tracking-[0.16em] text-white/80 md:flex">
+            <Link href="/services/pressure-washing-marietta-ga" className="hover:text-[#0B67F0]">
+              Services
+            </Link>
+            <Link href="/areas/marietta-ga-exterior-cleaning" className="hover:text-[#0B67F0]">
+              Areas
+            </Link>
+            <Link href="/faq" className="hover:text-[#0B67F0]">
+              FAQ
+            </Link>
+          </div>
+          <Button asChild className="h-11 px-4 text-xs sm:px-5">
+            <Link href="/book">Book Now</Link>
+          </Button>
+        </nav>
+      </header>
       <section className="relative overflow-hidden px-4 pb-10 pt-8 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#000_0%,#050505_58%,#075BE6_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-24 bg-[#075BE6]" />
         <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(120deg,transparent_0%,transparent_55%,rgba(255,255,255,0.08)_56%,transparent_72%)]" />
 
         <div className="relative mx-auto max-w-7xl">
-          <Link href="/" className="text-xs font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
-            Back Home
-          </Link>
-          <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_25rem] lg:items-end">
+          <div className="grid gap-8 lg:grid-cols-[1fr_25rem] lg:items-end">
             <div>
               <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">
                 {page.eyebrow}
