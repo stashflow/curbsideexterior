@@ -65,7 +65,7 @@ const faqs = [
   },
   {
     question: "What does trash can cleaning cost?",
-    answer: "One bin is $30. Two or more bins are $35 total for one-time trash can cleaning.",
+    answer: "One bin is $30. Two bins are $35. Each additional bin is $10 for one-time trash can cleaning.",
   },
 ];
 

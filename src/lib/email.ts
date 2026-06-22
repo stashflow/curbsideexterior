@@ -18,6 +18,28 @@ interface EmailPayload {
   text: string;
 }
 
+export interface AiCallerLeadPayload {
+  customerName?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  services?: string[];
+  estimateTotal?: number;
+  estimateBreakdown?: Array<{ label: string; amount?: number | string; note?: string }>;
+  depositRequired?: number;
+  preferredDate?: string;
+  preferredTimeWindow?: string;
+  urgency?: string;
+  leadType?: "ready_to_book" | "owner_review" | "question" | "other";
+  notes?: string;
+  transcriptSummary?: string;
+  callRecordingUrl?: string;
+  source?: string;
+}
+
 const brandBlue = "#0B67F0";
 const brandBlueDark = "#075BE6";
 const brandIce = "#BFD7FF";
@@ -199,6 +221,78 @@ export function bookingCompletedOwnerAlert(booking: BookingRecord) {
       body,
     }),
     text: `Job completed for ${booking.customer_name}. Service: ${formatServiceList(booking.primary_service)}. Total: ${formatCurrency(booking.quote_total)}.`,
+  });
+}
+
+function optionalLeadRow(label: string, value?: string | number | null) {
+  if (value === undefined || value === null || value === "") return "";
+
+  return `<p style="margin:0 0 8px 0;"><strong>${label}:</strong> ${value}</p>`;
+}
+
+export function aiCallerLeadOwnerAlert(lead: AiCallerLeadPayload) {
+  const customerName = lead.customerName?.trim() || "AI caller lead";
+  const serviceList = lead.services?.filter(Boolean).join(", ") || "Not specified";
+  const address = [lead.address, lead.city, lead.state, lead.zip].filter(Boolean).join(", ");
+  const leadType = lead.leadType ? formatTitle(lead.leadType) : "Owner Review";
+  const breakdown =
+    lead.estimateBreakdown && lead.estimateBreakdown.length > 0
+      ? `
+        <table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.10);margin-top:18px;">
+          ${lead.estimateBreakdown
+            .map(
+              (item) => `
+                <tr>
+                  <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08);color:#FFFFFF;">${item.label}</td>
+                  <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08);color:${brandIce};text-align:right;">${typeof item.amount === "number" ? formatCurrency(item.amount) : item.amount ?? ""}</td>
+                </tr>
+                ${item.note ? `<tr><td colspan="2" style="padding:0 12px 10px 12px;color:rgba(255,255,255,0.55);font-size:13px;">${item.note}</td></tr>` : ""}
+              `,
+            )
+            .join("")}
+        </table>
+      `
+      : "";
+
+  const body = `
+    <p style="margin:0 0 18px 0;">The AI caller collected a lead that is ready for booking or owner review.</p>
+    <div style="padding:18px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.10);margin-bottom:18px;">
+      ${optionalLeadRow("Lead type", leadType)}
+      ${optionalLeadRow("Customer", customerName)}
+      ${optionalLeadRow("Phone", lead.phone)}
+      ${optionalLeadRow("Email", lead.email)}
+      ${optionalLeadRow("Address", address)}
+      ${optionalLeadRow("Services", serviceList)}
+      ${optionalLeadRow("Estimated total", typeof lead.estimateTotal === "number" ? formatCurrency(lead.estimateTotal) : undefined)}
+      ${optionalLeadRow("Deposit required", typeof lead.depositRequired === "number" ? formatCurrency(lead.depositRequired) : undefined)}
+      ${optionalLeadRow("Preferred date", lead.preferredDate)}
+      ${optionalLeadRow("Preferred window", lead.preferredTimeWindow)}
+      ${optionalLeadRow("Urgency", lead.urgency)}
+      ${optionalLeadRow("Source", lead.source)}
+    </div>
+    ${breakdown}
+    ${
+      lead.notes || lead.transcriptSummary || lead.callRecordingUrl
+        ? `
+          <div style="padding:18px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.10);margin-top:18px;">
+            ${optionalLeadRow("Notes", lead.notes)}
+            ${optionalLeadRow("Call summary", lead.transcriptSummary)}
+            ${lead.callRecordingUrl ? `<p style="margin:0;"><strong>Recording:</strong> <a href="${lead.callRecordingUrl}" style="color:${brandIce};font-weight:700;">Open call recording</a></p>` : ""}
+          </div>
+        `
+        : ""
+    }
+  `;
+
+  return sendTransactionalEmail({
+    to: OWNER_NOTIFICATION_EMAILS,
+    subject: `AI caller lead: ${customerName}`,
+    html: emailShell({
+      eyebrow: "AI Caller Lead",
+      title: "Lead Needs Follow Up",
+      body,
+    }),
+    text: `AI caller lead: ${customerName}. Phone: ${lead.phone ?? "not provided"}. Services: ${serviceList}. Estimated total: ${typeof lead.estimateTotal === "number" ? formatCurrency(lead.estimateTotal) : "not provided"}. Deposit: ${typeof lead.depositRequired === "number" ? formatCurrency(lead.depositRequired) : "not provided"}.`,
   });
 }
 

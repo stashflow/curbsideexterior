@@ -1013,7 +1013,7 @@ export function BookingForm() {
                             />
                           </label>
                           <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-4 text-sm leading-6 text-white/80">
-                            Clear pricing: 1 bin is $30. Two or more bins are $35 total.
+                            Clear pricing: 1 bin is $30. 2 bins are $35. Each additional bin is $10.
                             Monthly service is reviewed before it is confirmed.
                           </div>
                         </div>

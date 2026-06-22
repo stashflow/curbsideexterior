@@ -141,21 +141,21 @@ export const serviceLandingPages: SeoLandingPage[] = [
   {
     slug: "trash-can-cleaning-marietta-ga",
     title: "Trash Can Cleaning Marietta GA",
-    metaTitle: "Trash Can Cleaning Marietta GA | $30-$35 Bin Cleaning",
+    metaTitle: "Trash Can Cleaning Marietta GA | From $30",
     description:
-      "Trash can cleaning in Marietta GA with transparent $30-$35 pricing. One bin is $30 and two or more bins are $35 total.",
+      "Trash can cleaning in Marietta GA with transparent pricing. One bin is $30, two bins are $35, and each additional bin is $10.",
     eyebrow: "Trash Can Cleaning",
-    headline: "Trash Can Cleaning For $30-$35",
+    headline: "Trash Can Cleaning From $30",
     intro:
-      "Simple bin cleaning pricing: one trash can is $30, and two or more cans are $35 total for one-time service.",
+      "Simple bin cleaning pricing: one trash can is $30, two cans are $35, and each additional can is $10 for one-time service.",
     primaryKeyword: "trash can cleaning Marietta GA",
     serviceName: "Trash Can Cleaning",
     canonical: "/services/trash-can-cleaning-marietta-ga",
-    highlights: ["1 Bin $30", "2+ Bins $35", "Odor Help", "One-Time Cleaning", "Monthly Review", "Easy Booking"],
+    highlights: ["1 Bin $30", "2 Bins $35", "+$10 Extra Bins", "Odor Help", "One-Time Cleaning", "Easy Booking"],
     sections: [
       {
         title: "Transparent Bin Pricing",
-        body: "One bin is $30. Two or more bins are $35 total. You can see the price in the booking estimate before submitting.",
+        body: "One bin is $30. Two bins are $35. Each additional bin is $10. You can see the price in the booking estimate before submitting.",
       },
       {
         title: "Good For Odor And Grime",
@@ -169,7 +169,7 @@ export const serviceLandingPages: SeoLandingPage[] = [
     faqs: [
       {
         question: "How much is trash can cleaning?",
-        answer: "One bin is $30. Two or more bins are $35 total.",
+        answer: "One bin is $30. Two bins are $35. Each additional bin is $10.",
       },
       {
         question: "Can I add bin cleaning to pressure washing?",
@@ -258,21 +258,21 @@ export const serviceLandingPages: SeoLandingPage[] = [
   {
     slug: "trash-can-cleaning-near-me",
     title: "Trash Can Cleaning Near Me",
-    metaTitle: "Trash Can Cleaning Near Me | Marietta GA $30-$35",
+    metaTitle: "Trash Can Cleaning Near Me | Marietta GA From $30",
     description:
-      "Trash can cleaning near Marietta GA with clear $30-$35 pricing for homeowners who want cleaner bins and less odor.",
+      "Trash can cleaning near Marietta GA with clear pricing for homeowners who want cleaner bins and less odor.",
     eyebrow: "Bin Cleaning Near Me",
     headline: "Trash Can Cleaning Near Me",
     intro:
-      "One bin is $30 and two or more bins are $35 total. Add bin cleaning to a pressure washing request or book it by itself.",
+      "One bin is $30, two bins are $35, and each additional bin is $10. Add bin cleaning to a pressure washing request or book it by itself.",
     primaryKeyword: "trash can cleaning near me",
     serviceName: "Trash Can Cleaning Near Me",
     canonical: "/services/trash-can-cleaning-near-me",
-    highlights: ["1 Bin $30", "2+ Bins $35", "Odor Help", "Marietta", "Easy Booking", "Add-On Service"],
+    highlights: ["1 Bin $30", "2 Bins $35", "+$10 Extra Bins", "Marietta", "Easy Booking", "Add-On Service"],
     sections: [
       {
         title: "Clear Bin Pricing",
-        body: "No confusing tiers. One bin is $30 and two or more bins are $35 total.",
+        body: "No confusing tiers. One bin is $30, two bins are $35, and each additional bin is $10.",
       },
       {
         title: "Easy Add-On",
@@ -286,7 +286,7 @@ export const serviceLandingPages: SeoLandingPage[] = [
     faqs: [
       {
         question: "How much is bin cleaning near me?",
-        answer: "For CURBSIDE, one bin is $30 and two or more bins are $35 total.",
+        answer: "For CURBSIDE, one bin is $30, two bins are $35, and each additional bin is $10.",
       },
       {
         question: "Can I book just trash can cleaning?",

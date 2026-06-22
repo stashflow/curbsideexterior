@@ -92,7 +92,7 @@ const grinds = [
     effort: "Medium",
     link: "/services/trash-can-cleaning-marietta-ga",
     icon: MapPinned,
-    pitch: "I clean trash cans for $30 for one bin or $35 for two or more. I’m building a route in this area.",
+    pitch: "I clean trash cans for $30 for one bin, $35 for two bins, and $10 for each additional bin. I’m building a route in this area.",
     steps: ["Go after trash pickup day.", "Look for bins near curb.", "Leave a clean note or talk directly.", "Offer neighbor bundle.", "Book through /book."],
   },
   {
