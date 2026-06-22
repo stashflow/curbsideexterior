@@ -1,8 +1,12 @@
 import Link from "next/link";
-import { CalendarCheck, MessageSquare } from "lucide-react";
+import { CalendarCheck, MessageSquare, Phone } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { BUSINESS_INSTAGRAM_URL, BUSINESS_PHONE_DISPLAY } from "@/lib/business";
+import {
+  BUSINESS_PHONE_TEL,
+  BUSINESS_TEXT_PHONE_DISPLAY,
+  BUSINESS_TEXT_PHONE_TEL,
+} from "@/lib/business";
 import type { SeoLandingPage } from "@/lib/seo-landing-pages";
 import { SITE_URL } from "@/lib/site";
 
@@ -82,7 +86,7 @@ export function SeoLandingPageView({ page }: { page: SeoLandingPage }) {
             <p className="mt-4 max-w-2xl text-base italic leading-7 text-white/90 sm:text-lg">
               {page.intro}
             </p>
-            <div className="mt-7 grid gap-3 sm:max-w-xl sm:grid-cols-2">
+            <div className="mt-7 grid gap-3 sm:max-w-2xl sm:grid-cols-3">
               <Button asChild size="lg">
                 <Link href="/book">
                   <CalendarCheck className="size-4" />
@@ -90,14 +94,20 @@ export function SeoLandingPageView({ page }: { page: SeoLandingPage }) {
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg">
-                <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
+                <Link href={`sms:${BUSINESS_TEXT_PHONE_TEL}`}>
                   <MessageSquare className="size-4" />
                   Text Photos
                 </Link>
               </Button>
+              <Button asChild variant="ghost" size="lg">
+                <Link href={`tel:${BUSINESS_PHONE_TEL}`}>
+                  <Phone className="size-4" />
+                  Call
+                </Link>
+              </Button>
             </div>
             <p className="mt-3 text-xs font-bold uppercase italic tracking-[0.08em] text-white/72">
-              Prefer texting? Send photos to {BUSINESS_PHONE_DISPLAY}.
+              Prefer texting? Send photos to {BUSINESS_TEXT_PHONE_DISPLAY}.
             </p>
           </div>
         </div>

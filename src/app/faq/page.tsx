@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarCheck, ChevronDown, MessageSquare } from "lucide-react";
+import { CalendarCheck, ChevronDown, MessageSquare, Phone } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { BUSINESS_INSTAGRAM_URL, BUSINESS_PHONE_DISPLAY } from "@/lib/business";
+import {
+  BUSINESS_PHONE_TEL,
+  BUSINESS_TEXT_PHONE_DISPLAY,
+  BUSINESS_TEXT_PHONE_TEL,
+} from "@/lib/business";
 
 export const metadata: Metadata = {
   title: "Pressure Washing FAQ | CURBSIDE EXTERIOR CO.",
@@ -104,7 +108,7 @@ export default function FaqPage() {
           <p className="mt-3 max-w-xl text-sm leading-6 text-white/76 sm:text-base">
             Short answers. No pressure. If a photo is easier, send one.
           </p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
             <Button asChild size="lg">
               <Link href="/book">
                 <CalendarCheck className="size-4" />
@@ -112,14 +116,20 @@ export default function FaqPage() {
               </Link>
             </Button>
             <Button asChild variant="secondary" size="lg">
-              <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
+              <Link href={`sms:${BUSINESS_TEXT_PHONE_TEL}`}>
                 <MessageSquare className="size-4" />
                 Text Us Photos
               </Link>
             </Button>
+            <Button asChild variant="ghost" size="lg">
+              <Link href={`tel:${BUSINESS_PHONE_TEL}`}>
+                <Phone className="size-4" />
+                Call
+              </Link>
+            </Button>
           </div>
           <p className="mt-3 text-xs font-bold uppercase italic tracking-[0.08em] text-white/60">
-            Prefer texting? Send photos to {BUSINESS_PHONE_DISPLAY}.
+            Prefer texting? Send photos to {BUSINESS_TEXT_PHONE_DISPLAY}.
           </p>
         </div>
       </section>

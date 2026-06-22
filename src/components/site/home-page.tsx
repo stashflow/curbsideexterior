@@ -14,6 +14,7 @@ import {
   Info,
   Menu,
   MessageSquare,
+  Phone,
   X,
   ShieldCheck,
   Smartphone,
@@ -25,9 +26,10 @@ import { BrandLogo } from "@/components/site/brand-logo";
 import { EmailSignupForm } from "@/components/site/email-signup-form";
 import { Button } from "@/components/ui/button";
 import {
-  BUSINESS_INSTAGRAM_URL,
   BUSINESS_PHONE_DISPLAY,
   BUSINESS_PHONE_TEL,
+  BUSINESS_TEXT_PHONE_DISPLAY,
+  BUSINESS_TEXT_PHONE_TEL,
 } from "@/lib/business";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -225,15 +227,20 @@ export function HomePage() {
                 </Link>
               ))}
               <Link
-                href={BUSINESS_INSTAGRAM_URL}
-                target="_blank"
-                rel="noreferrer"
+                href={`sms:${BUSINESS_TEXT_PHONE_TEL}`}
                 onClick={() => setMenuOpen(false)}
                 className="rounded-2xl border border-[#0B67F0] bg-[#0B67F0]/12 px-4 py-3 text-sm font-black uppercase italic tracking-[0.12em] text-white"
               >
-                Text us photos on Instagram
+                Text us photos
               </Link>
-              <p className="px-1 text-sm text-white/70">Prefer texting? Send photos to {BUSINESS_PHONE_DISPLAY}.</p>
+              <Link
+                href={`tel:${BUSINESS_PHONE_TEL}`}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-black uppercase italic tracking-[0.12em] text-white"
+              >
+                Call {BUSINESS_PHONE_DISPLAY}
+              </Link>
+              <p className="px-1 text-sm text-white/70">Prefer texting? Send photos to {BUSINESS_TEXT_PHONE_DISPLAY}.</p>
             </div>
           </div>
         ) : null}
@@ -268,13 +275,19 @@ export function HomePage() {
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg" className="h-12 w-full sm:h-14">
-                <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
+                <Link href={`sms:${BUSINESS_TEXT_PHONE_TEL}`}>
                   <MessageSquare className="size-4" />
                   Text Us Photos
                 </Link>
               </Button>
+              <Button asChild variant="ghost" size="lg" className="h-12 w-full sm:h-14">
+                <Link href={`tel:${BUSINESS_PHONE_TEL}`}>
+                  <Phone className="size-4" />
+                  Call
+                </Link>
+              </Button>
               <p className="text-center text-xs font-bold uppercase italic tracking-[0.08em] text-white/72 sm:text-left">
-                Prefer texting? Send photos to {BUSINESS_PHONE_DISPLAY}.
+                Prefer texting? Send photos to {BUSINESS_TEXT_PHONE_DISPLAY}.
               </p>
             </FadeIn>
 
@@ -443,7 +456,7 @@ export function HomePage() {
                 Fast. Easy. Convenient.
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-3">
               <Button asChild size="lg" className="border-white bg-white text-[#075BE6] hover:bg-white/90">
                 <Link href="/book">
                   <CalendarCheck className="size-4" />
@@ -451,21 +464,27 @@ export function HomePage() {
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg" className="border-white/80 bg-black/20">
-                <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
+                <Link href={`sms:${BUSINESS_TEXT_PHONE_TEL}`}>
                   <MessageSquare className="size-4" />
                   Text Us Photos
                 </Link>
               </Button>
+              <Button asChild variant="ghost" size="lg" className="border-white/60 bg-white/10 text-white">
+                <Link href={`tel:${BUSINESS_PHONE_TEL}`}>
+                  <Phone className="size-4" />
+                  Call
+                </Link>
+              </Button>
             </div>
             <p className="text-sm font-bold uppercase italic tracking-[0.08em] text-white/82 md:text-right">
-              Prefer texting? <Link href={`sms:${BUSINESS_PHONE_TEL}`} className="underline">Send photos to {BUSINESS_PHONE_DISPLAY}</Link>.
+              Prefer texting? <Link href={`sms:${BUSINESS_TEXT_PHONE_TEL}`} className="underline">Send photos to {BUSINESS_TEXT_PHONE_DISPLAY}</Link>.
             </p>
           </div>
         </section>
       </main>
 
       <div className="mobile-fixed-cta inset-x-0 bottom-0 z-50 border-t border-white/10 bg-black/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur-md md:hidden">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <Button asChild size="lg" className="h-12">
             <Link href="/book">
               <CalendarCheck className="size-4" />
@@ -473,9 +492,15 @@ export function HomePage() {
             </Link>
           </Button>
           <Button asChild size="lg" variant="secondary" className="h-12">
-            <Link href={BUSINESS_INSTAGRAM_URL} target="_blank" rel="noreferrer">
+            <Link href={`sms:${BUSINESS_TEXT_PHONE_TEL}`}>
               <MessageSquare className="size-4" />
               Text Us
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="ghost" className="h-12 border border-white/10 bg-white/[0.03]">
+            <Link href={`tel:${BUSINESS_PHONE_TEL}`}>
+              <Phone className="size-4" />
+              Call
             </Link>
           </Button>
         </div>

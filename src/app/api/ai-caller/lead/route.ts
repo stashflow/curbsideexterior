@@ -88,20 +88,25 @@ function getBreakdown(record: UnknownRecord) {
   const value = record.estimateBreakdown ?? record.estimate_breakdown ?? record.quote_breakdown;
   if (!Array.isArray(value)) return undefined;
 
-  return value
-    .map((item) => {
-      const row = asRecord(item);
-      const label = getString(row, ["label", "name", "item"]);
-      if (!label) return null;
+  const rows: Array<{ label: string; amount?: string; note?: string }> = [];
 
-      return {
-        label,
-        amount: getString(row, ["amount", "price", "total"]),
-        note: getString(row, ["note", "description"]),
-      };
-    })
-    .filter((item): item is { label: string; amount?: string; note?: string } => Boolean(item))
-    .slice(0, 20);
+  for (const item of value) {
+    const row = asRecord(item);
+    const label = getString(row, ["label", "name", "item"]);
+    if (!label) continue;
+
+    const amount = getString(row, ["amount", "price", "total"]);
+    const note = getString(row, ["note", "description"]);
+    const normalized: { label: string; amount?: string; note?: string } = { label };
+
+    if (amount) normalized.amount = amount;
+    if (note) normalized.note = note;
+    rows.push(normalized);
+
+    if (rows.length >= 20) break;
+  }
+
+  return rows.length ? rows : undefined;
 }
 
 function normalizeLeadPayload(body: unknown) {
