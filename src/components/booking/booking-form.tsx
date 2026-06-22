@@ -1207,7 +1207,7 @@ export function BookingForm() {
                           <input
                             value={form.phone}
                             onChange={(event) => update("phone", event.target.value)}
-                            placeholder="678-709-6690"
+                            placeholder="470-287-3077"
                             className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-[#0B67F0]"
                             required
                           />
