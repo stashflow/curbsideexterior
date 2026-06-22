@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarCheck, MessageSquare } from "lucide-react";
+import { CalendarCheck, ChevronDown, MessageSquare } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { BUSINESS_INSTAGRAM_URL, BUSINESS_PHONE_DISPLAY } from "@/lib/business";
@@ -124,14 +124,22 @@ export default function FaqPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-5 grid max-w-7xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="mx-auto mt-5 grid max-w-4xl gap-3">
         {faqs.map((faq) => (
-          <article key={faq.question} className="rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-5">
-            <h2 className="font-heading text-3xl font-black uppercase italic leading-none text-white">
-              {faq.question}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-white/72">{faq.answer}</p>
-          </article>
+          <details
+            key={faq.question}
+            className="group border border-white/10 bg-white/[0.03] transition open:border-[#0B67F0]/60 open:bg-[#0B67F0]/10"
+          >
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 marker:hidden sm:px-5">
+              <h2 className="font-heading text-3xl font-black uppercase italic leading-none text-white">
+                {faq.question}
+              </h2>
+              <ChevronDown className="size-5 shrink-0 text-[#BFD7FF] transition group-open:rotate-180" />
+            </summary>
+            <div className="border-t border-white/10 px-4 pb-5 pt-4 sm:px-5">
+              <p className="text-sm leading-6 text-white/76">{faq.answer}</p>
+            </div>
+          </details>
         ))}
       </section>
     </main>

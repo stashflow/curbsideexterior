@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import {
   BadgeCheck,
+  Building2,
   CalendarCheck,
   CircleDollarSign,
   Droplets,
@@ -93,6 +94,27 @@ const seoLinks = [
   ["East Cobb Pressure Washing", "/areas/east-cobb-ga-pressure-washing"],
   ["Kennesaw Pressure Washing", "/areas/kennesaw-ga-pressure-washing"],
   ["Smyrna Pressure Washing", "/areas/smyrna-ga-pressure-washing"],
+] as const;
+
+const audienceLinks = [
+  {
+    icon: Building2,
+    title: "Are You A Property Manager?",
+    body: "Fast exterior cleaning for rentals, listings, owner updates, and managed properties.",
+    href: "/property-managers",
+  },
+  {
+    icon: Home,
+    title: "Cleaning For Apartments?",
+    body: "Sidewalks, breezeways, entries, dumpster pads, and curb appeal for apartment communities.",
+    href: "/apartments",
+  },
+  {
+    icon: Info,
+    title: "Have Questions?",
+    body: "Pricing, photos, scheduling, payments, service areas, and what to move before we arrive.",
+    href: "/faq",
+  },
 ] as const;
 
 const why = [
@@ -381,6 +403,30 @@ export function HomePage() {
                   className="border border-white/12 bg-black/35 px-3 py-3 text-center text-xs font-black uppercase italic tracking-[0.08em] text-white transition hover:border-[#0B67F0]"
                 >
                   {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-black px-4 py-8 sm:px-6 md:py-14 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <SectionTitle>Built For More Properties</SectionTitle>
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
+              {audienceLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="border border-white/12 bg-white/[0.03] p-5 transition hover:border-[#0B67F0] hover:bg-[#0B67F0]/10"
+                >
+                  <item.icon className="size-8 text-[#BFD7FF]" />
+                  <h3 className="mt-4 font-heading text-3xl font-black uppercase italic leading-none text-white">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-white/72">{item.body}</p>
+                  <p className="mt-4 text-xs font-black uppercase italic tracking-[0.14em] text-[#0B67F0]">
+                    Open Page
+                  </p>
                 </Link>
               ))}
             </div>
