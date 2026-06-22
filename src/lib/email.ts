@@ -1,4 +1,10 @@
-import { BUSINESS_NAME, BUSINESS_PHONE_DISPLAY, BUSINESS_INSTAGRAM_HANDLE, OWNER_EMAIL, PAYMENT_OPERATOR_NAME } from "@/lib/business";
+import {
+  BUSINESS_INSTAGRAM_HANDLE,
+  BUSINESS_NAME,
+  BUSINESS_PHONE_DISPLAY,
+  OWNER_NOTIFICATION_EMAILS,
+  PAYMENT_OPERATOR_NAME,
+} from "@/lib/business";
 import { formatBoolean, formatCurrency, formatDateOnly, formatDateTime, formatServiceList, formatTitle, parseQuoteJson } from "@/lib/format";
 import type { BookingRecord } from "@/lib/bookings";
 import { getCampaignForMonth } from "@/lib/marketing";
@@ -6,11 +12,15 @@ import { SITE_URL } from "@/lib/site";
 import type { SubscriberRecord } from "@/lib/subscribers";
 
 interface EmailPayload {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
   text: string;
 }
+
+const brandBlue = "#0B67F0";
+const brandBlueDark = "#075BE6";
+const brandIce = "#BFD7FF";
 
 function emailShell({
   eyebrow,
@@ -23,22 +33,35 @@ function emailShell({
   body: string;
   footer?: string;
 }) {
+  const defaultFooter =
+    `${BUSINESS_NAME}<br />` +
+    `${BUSINESS_PHONE_DISPLAY}<br />` +
+    `Instagram ${BUSINESS_INSTAGRAM_HANDLE}<br />` +
+    `Payments are processed securely by ${PAYMENT_OPERATOR_NAME} through Stripe.`;
+
   return `
-  <div style="background:#02060B;padding:32px 16px;font-family:Inter,Arial,sans-serif;color:#FFFFFF;">
-    <div style="max-width:620px;margin:0 auto;background:linear-gradient(180deg,rgba(7,17,29,0.98),rgba(2,6,11,0.98));border:1px solid rgba(18,182,255,0.18);border-radius:24px;overflow:hidden;">
-      <div style="padding:28px 28px 0 28px;">
-        <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(18,182,255,0.12);border:1px solid rgba(18,182,255,0.18);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#B6E9FF;font-weight:700;">
+  <div style="margin:0;background:#000000;padding:32px 16px;font-family:Inter,Arial,sans-serif;color:#FFFFFF;">
+    <div style="max-width:660px;margin:0 auto;border:1px solid rgba(255,255,255,0.10);background:#050505;overflow:hidden;">
+      <div style="background:linear-gradient(180deg,#000000 0%,#050505 58%,${brandBlueDark} 100%);padding:28px 28px 32px 28px;border-bottom:1px solid rgba(255,255,255,0.10);">
+        <div style="font-family:'Arial Narrow',Arial,sans-serif;font-size:28px;line-height:1;font-weight:900;font-style:italic;letter-spacing:0.08em;text-transform:uppercase;color:#FFFFFF;">
+          CURBSIDE
+        </div>
+        <div style="margin-top:6px;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.72);font-weight:800;">
+          Exterior Co.
+        </div>
+        <div style="display:inline-block;margin-top:24px;padding:7px 12px;border:1px solid rgba(255,255,255,0.14);background:rgba(0,0,0,0.28);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:${brandIce};font-weight:900;font-style:italic;">
           ${eyebrow}
         </div>
-        <h1 style="margin:18px 0 0 0;font-size:34px;line-height:1.02;text-transform:uppercase;font-family:Teko,Arial Narrow,Arial,sans-serif;letter-spacing:0.04em;color:#FFFFFF;">
+        <h1 style="margin:14px 0 0 0;font-size:44px;line-height:0.92;text-transform:uppercase;font-family:Teko,'Arial Narrow',Arial,sans-serif;font-style:italic;font-weight:900;letter-spacing:0;color:#FFFFFF;">
           ${title}
         </h1>
       </div>
-      <div style="padding:24px 28px 12px 28px;color:#D9E3EE;font-size:16px;line-height:1.7;">
+      <div style="padding:26px 28px 14px 28px;color:rgba(255,255,255,0.82);font-size:16px;line-height:1.7;background:#050505;">
         ${body}
       </div>
-      <div style="padding:0 28px 28px 28px;color:#A7B0BE;font-size:14px;line-height:1.7;">
-        ${footer ?? `${BUSINESS_NAME}<br />${BUSINESS_PHONE_DISPLAY}<br />Instagram ${BUSINESS_INSTAGRAM_HANDLE}<br />Payments are processed securely by ${PAYMENT_OPERATOR_NAME} through Stripe.`}
+      <div style="height:4px;background:${brandBlue};"></div>
+      <div style="padding:20px 28px 28px 28px;color:rgba(255,255,255,0.56);font-size:13px;line-height:1.7;background:#000000;">
+        ${footer ?? defaultFooter}
       </div>
     </div>
   </div>`;
@@ -53,17 +76,17 @@ function quoteSummaryTable(booking: BookingRecord) {
       (item) => `
       <tr>
         <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08);color:#FFFFFF;">${item.label}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08);color:#B6E9FF;text-align:right;">${item.amount > 0 ? formatCurrency(item.amount) : "Manual review"}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.08);color:${brandIce};text-align:right;">${item.amount > 0 ? formatCurrency(item.amount) : "Manual review"}</td>
       </tr>`,
     )
     .join("");
 
   return `
-    <table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.10);overflow:hidden;">
       ${rows}
       <tr>
         <td style="padding:12px;color:#FFFFFF;font-weight:700;">Estimated total</td>
-        <td style="padding:12px;color:#B6E9FF;text-align:right;font-weight:700;">${formatCurrency(booking.quote_total)}</td>
+        <td style="padding:12px;color:${brandIce};text-align:right;font-weight:700;">${formatCurrency(booking.quote_total)}</td>
       </tr>
     </table>
   `;
@@ -76,12 +99,12 @@ function bookingPhotoLinks(booking: BookingRecord) {
   const links = photoUrls
     .map(
       (url, index) =>
-        `<li style="margin:0 0 8px 0;"><a href="${url}" style="color:#B6E9FF;">Photo ${index + 1}</a></li>`,
+        `<li style="margin:0 0 8px 0;"><a href="${url}" style="color:${brandIce};font-weight:700;">Photo ${index + 1}</a></li>`,
     )
     .join("");
 
   return `
-    <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin:18px 0;">
+    <div style="padding:18px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.10);margin:18px 0;">
       <p style="margin:0 0 12px 0;"><strong>Uploaded photos:</strong></p>
       <ul style="margin:0;padding-left:18px;">${links}</ul>
     </div>
@@ -108,13 +131,11 @@ export async function sendTransactionalEmail(payload: EmailPayload) {
         address: fromEmail,
         name: BUSINESS_NAME,
       },
-      to: [
-        {
-          email_address: {
-            address: payload.to,
-          },
+      to: (Array.isArray(payload.to) ? payload.to : [payload.to]).map((address) => ({
+        email_address: {
+          address,
         },
-      ],
+      })),
       subject: payload.subject,
       htmlbody: payload.html,
       textbody: payload.text,
@@ -131,7 +152,7 @@ export async function sendTransactionalEmail(payload: EmailPayload) {
 export function bookingAdminAlert(booking: BookingRecord) {
   const body = `
     <p style="margin:0 0 18px 0;">A new booking came in and needs review.</p>
-    <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);margin-bottom:18px;">
+    <div style="padding:18px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.10);margin-bottom:18px;">
       <p style="margin:0 0 8px 0;"><strong>Customer:</strong> ${booking.customer_name}</p>
       <p style="margin:0 0 8px 0;"><strong>Phone:</strong> ${booking.phone}</p>
       <p style="margin:0 0 8px 0;"><strong>Email:</strong> ${booking.email}</p>
@@ -145,7 +166,7 @@ export function bookingAdminAlert(booking: BookingRecord) {
   `;
 
   return sendTransactionalEmail({
-    to: OWNER_EMAIL,
+    to: OWNER_NOTIFICATION_EMAILS,
     subject: `New booking: ${booking.customer_name}`,
     html: emailShell({
       eyebrow: "New Booking",
@@ -153,6 +174,31 @@ export function bookingAdminAlert(booking: BookingRecord) {
       body,
     }),
     text: `New booking from ${booking.customer_name}. Service: ${formatServiceList(booking.primary_service)}. Status: ${formatTitle(booking.status)}. Phone: ${booking.phone}.`,
+  });
+}
+
+export function bookingCompletedOwnerAlert(booking: BookingRecord) {
+  const body = `
+    <p style="margin:0 0 18px 0;">A job was marked complete in the admin app.</p>
+    <div style="padding:18px;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.10);margin-bottom:18px;">
+      <p style="margin:0 0 8px 0;"><strong>Customer:</strong> ${booking.customer_name}</p>
+      <p style="margin:0 0 8px 0;"><strong>Service:</strong> ${formatServiceList(booking.primary_service)}</p>
+      <p style="margin:0 0 8px 0;"><strong>Scheduled:</strong> ${formatDateOnly(booking.scheduled_date || booking.preferred_date)} (${booking.scheduled_time_window || booking.preferred_time_window})</p>
+      <p style="margin:0 0 8px 0;"><strong>Address:</strong> ${booking.address_line_1}, ${booking.city}, ${booking.state} ${booking.zip}</p>
+      <p style="margin:0;"><strong>Quote total:</strong> ${formatCurrency(booking.quote_total)}</p>
+    </div>
+    ${quoteSummaryTable(booking)}
+  `;
+
+  return sendTransactionalEmail({
+    to: OWNER_NOTIFICATION_EMAILS,
+    subject: `Job completed: ${booking.customer_name}`,
+    html: emailShell({
+      eyebrow: "Job Complete",
+      title: "Job Marked Complete",
+      body,
+    }),
+    text: `Job completed for ${booking.customer_name}. Service: ${formatServiceList(booking.primary_service)}. Total: ${formatCurrency(booking.quote_total)}.`,
   });
 }
 

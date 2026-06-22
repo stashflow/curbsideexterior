@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { getBookingById, notifyCustomerBookingUpdated, updateBookingById } from "@/lib/bookings";
 import {
+  bookingCompletedOwnerAlert,
   customerJobAcceptedEmail,
   customerJobDeclinedEmail,
   customerRescheduleRequestedEmail,
@@ -94,6 +95,10 @@ export async function POST(request: Request) {
       status: "completed",
       ownerNotes: ownerNotes || booking.owner_notes,
     });
+
+    if (updated) {
+      await bookingCompletedOwnerAlert(updated);
+    }
   } else {
     const status = String(formData.get("status") ?? "");
 

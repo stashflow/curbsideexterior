@@ -6,6 +6,7 @@ export const BUSINESS_PHONE_TEL = `+1${BUSINESS_PHONE_RAW}`;
 export const BUSINESS_INSTAGRAM_HANDLE = "@curbsideexterior";
 export const BUSINESS_INSTAGRAM_URL = "https://instagram.com/curbsideexterior";
 export const OWNER_EMAIL = "ejdarkbark17@gmail.com";
+export const OWNER_NOTIFICATION_EMAILS = [OWNER_EMAIL, "edddy_187@icloud.com", "mendoza1069@icloud.com"];
 export const BASE_ZIP = "30067";
 export const CORE_SERVICE_CITIES = [
   "Marietta",
