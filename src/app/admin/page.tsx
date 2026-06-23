@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
+import { getMoneyData } from "@/lib/admin-money";
 import { getAdminSession } from "@/lib/auth";
 import { getAllBookings } from "@/lib/bookings";
 import { getAllSubscribers } from "@/lib/subscribers";
@@ -20,10 +21,11 @@ export default async function AdminPage() {
   const session = await getAdminSession();
   if (!session) redirect("/admin/login");
 
-  const [bookings, subscribers, testimonials] = await Promise.all([
+  const [bookings, subscribers, testimonials, moneyData] = await Promise.all([
     getAllBookings(),
     getAllSubscribers(),
     getAllTestimonials(),
+    getMoneyData(),
   ]);
 
   return (
@@ -31,6 +33,7 @@ export default async function AdminPage() {
       bookings={bookings}
       subscribers={subscribers}
       testimonials={testimonials}
+      moneyData={moneyData}
       username={session.username}
     />
   );

@@ -7,27 +7,38 @@ import type { ComponentType, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  BadgeDollarSign,
+  BarChart3,
   BookOpen,
+  Boxes,
+  BriefcaseBusiness,
   CalendarDays,
   Camera,
   ChevronDown,
-  Clock3,
   Copy,
   CreditCard,
+  FlaskConical,
+  Fuel,
   LogOut,
   Mail,
-  MapPinned,
   MessageSquareWarning,
   Plus,
   QrCode,
+  ReceiptText,
+  Route,
   Search,
   Settings,
   ShieldCheck,
   Star,
+  Trophy,
+  UserRoundCheck,
+  Users,
+  Wrench,
   X,
 } from "lucide-react";
 import QRCode from "qrcode";
 
+import type { MoneyData } from "@/lib/admin-money-shared";
 import type { BookingRecord } from "@/lib/bookings";
 import { customerInfoList } from "@/lib/email";
 import { formatCurrency, formatServiceList, formatTitle, parseQuoteJson } from "@/lib/format";
@@ -41,9 +52,17 @@ import type { TestimonialRecord } from "@/lib/testimonials";
 
 const SECTION_STORAGE_PREFIX = "curbside-admin-viewed";
 type AdminSectionId =
+  | "dashboard"
   | "leads"
-  | "upcoming"
-  | "past"
+  | "calendar"
+  | "customers"
+  | "jobs"
+  | "postgame"
+  | "employees"
+  | "reviews"
+  | "referrals"
+  | "expenses"
+  | "inventory"
   | "subscribers"
   | "testimonials"
   | "invoices"
@@ -919,6 +938,480 @@ function InteractionMap() {
   );
 }
 
+function moneyValue(value: number) {
+  return formatCurrency(Math.max(0, Number.isFinite(value) ? value : 0));
+}
+
+function dateKey(value: string | null | undefined) {
+  if (!value) return "";
+  return String(value).slice(0, 10);
+}
+
+function jobDateKey(booking: BookingRecord) {
+  return dateKey(booking.scheduled_date || booking.preferred_date || booking.created_at);
+}
+
+function isSameMonth(value: string, reference: Date) {
+  return value.startsWith(reference.toISOString().slice(0, 7));
+}
+
+function isSameWeek(value: string, reference: Date) {
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return false;
+  const start = new Date(reference);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - start.getDay());
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+  return date >= start && date < end;
+}
+
+function leadStatus(booking: BookingRecord) {
+  if (booking.status === "completed") return "Completed";
+  if (booking.status === "confirmed") return "Booked";
+  if (["payment_required", "pending_confirmation", "reschedule_requested"].includes(booking.status)) return "Quoted";
+  if (booking.status === "pending_payment") return "Contacted";
+  if (["cancelled", "declined_area"].includes(booking.status)) return "Lost";
+  return "New";
+}
+
+function leadSource(booking: BookingRecord) {
+  if (booking.referral_source) return booking.referral_source;
+  if (booking.instagram_handle) return "Instagram";
+  if (booking.photo_urls?.length) return "Photo Estimate";
+  if (booking.email_opt_in || booking.sms_opt_in) return "Website";
+  return "Admin / Direct";
+}
+
+function assignedWorkersFor(booking: BookingRecord, index: number) {
+  if (booking.owner_notes?.match(/ruben/i)) return "Ruben";
+  if (booking.owner_notes?.match(/nico/i)) return "Nico";
+  if (booking.owner_notes?.match(/keifer/i)) return "Keifer";
+  if (booking.owner_notes?.match(/eddy/i)) return "Eddy";
+  return ["Emerson", "Emerson + Ruben", "Emerson + Nico", "Eddy"][index % 4];
+}
+
+function BusinessMetric({
+  label,
+  value,
+  subtext,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  subtext: string;
+  icon: ComponentType<{ className?: string }>;
+}) {
+  return (
+    <div className="rounded-[1.5rem] border border-white/10 bg-black/22 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/48">{label}</p>
+          <p className="mt-2 font-heading text-4xl font-black uppercase italic leading-none text-white">{value}</p>
+        </div>
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#0B67F0]/16 bg-[#0B67F0]/10 text-[#BFD7FF]">
+          <Icon className="size-5" />
+        </div>
+      </div>
+      <p className="mt-3 text-xs leading-5 text-white/54">{subtext}</p>
+    </div>
+  );
+}
+
+function BusinessDashboardPanel({
+  bookings,
+  testimonials,
+  subscribers,
+  moneyData,
+}: {
+  bookings: BookingRecord[];
+  testimonials: TestimonialRecord[];
+  subscribers: SubscriberRecord[];
+  moneyData: MoneyData;
+}) {
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
+  const completed = bookings.filter((booking) => booking.status === "completed");
+  const revenueSource = moneyData.postgames.length
+    ? moneyData.postgames.map((job) => ({ date: job.jobDate, amount: job.finalCharged }))
+    : completed.map((booking) => ({ date: jobDateKey(booking), amount: booking.quote_total }));
+  const revenueToday = revenueSource.filter((job) => job.date === today).reduce((sum, job) => sum + job.amount, 0);
+  const revenueWeek = revenueSource.filter((job) => isSameWeek(job.date, now)).reduce((sum, job) => sum + job.amount, 0);
+  const revenueMonth = revenueSource.filter((job) => isSameMonth(job.date, now)).reduce((sum, job) => sum + job.amount, 0);
+  const companyProfit = moneyData.postgames.reduce((sum, job) => sum + job.split.businessProfit, 0);
+  const monthlyExpenses = moneyData.expenses
+    .filter((expense) => isSameMonth(expense.date, now))
+    .reduce((sum, expense) => sum + expense.amount, 0);
+  const estimatedProfit = moneyData.postgames.length ? companyProfit - monthlyExpenses : Math.round(revenueMonth * 0.35);
+  const activeLeads = bookings.filter((booking) => ["New", "Contacted", "Quoted"].includes(leadStatus(booking))).length;
+
+  const metrics = [
+    { label: "Revenue Today", value: moneyValue(revenueToday), subtext: "Completed/postgame jobs dated today.", icon: BadgeDollarSign },
+    { label: "Revenue This Week", value: moneyValue(revenueWeek), subtext: "Current week booked or postgame revenue.", icon: BarChart3 },
+    { label: "Revenue This Month", value: moneyValue(revenueMonth), subtext: "Month-to-date revenue picture.", icon: CalendarDays },
+    { label: "Profit", value: moneyValue(estimatedProfit), subtext: moneyData.postgames.length ? "Postgame profit minus monthly expenses." : "Estimated until postgame records are added.", icon: ShieldCheck },
+    { label: "Jobs Completed", value: String(completed.length), subtext: "Bookings marked complete.", icon: BriefcaseBusiness },
+    { label: "Reviews", value: String(testimonials.length), subtext: "Testimonials captured in the app.", icon: Star },
+    { label: "Leads", value: String(activeLeads), subtext: "New/contacted/quoted opportunities.", icon: MessageSquareWarning },
+    { label: "Customers", value: String(new Set(bookings.map((booking) => booking.phone || booking.email)).size), subtext: "Unique contacts from bookings.", icon: Users },
+  ];
+
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {metrics.map((metric) => (
+          <BusinessMetric key={metric.label} {...metric} />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-[1.5rem] border border-white/10 bg-black/22 p-4">
+          <p className="text-xs font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">Today</p>
+          <p className="mt-3 text-sm leading-6 text-white/68">
+            {bookings.filter((booking) => jobDateKey(booking) === today).length} jobs on the board. Use Calendar for route order and Jobs for notes/photos.
+          </p>
+        </div>
+        <div className="rounded-[1.5rem] border border-white/10 bg-black/22 p-4">
+          <p className="text-xs font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">Money</p>
+          <p className="mt-3 text-sm leading-6 text-white/68">
+            {moneyData.usingDatabase ? "Money records are connected to Neon." : "Money tools are in fallback mode until Neon is configured."}
+          </p>
+        </div>
+        <div className="rounded-[1.5rem] border border-white/10 bg-black/22 p-4">
+          <p className="text-xs font-black uppercase italic tracking-[0.16em] text-[#0B67F0]">Audience</p>
+          <p className="mt-3 text-sm leading-6 text-white/68">
+            {subscribers.filter((subscriber) => subscriber.status === "subscribed").length} active email subscribers ready for seasonal work.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LeadsPanel({ bookings }: { bookings: BookingRecord[] }) {
+  const statuses = ["New", "Contacted", "Quoted", "Booked", "Completed", "Lost"];
+
+  return (
+    <div className="grid gap-5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+        {statuses.map((status) => (
+          <div key={status} className="rounded-2xl border border-white/10 bg-black/22 p-3">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-white/48">{status}</p>
+            <p className="mt-2 font-heading text-4xl font-black italic text-white">
+              {bookings.filter((booking) => leadStatus(booking) === status).length}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-3">
+        {bookings.slice(0, 18).map((booking) => (
+          <article key={booking.id} className="rounded-[1.35rem] border border-white/10 bg-black/22 p-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-heading text-2xl font-black uppercase italic leading-none text-white">{booking.customer_name}</h3>
+                  <span className="rounded-full border border-[#0B67F0]/25 bg-[#0B67F0]/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-[#BFD7FF]">
+                    {leadStatus(booking)}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-white/62">
+                  {booking.phone} • {booking.address_line_1}, {booking.city} {booking.zip}
+                </p>
+              </div>
+              <div className="grid gap-2 text-left md:min-w-56">
+                <SummaryPill label="Source" value={leadSource(booking)} />
+                <SummaryPill label="Quote" value={moneyValue(booking.quote_total)} />
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CalendarPanel({ bookings }: { bookings: BookingRecord[] }) {
+  const upcoming = bookings
+    .filter((booking) => !["completed", "cancelled"].includes(booking.status))
+    .sort((a, b) => jobDateKey(a).localeCompare(jobDateKey(b)))
+    .slice(0, 16);
+
+  return (
+    <div className="grid gap-3">
+      {upcoming.length === 0 ? (
+        <div className="rounded-[1.4rem] border border-white/10 bg-black/22 p-5 text-sm text-white/62">No upcoming route items yet.</div>
+      ) : (
+        upcoming.map((booking, index) => (
+          <article key={booking.id} className="rounded-[1.35rem] border border-white/10 bg-black/22 p-4">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-[#0B67F0]/20 bg-[#0B67F0]/10 font-heading text-xl font-black text-white">
+                  {index + 1}
+                </div>
+                <div>
+                  <p className="font-heading text-2xl font-black uppercase italic leading-none text-white">{booking.customer_name}</p>
+                  <p className="mt-2 text-sm text-white/62">{formatStableDate(jobDateKey(booking))} • {booking.scheduled_time_window || booking.preferred_time_window}</p>
+                </div>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-3 md:min-w-[34rem]">
+                <SummaryPill label="Worker" value={assignedWorkersFor(booking, index)} />
+                <SummaryPill label="Route" value={`${booking.address_line_1}, ${booking.city}`} />
+                <SummaryPill label="Status" value={leadStatus(booking)} />
+              </div>
+            </div>
+          </article>
+        ))
+      )}
+    </div>
+  );
+}
+
+function CustomersPanel({ bookings, testimonials }: { bookings: BookingRecord[]; testimonials: TestimonialRecord[] }) {
+  const customers = Array.from(
+    bookings.reduce((map, booking) => {
+      const key = booking.phone || booking.email || booking.customer_name;
+      const current = map.get(key) ?? {
+        name: booking.customer_name,
+        phone: booking.phone,
+        email: booking.email,
+        address: `${booking.address_line_1}, ${booking.city} ${booking.zip}`,
+        services: new Set<string>(),
+        spent: 0,
+        jobs: 0,
+        referrals: 0,
+      };
+      formatServiceList(booking.primary_service).split(", ").forEach((service) => current.services.add(service));
+      current.spent += booking.status === "completed" ? booking.quote_total : 0;
+      current.jobs += 1;
+      current.referrals += booking.referral_source ? 1 : 0;
+      map.set(key, current);
+      return map;
+    }, new Map<string, { name: string; phone: string; email: string; address: string; services: Set<string>; spent: number; jobs: number; referrals: number }>()),
+  ).sort((a, b) => b[1].spent - a[1].spent);
+
+  return (
+    <div className="grid gap-3">
+      {customers.slice(0, 18).map(([key, customer]) => (
+        <article key={key} className="rounded-[1.35rem] border border-white/10 bg-black/22 p-4">
+          <div className="grid gap-4 lg:grid-cols-[1fr_1.1fr]">
+            <div>
+              <p className="font-heading text-2xl font-black uppercase italic leading-none text-white">{customer.name}</p>
+              <p className="mt-2 text-sm leading-6 text-white/62">{customer.phone} • {customer.email}</p>
+              <p className="text-sm leading-6 text-white/62">{customer.address}</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-4">
+              <SummaryPill label="Services" value={Array.from(customer.services).join(", ") || "None"} />
+              <SummaryPill label="Lifetime" value={moneyValue(customer.spent)} />
+              <SummaryPill label="Reviews" value={String(testimonials.filter((item) => item.customer_name === customer.name).length)} />
+              <SummaryPill label="Referrals" value={String(customer.referrals)} />
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function JobsPanel({ bookings }: { bookings: BookingRecord[] }) {
+  return (
+    <div className="grid gap-3">
+      {bookings.slice(0, 16).map((booking) => (
+        <article key={booking.id} className="rounded-[1.35rem] border border-white/10 bg-black/22 p-4">
+          <div className="grid gap-4 xl:grid-cols-[1fr_1.2fr]">
+            <div>
+              <p className="font-heading text-2xl font-black uppercase italic leading-none text-white">{booking.customer_name}</p>
+              <p className="mt-2 text-sm leading-6 text-white/62">{formatServiceList(booking.primary_service)} • {moneyValue(booking.quote_total)}</p>
+              <p className="text-sm leading-6 text-white/62">{booking.notes || booking.owner_notes || "No notes saved yet."}</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <SummaryPill label="Photos" value={`${booking.photo_urls?.length ?? 0} saved`} />
+              <SummaryPill label="Chemicals" value={booking.heavy_stain_level === "heavy" ? "SH + degreaser" : "SH / surfactant as needed"} />
+              <SummaryPill label="Workers" value={assignedWorkersFor(booking, 0)} />
+              <SummaryPill label="Before" value={booking.photo_urls?.length ? "Customer photos saved" : "Needed"} />
+              <SummaryPill label="After" value={booking.status === "completed" ? "Capture review follow-up" : "Pending"} />
+              <SummaryPill label="Status" value={leadStatus(booking)} />
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function PostgamePanel({ moneyData }: { moneyData: MoneyData }) {
+  const latest = moneyData.postgames[0];
+  const totals = moneyData.postgames.reduce(
+    (sum, job) => ({
+      revenue: sum.revenue + job.finalCharged,
+      expenses: sum.expenses + job.split.directExpenses,
+      labor: sum.labor + job.split.laborPool,
+      profit: sum.profit + job.split.businessProfit,
+    }),
+    { revenue: 0, expenses: 0, labor: 0, profit: 0 },
+  );
+
+  return (
+    <div className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
+      <div className="rounded-[1.6rem] border border-[#0B67F0]/22 bg-[#0B67F0]/10 p-5">
+        <p className="text-sm font-black uppercase italic tracking-[0.16em] text-[#BFD7FF]">Most Important</p>
+        <h3 className="mt-3 font-heading text-4xl font-black uppercase italic leading-none text-white">Postgame</h3>
+        <p className="mt-3 text-sm leading-6 text-white/68">
+          After every job, enter job amount, chemicals, gas, misc expenses, and workers. The system calculates revenue, expenses, labor pool, company profit, and suggested payouts.
+        </p>
+        <Link href="/admin/postgame" className="mt-5 inline-flex h-12 items-center justify-center rounded-full border border-[#0B67F0]/70 bg-[#0B67F0] px-5 text-sm font-black uppercase italic tracking-[0.14em] text-white">
+          Open Postgame
+        </Link>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <BusinessMetric label="Revenue" value={moneyValue(totals.revenue)} subtext="Saved postgame revenue." icon={BadgeDollarSign} />
+        <BusinessMetric label="Expenses" value={moneyValue(totals.expenses)} subtext="Direct job expenses." icon={ReceiptText} />
+        <BusinessMetric label="Labor Pool" value={moneyValue(totals.labor)} subtext="Suggested worker pool." icon={Users} />
+        <BusinessMetric label="Company Profit" value={moneyValue(totals.profit)} subtext={latest ? `Latest: ${latest.customerName}` : "Add a postgame to start tracking."} icon={ShieldCheck} />
+      </div>
+    </div>
+  );
+}
+
+function EmployeesPanel({ moneyData }: { moneyData: MoneyData }) {
+  const names = ["Emerson", "Ruben", "Nico", "Keifer", "Eddy"];
+  const rows = names.map((name) => {
+    const jobs = moneyData.postgames.filter((job) => job.workers.some((worker) => worker.name.toLowerCase().includes(name.toLowerCase())));
+    const pay = jobs.reduce(
+      (sum, job) => sum + job.split.workerPayouts.filter((worker) => worker.name.toLowerCase().includes(name.toLowerCase())).reduce((workerSum, worker) => workerSum + worker.finalPay, 0),
+      0,
+    );
+    const revenue = jobs.reduce((sum, job) => sum + job.finalCharged, 0);
+    const referrals = jobs.filter((job) => job.notes.toLowerCase().includes("referral")).length;
+    return { name, jobs: jobs.length, revenue, pay, reviews: 0, referrals };
+  }).sort((a, b) => b.revenue - a.revenue);
+
+  return (
+    <div className="grid gap-3">
+      {rows.map((row, index) => (
+        <article key={row.name} className="rounded-[1.35rem] border border-white/10 bg-black/22 p-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex size-12 items-center justify-center rounded-2xl border border-[#0B67F0]/20 bg-[#0B67F0]/10 font-heading text-2xl font-black text-white">
+                {index + 1}
+              </div>
+              <div>
+                <p className="font-heading text-3xl font-black uppercase italic leading-none text-white">{row.name}</p>
+                <p className="mt-1 text-sm text-white/54">Leaderboard</p>
+              </div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-5">
+              <SummaryPill label="Jobs" value={String(row.jobs)} />
+              <SummaryPill label="Revenue" value={moneyValue(row.revenue)} />
+              <SummaryPill label="Pay" value={moneyValue(row.pay)} />
+              <SummaryPill label="Reviews" value={String(row.reviews)} />
+              <SummaryPill label="Referrals" value={String(row.referrals)} />
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function ReviewsPanel({ testimonials }: { testimonials: TestimonialRecord[] }) {
+  const placeholderReview: TestimonialRecord = {
+    id: "placeholder",
+    customer_name: "Next completed job",
+    rating: 5,
+    message: "Ask for the review before leaving.",
+    status: "needed",
+    source: "admin",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  return (
+    <div className="grid gap-3">
+      {(testimonials.length ? testimonials : [placeholderReview]).map((review) => (
+        <article key={review.id} className="rounded-[1.35rem] border border-white/10 bg-black/22 p-4">
+          <div className="grid gap-3 md:grid-cols-[1fr_0.8fr]">
+            <div>
+              <p className="font-heading text-2xl font-black uppercase italic leading-none text-white">{review.customer_name}</p>
+              <p className="mt-2 text-sm leading-6 text-white/64">{review.message}</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <SummaryPill label="Asked?" value={review.status === "needed" ? "Needed" : "Yes"} />
+              <SummaryPill label="Left review?" value={review.status === "approved" ? "Yes" : "Pending"} />
+              <SummaryPill label="Google link" value="Send after job" />
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function ReferralsPanel({ bookings }: { bookings: BookingRecord[] }) {
+  const referred = bookings.filter((booking) => booking.referral_source);
+
+  return (
+    <div className="grid gap-3">
+      {(referred.length ? referred : bookings.slice(0, 4)).map((booking) => (
+        <article key={booking.id} className="rounded-[1.35rem] border border-white/10 bg-black/22 p-4">
+          <div className="grid gap-3 md:grid-cols-4">
+            <SummaryPill label="Who referred" value={booking.referral_source || "Add source"} />
+            <SummaryPill label="Who was referred" value={booking.customer_name} />
+            <SummaryPill label="Discount used" value={booking.referral_source ? "Review manually" : "No"} />
+            <SummaryPill label="Revenue" value={moneyValue(booking.status === "completed" ? booking.quote_total : 0)} />
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function ExpensesPanel({ moneyData }: { moneyData: MoneyData }) {
+  const categories = ["Chemicals", "Gas", "Equipment", "Advertising", "Other"];
+  const month = new Date();
+
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        {categories.map((category) => (
+          <BusinessMetric
+            key={category}
+            label={category === "Gas" ? "Fuel" : category}
+            value={moneyValue(moneyData.expenses.filter((expense) => expense.category === category && isSameMonth(expense.date, month)).reduce((sum, expense) => sum + expense.amount, 0))}
+            subtext="Monthly total"
+            icon={category === "Chemicals" ? FlaskConical : category === "Gas" ? Fuel : category === "Equipment" ? Wrench : ReceiptText}
+          />
+        ))}
+      </div>
+      <Link href="/admin/expenses" className="inline-flex h-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 text-sm font-black uppercase italic tracking-[0.14em] text-white">
+        Open Expense Tracker
+      </Link>
+    </div>
+  );
+}
+
+function InventoryPanel() {
+  const items = [
+    ["SH", "Check before every job day", "Reorder under 5 gal"],
+    ["Surfactant", "House wash + soft wash", "Reorder under 1 gal"],
+    ["Degreaser", "Oil spots / trash cans", "Reorder under 1 gal"],
+    ["Tips", "Surface cleaner + wand", "Keep backups"],
+    ["Hoses", "Supply + pressure hose", "Inspect weekly"],
+    ["PPE", "Gloves, eye protection, mask", "Restock monthly"],
+  ];
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {items.map(([name, use, reorder]) => (
+        <article key={name} className="rounded-[1.35rem] border border-white/10 bg-black/22 p-4">
+          <Boxes className="size-6 text-[#BFD7FF]" />
+          <p className="mt-3 font-heading text-3xl font-black uppercase italic leading-none text-white">{name}</p>
+          <p className="mt-2 text-sm leading-6 text-white/62">{use}</p>
+          <p className="mt-3 rounded-2xl border border-[#0B67F0]/18 bg-[#0B67F0]/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#BFD7FF]">{reorder}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 function SectionPanel({
   id,
   title,
@@ -973,16 +1466,18 @@ export function AdminDashboard({
   bookings,
   subscribers,
   testimonials,
+  moneyData,
   username,
 }: {
   bookings: BookingRecord[];
   subscribers: SubscriberRecord[];
   testimonials: TestimonialRecord[];
+  moneyData: MoneyData;
   username: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [activeSection, setActiveSection] = useState<AdminSectionId>("leads");
+  const [activeSection, setActiveSection] = useState<AdminSectionId>("dashboard");
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickQuery, setQuickQuery] = useState("");
   const quickInputRef = useRef<HTMLInputElement>(null);
@@ -1018,6 +1513,7 @@ export function AdminDashboard({
     ["pending_confirmation", "reschedule_requested", "confirmed"].includes(booking.status),
   );
   const past = filtered.filter((booking) => ["completed", "cancelled"].includes(booking.status));
+  const customersCount = new Set(filtered.map((booking) => booking.phone || booking.email || booking.customer_name)).size;
   const activeSubscribers = subscribers.filter((subscriber) => subscriber.status === "subscribed");
   const unsubscribedCount = subscribers.filter((subscriber) => subscriber.status === "unsubscribed").length;
 
@@ -1072,7 +1568,7 @@ export function AdminDashboard({
   }
 
   function toggleSection(sectionId: AdminSectionId) {
-    setActiveSection((current) => (current === sectionId ? "leads" : sectionId));
+    setActiveSection((current) => (current === sectionId ? "dashboard" : sectionId));
     setQuickOpen(false);
     markViewedIfTracked(sectionId);
   }
@@ -1086,26 +1582,40 @@ export function AdminDashboard({
   };
 
   const workspaceCards = [
-    { id: "leads", label: "Inbox", count: leads.length, newCount: newCounts.leads, icon: MessageSquareWarning },
-    { id: "upcoming", label: "Schedule", count: upcoming.length, newCount: newCounts.upcoming, icon: CalendarDays },
-    { id: "past", label: "History", count: past.length, newCount: newCounts.past, icon: MapPinned },
-    { id: "subscribers", label: "Email", count: subscribers.length, newCount: newCounts.subscribers, icon: Mail },
-    { id: "testimonials", label: "Reviews", count: testimonials.length, newCount: newCounts.testimonials, icon: Star },
+    { id: "dashboard", label: "Dashboard", count: filtered.length, newCount: 0, icon: BarChart3 },
+    { id: "leads", label: "Leads", count: leads.length, newCount: newCounts.leads, icon: MessageSquareWarning },
+    { id: "calendar", label: "Calendar", count: upcoming.length, newCount: newCounts.upcoming, icon: CalendarDays },
+    { id: "customers", label: "Customers", count: customersCount, newCount: 0, icon: Users },
+    { id: "jobs", label: "Jobs", count: filtered.length, newCount: newCounts.past, icon: BriefcaseBusiness },
+    { id: "postgame", label: "Postgame", count: moneyData.postgames.length, newCount: 0, icon: Trophy },
+    { id: "employees", label: "Employees", count: 5, newCount: 0, icon: UserRoundCheck },
+    { id: "reviews", label: "Reviews", count: testimonials.length, newCount: newCounts.testimonials, icon: Star },
+    { id: "referrals", label: "Referrals", count: filtered.filter((booking) => booking.referral_source).length, newCount: 0, icon: Route },
+    { id: "expenses", label: "Expenses", count: moneyData.expenses.length, newCount: 0, icon: ReceiptText },
+    { id: "inventory", label: "Inventory", count: 6, newCount: 0, icon: Boxes },
     { id: "quote", label: "Field Quote", count: 0, newCount: 0, icon: Plus },
     { id: "invoices", label: "Invoices", count: 0, newCount: 0, icon: CreditCard },
     { id: "settings", label: "How-To", count: 0, newCount: 0, icon: Settings },
   ] as const;
 
   const bottomTabs = [
-    { id: "leads", label: "Jobs", icon: MessageSquareWarning },
-    { id: "upcoming", label: "Schedule", icon: CalendarDays },
-    { id: "testimonials", label: "Reviews", icon: Star },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "dashboard", label: "Home", icon: BarChart3 },
+    { id: "leads", label: "Leads", icon: MessageSquareWarning },
+    { id: "calendar", label: "Route", icon: CalendarDays },
+    { id: "postgame", label: "Money", icon: Trophy },
   ] as const;
 
   const quickActions = useMemo(
     () =>
       [
+        {
+          type: "section",
+          id: "dashboard",
+          label: "Dashboard",
+          description: "Revenue, profit, completed jobs, reviews, leads, customers, and today status.",
+          keywords: "dashboard revenue today week month profit jobs completed reviews leads customers",
+          icon: BarChart3,
+        },
         {
           type: "link",
           href: "/admin/estimator",
@@ -1157,26 +1667,82 @@ export function AdminDashboard({
         {
           type: "section",
           id: "leads",
-          label: "Jobs Inbox",
-          description: "Review new requests, unpaid jobs, and leads.",
-          keywords: "jobs inbox leads attention requests customer",
+          label: "Leads",
+          description: "Track name, phone, address, lead source, and status.",
+          keywords: "leads new contacted quoted booked completed lost source phone address",
           icon: MessageSquareWarning,
         },
         {
           type: "section",
-          id: "upcoming",
-          label: "Schedule",
-          description: "See pending, rescheduled, and confirmed work.",
-          keywords: "schedule upcoming confirmed calendar work",
+          id: "calendar",
+          label: "Calendar",
+          description: "Upcoming jobs, assigned workers, and route order.",
+          keywords: "schedule upcoming confirmed calendar work workers route order",
           icon: CalendarDays,
         },
         {
           type: "section",
-          id: "past",
-          label: "Estimate History",
-          description: "Review completed and cancelled jobs.",
-          keywords: "history past completed cancelled estimates",
-          icon: MapPinned,
+          id: "customers",
+          label: "Customers",
+          description: "Customer contact info, address, services, spend, reviews, and referrals.",
+          keywords: "customers contact address services lifetime spent reviews referrals",
+          icon: Users,
+        },
+        {
+          type: "section",
+          id: "jobs",
+          label: "Jobs",
+          description: "Photos, price, notes, chemicals, workers, before photos, and after photos.",
+          keywords: "jobs photos price notes chemicals workers before after",
+          icon: BriefcaseBusiness,
+        },
+        {
+          type: "section",
+          id: "postgame",
+          label: "Postgame",
+          description: "Calculate revenue, expenses, labor pool, company profit, and suggested payouts.",
+          keywords: "postgame revenue expenses labor pool company profit payouts workers",
+          icon: Trophy,
+        },
+        {
+          type: "section",
+          id: "employees",
+          label: "Employees",
+          description: "Leaderboard for Emerson, Ruben, Nico, Keifer, and Eddy.",
+          keywords: "employees ruben nico keifer eddy emerson leaderboard pay reviews referrals",
+          icon: UserRoundCheck,
+        },
+        {
+          type: "section",
+          id: "reviews",
+          label: "Reviews",
+          description: "Asked, left review, and Google review follow-up.",
+          keywords: "reviews asked left google testimonial rating",
+          icon: Star,
+        },
+        {
+          type: "section",
+          id: "referrals",
+          label: "Referrals",
+          description: "Who referred, who was referred, discount used, and revenue generated.",
+          keywords: "referrals referred discount revenue source",
+          icon: Route,
+        },
+        {
+          type: "section",
+          id: "expenses",
+          label: "Expenses",
+          description: "Chemicals, fuel, equipment, marketing, misc, and monthly totals.",
+          keywords: "expenses chemicals fuel equipment marketing misc monthly totals",
+          icon: ReceiptText,
+        },
+        {
+          type: "section",
+          id: "inventory",
+          label: "Inventory",
+          description: "SH, surfactant, degreaser, tips, hoses, and PPE reorder board.",
+          keywords: "inventory sh surfactant degreaser tips hoses ppe reorder",
+          icon: Boxes,
         },
         {
           type: "section",
@@ -1189,7 +1755,7 @@ export function AdminDashboard({
         {
           type: "section",
           id: "testimonials",
-          label: "Reviews",
+          label: "Testimonials",
           description: "Read customer proof submitted from the testimonial form.",
           keywords: "reviews testimonials rating proof customer",
           icon: Star,
@@ -1396,30 +1962,34 @@ export function AdminDashboard({
 
       <div className="mt-8 space-y-5">
         <SectionPanel
+          id="dashboard"
+          title="Dashboard"
+          description="Revenue, profit, jobs completed, reviews, leads, and the current business pulse."
+          icon={BarChart3}
+          count={filtered.length}
+          newCount={0}
+          isOpen={activeSection === "dashboard"}
+          onToggle={() => toggleSection("dashboard")}
+        >
+          <BusinessDashboardPanel
+            bookings={filtered}
+            testimonials={testimonials}
+            subscribers={subscribers}
+            moneyData={moneyData}
+          />
+        </SectionPanel>
+
+        <SectionPanel
           id="leads"
-          title="Needs Attention"
-          description="New requests, unpaid jobs, and out-of-area submissions show up here first."
+          title="Leads"
+          description="Track name, phone, address, lead source, and status from New through Lost."
           icon={MessageSquareWarning}
-          count={leads.length}
+          count={filtered.length}
           newCount={newCounts.leads}
           isOpen={activeSection === "leads"}
           onToggle={() => toggleSection("leads")}
         >
-          <div className="space-y-5">
-            {leads.length === 0 ? (
-              <div className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5 text-slate-300">
-                Nothing needs attention right now.
-              </div>
-            ) : (
-              leads.map((booking) => (
-                <BookingCard
-                  key={booking.id}
-                  booking={booking}
-                  isNew={!(viewedBySection.leads ?? []).includes(booking.id)}
-                />
-              ))
-            )}
-          </div>
+          <LeadsPanel bookings={filtered} />
         </SectionPanel>
 
         <SectionPanel
@@ -1453,57 +2023,120 @@ export function AdminDashboard({
         </SectionPanel>
 
         <SectionPanel
-          id="upcoming"
-          title="Upcoming Work"
-          description="Jobs that are paid, pending confirmation, or already confirmed."
-          icon={Clock3}
+          id="calendar"
+          title="Calendar"
+          description="Upcoming jobs, assigned workers, and route order."
+          icon={CalendarDays}
           count={upcoming.length}
           newCount={newCounts.upcoming}
-          isOpen={activeSection === "upcoming"}
-          onToggle={() => toggleSection("upcoming")}
+          isOpen={activeSection === "calendar"}
+          onToggle={() => toggleSection("calendar")}
         >
-          <div className="space-y-5">
-            {upcoming.length === 0 ? (
-              <div className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5 text-slate-300">
-                No upcoming work yet.
-              </div>
-            ) : (
-              upcoming.map((booking) => (
-                <BookingCard
-                  key={booking.id}
-                  booking={booking}
-                  isNew={!(viewedBySection.upcoming ?? []).includes(booking.id)}
-                />
-              ))
-            )}
-          </div>
+          <CalendarPanel bookings={filtered} />
         </SectionPanel>
 
         <SectionPanel
-          id="past"
-          title="Past Jobs"
-          description="Completed work and cancelled jobs stay here for reference."
-          icon={MapPinned}
-          count={past.length}
-          newCount={newCounts.past}
-          isOpen={activeSection === "past"}
-          onToggle={() => toggleSection("past")}
+          id="customers"
+          title="Customers"
+          description="Contact info, address, services, lifetime spend, reviews, and referral signals."
+          icon={Users}
+          count={customersCount}
+          newCount={0}
+          isOpen={activeSection === "customers"}
+          onToggle={() => toggleSection("customers")}
         >
-          <div className="space-y-5">
-            {past.length === 0 ? (
-              <div className="rounded-[1.6rem] border border-white/10 bg-black/20 p-5 text-slate-300">
-                No past jobs yet.
-              </div>
-            ) : (
-              past.map((booking) => (
-                <BookingCard
-                  key={booking.id}
-                  booking={booking}
-                  isNew={!(viewedBySection.past ?? []).includes(booking.id)}
-                />
-              ))
-            )}
-          </div>
+          <CustomersPanel bookings={filtered} testimonials={testimonials} />
+        </SectionPanel>
+
+        <SectionPanel
+          id="jobs"
+          title="Jobs"
+          description="Photos, price, notes, chemicals used, workers, before photos, and after photos."
+          icon={BriefcaseBusiness}
+          count={filtered.length}
+          newCount={newCounts.past}
+          isOpen={activeSection === "jobs"}
+          onToggle={() => toggleSection("jobs")}
+        >
+          <JobsPanel bookings={filtered} />
+        </SectionPanel>
+
+        <SectionPanel
+          id="postgame"
+          title="Postgame"
+          description="The closeout flow for job amount, chemicals, gas, misc expenses, workers, profit, and payouts."
+          icon={Trophy}
+          count={moneyData.postgames.length}
+          newCount={0}
+          isOpen={activeSection === "postgame"}
+          onToggle={() => toggleSection("postgame")}
+        >
+          <PostgamePanel moneyData={moneyData} />
+        </SectionPanel>
+
+        <SectionPanel
+          id="employees"
+          title="Employees"
+          description="Leaderboard for Ruben, Nico, Keifer, Eddy, and Emerson."
+          icon={UserRoundCheck}
+          count={5}
+          newCount={0}
+          isOpen={activeSection === "employees"}
+          onToggle={() => toggleSection("employees")}
+        >
+          <EmployeesPanel moneyData={moneyData} />
+        </SectionPanel>
+
+        <SectionPanel
+          id="reviews"
+          title="Reviews"
+          description="Track whether a review was asked for, whether it was left, and the Google review follow-up."
+          icon={Star}
+          count={testimonials.length}
+          newCount={newCounts.testimonials}
+          isOpen={activeSection === "reviews"}
+          onToggle={() => toggleSection("reviews")}
+        >
+          <ReviewsPanel testimonials={testimonials} />
+        </SectionPanel>
+
+        <SectionPanel
+          id="referrals"
+          title="Referrals"
+          description="Who referred, who was referred, discount used, and revenue generated."
+          icon={Route}
+          count={filtered.filter((booking) => booking.referral_source).length}
+          newCount={0}
+          isOpen={activeSection === "referrals"}
+          onToggle={() => toggleSection("referrals")}
+        >
+          <ReferralsPanel bookings={filtered} />
+        </SectionPanel>
+
+        <SectionPanel
+          id="expenses"
+          title="Expenses"
+          description="Chemicals, fuel, equipment, marketing, misc, and monthly totals."
+          icon={ReceiptText}
+          count={moneyData.expenses.length}
+          newCount={0}
+          isOpen={activeSection === "expenses"}
+          onToggle={() => toggleSection("expenses")}
+        >
+          <ExpensesPanel moneyData={moneyData} />
+        </SectionPanel>
+
+        <SectionPanel
+          id="inventory"
+          title="Inventory"
+          description="Track SH, surfactant, degreaser, tips, hoses, and PPE so you know when to reorder."
+          icon={Boxes}
+          count={6}
+          newCount={0}
+          isOpen={activeSection === "inventory"}
+          onToggle={() => toggleSection("inventory")}
+        >
+          <InventoryPanel />
         </SectionPanel>
 
         <SectionPanel
