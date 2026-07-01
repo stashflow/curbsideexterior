@@ -40,6 +40,12 @@ ADMIN_SESSION_SECRET=
 ZEPTOMAIL_API_URL=
 ZEPTOMAIL_API_TOKEN=
 ZEPTOMAIL_FROM_EMAIL=
+
+AI_CALLER_WEBHOOK_SECRET=
+BLOB_READ_WRITE_TOKEN=
+
+OPENAI_API_KEY=
+OPENAI_ESTIMATOR_MODEL=
 ```
 
 ## Neon Setup
@@ -66,6 +72,14 @@ Set:
 - `ZEPTOMAIL_API_TOKEN`
 - `ZEPTOMAIL_FROM_EMAIL`
 
+## Uploads, AI Caller, and AI Estimator
+
+Set `BLOB_READ_WRITE_TOKEN` to enable customer photo uploads through Vercel Blob.
+
+Set `AI_CALLER_WEBHOOK_SECRET` if the AI caller lead endpoint is enabled.
+
+Set `OPENAI_API_KEY` to enable AI-assisted admin estimates. `OPENAI_ESTIMATOR_MODEL` is optional and defaults to the app's configured model.
+
 ## Admin Login
 
 The owner admin portal lives at:
@@ -85,6 +99,8 @@ Password comes from:
 - Without `DATABASE_URL`, booking submissions still calculate quotes, but they will not save.
 - Without Stripe env vars, bookings will not create live checkout sessions.
 - Without ZeptoMail env vars, confirmation emails are skipped.
+- In production, `ADMIN_SESSION_SECRET` must be set or admin session signing will fail closed.
+- Run [database/schema.sql](./database/schema.sql) before production traffic so booking, subscriber, testimonial, Stripe webhook, and admin money tables exist.
 
 ## Commands
 

@@ -4,7 +4,14 @@ import { cookies } from "next/headers";
 import { ADMIN_COOKIE_NAME } from "@/lib/business";
 
 function getSecret() {
-  return process.env.ADMIN_SESSION_SECRET ?? "local-dev-secret-change-me";
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  if (secret) return secret;
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("ADMIN_SESSION_SECRET must be configured in production.");
+  }
+
+  return "local-dev-secret-change-me";
 }
 
 function sign(payload: string) {

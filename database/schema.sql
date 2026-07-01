@@ -102,3 +102,43 @@ CREATE TABLE IF NOT EXISTS stripe_webhook_events (
   payload JSONB NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS admin_postgames (
+  id TEXT PRIMARY KEY,
+  customer_name TEXT NOT NULL,
+  customer_address TEXT NOT NULL DEFAULT '',
+  job_date DATE NOT NULL,
+  services JSONB NOT NULL DEFAULT '[]'::jsonb,
+  notes TEXT NOT NULL DEFAULT '',
+  original_quote INTEGER NOT NULL DEFAULT 0,
+  final_charged INTEGER NOT NULL DEFAULT 0,
+  discount_type TEXT NOT NULL DEFAULT 'None',
+  discount_amount INTEGER NOT NULL DEFAULT 0,
+  payment_method TEXT NOT NULL DEFAULT 'Card',
+  payment_status TEXT NOT NULL DEFAULT 'Paid',
+  workers JSONB NOT NULL DEFAULT '[]'::jsonb,
+  expenses JSONB NOT NULL DEFAULT '[]'::jsonb,
+  split JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS admin_postgames_job_date_idx ON admin_postgames (job_date DESC, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS admin_expenses (
+  id TEXT PRIMARY KEY,
+  date DATE NOT NULL,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  amount INTEGER NOT NULL DEFAULT 0,
+  paid_by TEXT NOT NULL DEFAULT '',
+  payment_method TEXT NOT NULL DEFAULT '',
+  reimbursable BOOLEAN NOT NULL DEFAULT FALSE,
+  reimbursed BOOLEAN NOT NULL DEFAULT FALSE,
+  related_job TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  postgame_id TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS admin_expenses_date_idx ON admin_expenses (date DESC, created_at DESC);
+CREATE INDEX IF NOT EXISTS admin_expenses_postgame_id_idx ON admin_expenses (postgame_id);

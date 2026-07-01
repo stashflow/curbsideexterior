@@ -27,7 +27,7 @@ const observations = [
   "Easy equipment access",
 ];
 
-const addOns = ["+$75 Sidewalk Cleaning", "+$30 Trash Can Cleaning"];
+const addOns = ["+$75 Sidewalk Cleaning", "+$20 Trash Can Cleaning"];
 
 const historyItems = [
   { address: "123 Main St", service: "Driveway Cleaning", price: "$285", confidence: "88%" },

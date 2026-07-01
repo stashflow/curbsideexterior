@@ -73,7 +73,7 @@ const services = [
   {
     icon: Trash2,
     title: "Trash Bin Cleaning",
-    body: "1 bin $30. 2 bins $35. +$10 each extra.",
+    body: "1 bin $20. 2 for $35. 3 for $50. +$10 after.",
     href: "/services/trash-can-cleaning-marietta-ga",
   },
   {
